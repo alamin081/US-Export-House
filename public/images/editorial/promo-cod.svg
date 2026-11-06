@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800" role="img" aria-label="CASH ON DELIVERY placeholder">
+  <rect width="1200" height="800" fill="#F5F3EF"/>
+  <rect x="0" y="0" width="624" height="800" fill="#CFCAC0" opacity="0.55"/>
+  <rect x="96" y="112" width="432" height="576" fill="#FFFFFF" opacity="0.45"/>
+  
+  <text x="96" y="88" font-family="Inter, system-ui, sans-serif" font-size="28" letter-spacing="5" fill="#8C867A">CASH ON DELIVERY</text>
+  <text x="96" y="744" font-family="Inter, system-ui, sans-serif" font-size="22" letter-spacing="5" fill="#8C867A" opacity="0.8">PLACEHOLDER IMAGE</text>
+</svg>

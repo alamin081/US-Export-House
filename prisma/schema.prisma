@@ -1,0 +1,1459 @@
+// =============================================================================
+// US EXPORT HOUSE — DATABASE SCHEMA (Phase 4)
+// =============================================================================
+//
+// PostgreSQL is the single source of truth for the storefront, the admin
+// dashboard and the in-store till. The design follows the master spec:
+//
+//   * Money is ALWAYS an integer number of poisha (1 BDT = 100 poisha). There
+//     is no Float or Decimal money column anywhere in this file.
+//   * Bilingual content uses paired columns (`nameEn` required, `nameBn`
+//     optional). English is mandatory, Bengali falls back to English. Two
+//     languages are planned, so paired columns beat a translation table: they
+//     keep queries, sorting and indexes simple. A third language would need a
+//     migration — an accepted trade-off.
+//   * Stock lives per location (`InventoryLevel`) and every change is appended
+//     to the `InventoryMovement` ledger, which is never updated or deleted.
+//   * Soft delete (`deletedAt`) on records the business must keep history for:
+//     products, variants, categories, locations, coupons and staff.
+//   * Order, payment, shipment and return history store snapshots of names,
+//     SKUs and prices, so editing a product never rewrites past orders.
+//
+// Conventions: Prisma default identifier casing (quoted camelCase columns in
+// Postgres), `cuid()` ids, `createdAt`/`updatedAt` on every table.
+// =============================================================================
+
+generator client {
+  // Prisma 7 default generator. `output` is required and the client is no
+  // longer written into node_modules, so it is generated under `src/` and
+  // imported through the `@/` alias (see src/lib/db.ts).
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+
+  // `tsx` (used for the seed script) cannot resolve the generated client's
+  // internal ".js" imports, so emit TypeScript import specifiers instead.
+  importFileExtension = "ts"
+}
+
+datasource db {
+  // The connection string lives in prisma.config.ts (Prisma 7 moved `url` out
+  // of this block), which reads DATABASE_URL — Docker locally, Neon or
+  // Supabase in the cloud. Both providers work without schema changes.
+  provider = "postgresql"
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+enum LocationType {
+  BRANCH
+  WAREHOUSE
+}
+
+enum UserKind {
+  CUSTOMER
+  STAFF
+}
+
+enum OtpPurpose {
+  LOGIN
+  PHONE_VERIFY
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum OptionType {
+  SIZE
+  COLOUR
+}
+
+/// Every reason stock can move. The ledger is append-only, so this list only
+/// ever grows.
+enum MovementType {
+  PURCHASE_RECEIVE
+  SALE_ONLINE
+  SALE_STORE
+  RESERVE
+  RELEASE
+  TRANSFER_OUT
+  TRANSFER_IN
+  ADJUSTMENT
+  RETURN
+  DAMAGE
+}
+
+enum TransferStatus {
+  DRAFT
+  DISPATCHED
+  RECEIVED
+  CANCELLED
+}
+
+enum StockCountStatus {
+  DRAFT
+  COUNTING
+  COMPLETED
+  CANCELLED
+}
+
+enum SalesChannel {
+  ONLINE
+  STORE
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+/// Tracked separately from OrderStatus on purpose: a COD order can be
+/// DELIVERED and still UNPAID until the courier settles.
+enum PaymentStatus {
+  UNPAID
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentProvider {
+  COD
+  SSLCOMMERZ
+  BKASH
+  NAGAD
+  CASH
+  CARD
+}
+
+enum PaymentAttemptStatus {
+  INITIATED
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+enum RefundMethod {
+  ORIGINAL
+  BANK_TRANSFER
+  MFS
+}
+
+enum RefundStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum ReturnStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  RECEIVED
+  INSPECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum ReturnItemCondition {
+  UNUSED_WITH_TAGS
+  USED
+  DAMAGED
+  WRONG_ITEM
+}
+
+enum InspectionResult {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED
+}
+
+enum CouponChannel {
+  ONLINE
+  STORE
+  BOTH
+}
+
+enum CourierProviderType {
+  STEADFAST
+  PATHAO
+  REDX
+  MANUAL
+}
+
+/// Integration mode, stored per shipment so a mock booking can never be
+/// mistaken for a real one.
+enum IntegrationMode {
+  MOCK
+  SANDBOX
+  LIVE
+}
+
+enum ShipmentStatus {
+  PENDING
+  BOOKED
+  IN_TRANSIT
+  DELIVERED
+  RETURNED
+  CANCELLED
+  FAILED
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum BannerPlacement {
+  HOME_HERO
+  HOME_PROMO
+  CATEGORY_HEADER
+}
+
+enum HomeSectionType {
+  HERO
+  CATEGORY_GRID
+  NEW_ARRIVALS
+  BEST_SELLERS
+  COLLECTION_GRID
+  PROMO_BANNER
+  BRAND_INTRO
+  REVIEWS
+  NEWSLETTER
+}
+
+enum MenuLocation {
+  HEADER
+  FOOTER
+}
+
+enum SettingValueType {
+  STRING
+  INT
+  BOOLEAN
+  JSON
+}
+
+// =============================================================================
+// PEOPLE & ACCESS
+// =============================================================================
+
+/// Customers and staff share one table. Customers sign in with a phone number
+/// and an SMS OTP; staff sign in with email and an Argon2id password hash.
+model User {
+  id   String   @id @default(cuid())
+  kind UserKind @default(CUSTOMER)
+
+  // --- customer identity -----------------------------------------------
+  /// Stored in E.164 form: +8801XXXXXXXXX.
+  phone           String?   @unique
+  phoneVerifiedAt DateTime?
+
+  // --- staff identity (also used by Auth.js) ---------------------------
+  email         String?   @unique
+  emailVerified DateTime?
+  passwordHash  String?
+  name          String?
+  image         String?
+
+  /// Staff role. Customers have no role.
+  roleId String?
+  role   Role?   @relation(fields: [roleId], references: [id], onDelete: SetNull)
+
+  isActive  Boolean   @default(true)
+  lastLogin DateTime?
+  /// Soft delete: staff and customer history must survive deactivation.
+  deletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts         Account[]
+  sessions         Session[]
+  addresses        Address[]
+  carts            Cart[]
+  orders           Order[]
+  returnRequests   ReturnRequest[]
+  locationAccess   StaffLocationAccess[]
+  auditLogs        AuditLog[]
+  movements        InventoryMovement[]
+  transfersCreated StockTransfer[]       @relation("TransferCreatedBy")
+  transfersSent    StockTransfer[]       @relation("TransferDispatchedBy")
+  stockCounts      StockCount[]
+  refunds          Refund[]
+  settingsUpdated  Setting[]
+  pagesUpdated     Page[]
+  storeSales       Order[]               @relation("OrderSoldBy")
+  couponUses       CouponRedemption[]
+
+  @@index([kind, isActive])
+  @@index([deletedAt])
+}
+
+/// Auth.js (NextAuth v5) OAuth account link. Kept for future use; staff sign
+/// in with credentials and customers with OTP.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+/// Database sessions (not JWT), so a staff session can be revoked instantly.
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  /// Useful when revoking a session from the admin UI.
+  userAgent    String?
+  ip           String?
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expires])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+/// One SMS OTP challenge. The code itself is never stored in clear text.
+model OtpChallenge {
+  id        String     @id @default(cuid())
+  phone     String
+  codeHash  String
+  purpose   OtpPurpose @default(LOGIN)
+  expiresAt DateTime
+  /// Failed verification attempts, for per-challenge lock-out.
+  attempts  Int        @default(0)
+  consumedAt DateTime?
+  /// Request metadata for the per-IP rate limit.
+  requestIp String?
+  createdAt DateTime   @default(now())
+
+  @@index([phone, createdAt])
+  @@index([expiresAt])
+}
+
+/// A named set of permission keys. The keys themselves live in code
+/// (src/lib/permissions.ts, Phase 5); this table decides which role holds them.
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  /// Permission keys, e.g. ["product.write", "inventory.adjust"].
+  permissions String[]
+  /// True for roles the app relies on and the admin must not delete.
+  isSystem    Boolean  @default(false)
+  /// Grants every location without a StaffLocationAccess row.
+  allLocations Boolean @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users User[]
+}
+
+/// Which locations a staff member may see and act on. Enforced in the service
+/// layer, and every repository query filters on it.
+model StaffLocationAccess {
+  id         String   @id @default(cuid())
+  userId     String
+  locationId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, locationId])
+  @@index([locationId])
+}
+
+/// A customer's saved address. Orders keep their own snapshot, so editing an
+/// address never changes a past delivery record.
+model Address {
+  id        String  @id @default(cuid())
+  userId    String
+  label     String?
+  fullName  String
+  phone     String
+  line1     String
+  area      String
+  city      String
+  postcode  String?
+  zoneId    String?
+  isDefault Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  zone ShippingZone? @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+}
+
+// =============================================================================
+// LOCATIONS & INVENTORY
+// =============================================================================
+
+/// A branch (showroom) or a warehouse. Both hold stock; only some fulfil
+/// online orders.
+model Location {
+  id      String       @id @default(cuid())
+  code    String       @unique
+  type    LocationType
+  nameEn  String
+  nameBn  String?
+  addressEn String?
+  addressBn String?
+  phone   String?
+  /// Opening hours, shown on the storefront.
+  hoursEn String?
+  hoursBn String?
+
+  isActive Boolean @default(true)
+  /// Online orders may be fulfilled from here.
+  isOnlineFulfillment Boolean @default(false)
+  /// The single default location online orders reserve stock from.
+  isDefaultOnlineFulfillment Boolean @default(false)
+  sortOrder Int @default(0)
+
+  /// Soft delete: a location with history is deactivated, never removed.
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  inventoryLevels InventoryLevel[]
+  movements       InventoryMovement[]
+  transfersOut    StockTransfer[]       @relation("TransferFrom")
+  transfersIn     StockTransfer[]       @relation("TransferTo")
+  stockCounts     StockCount[]
+  orders          Order[]
+  carts           Cart[]
+  staffAccess     StaffLocationAccess[]
+  returnItems     ReturnItem[]
+
+  @@index([type, isActive])
+}
+
+/// Stock for one variant at one location. `available` is always computed as
+/// `onHand - reserved`; it is never stored.
+model InventoryLevel {
+  id         String @id @default(cuid())
+  variantId  String
+  locationId String
+
+  onHand   Int @default(0)
+  /// Held for unpaid or unshipped orders. Released on cancel or timeout.
+  reserved Int @default(0)
+
+  /// Per-variant, per-location low-stock alert threshold.
+  lowStockThreshold Int?
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  variant  ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  location Location       @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([variantId, locationId])
+  @@index([locationId])
+  // A CHECK constraint keeps onHand/reserved non-negative and reserved <= onHand
+  // (added by migration SQL: Prisma has no @@check attribute).
+}
+
+/// Append-only stock ledger. Every row explains one change; rows are never
+/// updated or deleted.
+model InventoryMovement {
+  id         String       @id @default(cuid())
+  variantId  String
+  locationId String
+  type       MovementType
+  /// Signed: negative for stock leaving, positive for stock arriving.
+  quantity   Int
+  reason     String?
+
+  /// Loose reference to whatever caused the movement (order, transfer,
+  /// adjustment, return). Loose on purpose: the ledger outlives its causes.
+  referenceType String?
+  referenceId   String?
+
+  userId    String?
+  createdAt DateTime @default(now())
+
+  variant  ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  location Location       @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  user     User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  stockCountItems StockCountItem[]
+
+  @@index([variantId, locationId, createdAt])
+  @@index([locationId, createdAt])
+  @@index([type, createdAt])
+  @@index([referenceType, referenceId])
+}
+
+/// Moving stock between locations: DRAFT -> DISPATCHED -> RECEIVED.
+model StockTransfer {
+  id             String         @id @default(cuid())
+  reference      String         @unique
+  fromLocationId String
+  toLocationId   String
+  status         TransferStatus @default(DRAFT)
+  note           String?
+
+  createdByUserId    String?
+  dispatchedByUserId String?
+  receivedByUserId   String?
+  dispatchedAt       DateTime?
+  receivedAt         DateTime?
+  cancelledAt        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  fromLocation  Location @relation("TransferFrom", fields: [fromLocationId], references: [id], onDelete: Restrict)
+  toLocation    Location @relation("TransferTo", fields: [toLocationId], references: [id], onDelete: Restrict)
+  createdBy     User?    @relation("TransferCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  dispatchedBy  User?    @relation("TransferDispatchedBy", fields: [dispatchedByUserId], references: [id], onDelete: SetNull)
+
+  items StockTransferItem[]
+
+  @@index([status, createdAt])
+  @@index([fromLocationId])
+  @@index([toLocationId])
+}
+
+model StockTransferItem {
+  id         String @id @default(cuid())
+  transferId String
+  variantId  String
+
+  quantitySent     Int
+  /// Null until the transfer is received; a lower value is a discrepancy.
+  quantityReceived Int?
+  note             String?
+
+  transfer StockTransfer  @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  variant  ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+
+  @@unique([transferId, variantId])
+}
+
+/// A physical stock count at one location.
+model StockCount {
+  id         String           @id @default(cuid())
+  reference  String           @unique
+  locationId String
+  status     StockCountStatus @default(DRAFT)
+  note       String?
+
+  createdByUserId String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  location  Location @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  createdBy User?    @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  items StockCountItem[]
+
+  @@index([locationId, status])
+}
+
+model StockCountItem {
+  id           String @id @default(cuid())
+  stockCountId String
+  variantId    String
+
+  /// What the system believed when counting started.
+  systemQty  Int
+  /// What was actually on the shelf.
+  countedQty Int?
+  /// countedQty - systemQty, stored so the report does not recompute history.
+  differenceQty Int?
+
+  /// The ADJUSTMENT movement this count produced, if any.
+  movementId String?
+
+  stockCount StockCount         @relation(fields: [stockCountId], references: [id], onDelete: Cascade)
+  variant    ProductVariant     @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  movement   InventoryMovement? @relation(fields: [movementId], references: [id], onDelete: SetNull)
+
+  @@unique([stockCountId, variantId])
+}
+
+// =============================================================================
+// CATALOGUE
+// =============================================================================
+
+/// Category tree. One catalogue is shared by every location.
+model Category {
+  id       String  @id @default(cuid())
+  slug     String  @unique
+  nameEn   String
+  nameBn   String?
+  taglineEn String?
+  taglineBn String?
+  descriptionEn String?
+  descriptionBn String?
+  imageUrl String?
+
+  parentId String?
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children Category[] @relation("CategoryTree")
+
+  /// Default size chart for products in this category.
+  sizeChartId String?
+  sizeChart   SizeChart? @relation(fields: [sizeChartId], references: [id], onDelete: SetNull)
+
+  isActive  Boolean   @default(true)
+  sortOrder Int       @default(0)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  products Product[]
+
+  @@index([parentId])
+  @@index([isActive, sortOrder])
+}
+
+model Brand {
+  id       String  @id @default(cuid())
+  slug     String  @unique
+  nameEn   String
+  nameBn   String?
+  logoUrl  String?
+  isActive Boolean @default(true)
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  products Product[]
+}
+
+/// Garment measurements, attached to a product or a category.
+model SizeChart {
+  id      String  @id @default(cuid())
+  nameEn  String
+  nameBn  String?
+  noteEn  String?
+  noteBn  String?
+  /// Column headings, e.g. [{"en":"Chest","bn":"বুক"}].
+  columns Json
+  /// Rows, e.g. [{"size":"M","values":["40","17.5","29"]}].
+  rows    Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products   Product[]
+  categories Category[]
+}
+
+model Product {
+  id     String  @id @default(cuid())
+  slug   String  @unique
+  nameEn String
+  nameBn String?
+  /// One-line summary used on cards and meta descriptions.
+  summaryEn String?
+  summaryBn String?
+  /// Long description as an array of paragraphs.
+  descriptionEn Json?
+  descriptionBn Json?
+  fabricEn String?
+  fabricBn String?
+  /// Care instructions as an array of lines.
+  careEn Json?
+  careBn Json?
+
+  categoryId  String
+  brandId     String?
+  sizeChartId String?
+
+  status ProductStatus @default(DRAFT)
+  /// Marketing flags that drive the storefront rows.
+  isNew        Boolean @default(false)
+  isBestseller Boolean @default(false)
+  isFeatured   Boolean @default(false)
+
+  /// Shown when a product has no reviews yet; recalculated from Review rows.
+  ratingAverage Float @default(0)
+  ratingCount   Int   @default(0)
+
+  publishedAt DateTime?
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  category  Category   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  brand     Brand?     @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  sizeChart SizeChart? @relation(fields: [sizeChartId], references: [id], onDelete: SetNull)
+
+  images   ProductImage[]
+  options  ProductOption[]
+  variants ProductVariant[]
+  reviews  Review[]
+
+  @@index([categoryId, status])
+  @@index([status, publishedAt])
+  @@index([deletedAt])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  url       String
+  altEn     String?
+  altBn     String?
+  sortOrder Int     @default(0)
+  /// Set when the image belongs to one colour of the product.
+  optionValueId String?
+
+  createdAt DateTime @default(now())
+
+  product     Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  optionValue OptionValue? @relation(fields: [optionValueId], references: [id], onDelete: SetNull)
+
+  @@index([productId, sortOrder])
+}
+
+/// A dimension a product varies on (Size, Colour).
+model ProductOption {
+  id        String     @id @default(cuid())
+  productId String
+  type      OptionType
+  nameEn    String
+  nameBn    String?
+  sortOrder Int        @default(0)
+
+  product Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  values  OptionValue[]
+
+  @@unique([productId, type])
+}
+
+model OptionValue {
+  id       String  @id @default(cuid())
+  optionId String
+  valueEn  String
+  valueBn  String?
+  /// Swatch colour for COLOUR options.
+  hex      String?
+  sortOrder Int    @default(0)
+
+  option ProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  variantLinks ProductVariantOption[]
+  images       ProductImage[]
+
+  @@unique([optionId, valueEn])
+}
+
+/// The sellable unit: one size/colour combination, with its own SKU, barcode
+/// and price. Prices are the same at every location (confirmed default); a
+/// future `LocationPrice` table can override without touching this column.
+model ProductVariant {
+  id        String  @id @default(cuid())
+  productId String
+  sku       String  @unique
+  barcode   String? @unique
+
+  pricePoisha        Int
+  /// Original price, struck through on the storefront when higher.
+  comparePricePoisha Int?
+  /// What the business paid, for stock valuation reports. Never shown publicly.
+  costPoisha         Int?
+
+  /// Short label built from the option values, e.g. "L / White".
+  labelEn String?
+  labelBn String?
+
+  weightGrams Int?
+  isActive    Boolean   @default(true)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  optionValues    ProductVariantOption[]
+  inventoryLevels InventoryLevel[]
+  movements       InventoryMovement[]
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+  transferItems   StockTransferItem[]
+  stockCountItems StockCountItem[]
+
+  @@index([productId, isActive])
+}
+
+/// Join table: which option values make up a variant.
+model ProductVariantOption {
+  variantId     String
+  optionValueId String
+
+  variant     ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  optionValue OptionValue    @relation(fields: [optionValueId], references: [id], onDelete: Restrict)
+
+  @@id([variantId, optionValueId])
+  @@index([optionValueId])
+}
+
+/// Customer product review. Moderated: nothing appears on the storefront until
+/// a staff member approves it.
+model Review {
+  id        String  @id @default(cuid())
+  productId String
+  /// Null for a review left by a guest order.
+  userId    String?
+  authorName String
+  cityEn     String?
+  cityBn     String?
+  rating     Int
+  titleEn    String?
+  titleBn    String?
+  bodyEn     String?
+  bodyBn     String?
+  isApproved Boolean @default(false)
+  /// True when the reviewer's phone matches a delivered order for this product.
+  isVerifiedPurchase Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, isApproved])
+}
+
+// =============================================================================
+// CART
+// =============================================================================
+
+/// A cart belongs to a signed-in customer or to a guest session token. The
+/// in-store till also uses carts, which is why `locationId` exists.
+model Cart {
+  id           String  @id @default(cuid())
+  userId       String?
+  sessionToken String? @unique
+  locationId   String?
+  channel      SalesChannel @default(ONLINE)
+  /// Applied coupon; re-validated at checkout, never trusted from here.
+  couponId     String?
+
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user     User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  coupon   Coupon?   @relation(fields: [couponId], references: [id], onDelete: SetNull)
+
+  items CartItem[]
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model CartItem {
+  id        String @id @default(cuid())
+  cartId    String
+  variantId String
+  quantity  Int    @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart    Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  // Prices are NOT stored here: the checkout recalculates from the variant.
+  @@unique([cartId, variantId])
+}
+
+// =============================================================================
+// ORDERS
+// =============================================================================
+
+model Order {
+  id          String @id @default(cuid())
+  /// Human-readable, e.g. UEH-2026-001. Generated from a Postgres sequence.
+  orderNumber String @unique
+
+  channel    SalesChannel @default(ONLINE)
+  /// Which branch or warehouse fulfils (online) or sold (in store) this order.
+  locationId String
+
+  userId String?
+  /// Guest checkout keeps the contact details on the order itself.
+  customerName  String
+  customerPhone String
+  customerEmail String?
+
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(UNPAID)
+
+  // --- money: every amount in poisha, all recalculated server-side --------
+  subtotalPoisha Int
+  discountPoisha Int @default(0)
+  shippingPoisha Int @default(0)
+  totalPoisha    Int
+  /// Sum of completed refunds, kept here so lists do not need a join.
+  refundedPoisha Int @default(0)
+
+  couponId String?
+  zoneId   String?
+
+  // --- delivery address snapshot -----------------------------------------
+  shipName     String?
+  shipPhone    String?
+  shipLine1    String?
+  shipArea     String?
+  shipCity     String?
+  shipPostcode String?
+  deliveryNote String?
+
+  /// Staff member who rang up an in-store sale.
+  soldByUserId String?
+
+  placedAt    DateTime  @default(now())
+  confirmedAt DateTime?
+  processedAt DateTime?
+  shippedAt   DateTime?
+  deliveredAt DateTime?
+  cancelledAt DateTime?
+  /// When the stock reservation for an unpaid online order expires.
+  reservationExpiresAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  location Location      @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  user     User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  soldBy   User?         @relation("OrderSoldBy", fields: [soldByUserId], references: [id], onDelete: SetNull)
+  coupon   Coupon?       @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  zone     ShippingZone? @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+
+  items          OrderItem[]
+  statusHistory  OrderStatusHistory[]
+  payments       Payment[]
+  refunds        Refund[]
+  shipments      Shipment[]
+  returnRequests ReturnRequest[]
+  redemption     CouponRedemption?
+
+  @@index([status, placedAt])
+  @@index([paymentStatus, placedAt])
+  @@index([channel, locationId, placedAt])
+  @@index([customerPhone])
+  @@index([userId])
+  @@index([reservationExpiresAt])
+}
+
+/// A line on an order. Product name, SKU and price are snapshots: editing the
+/// catalogue must never rewrite history.
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  /// Kept for reporting; restricted so a sold variant cannot be hard-deleted.
+  variantId String?
+
+  productNameEn String
+  productNameBn String?
+  variantLabel  String?
+  sku           String
+  imageUrl      String?
+
+  unitPricePoisha Int
+  quantity        Int
+  lineTotalPoisha Int
+
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Restrict)
+
+  returnItems ReturnItem[]
+
+  @@index([orderId])
+  @@index([variantId])
+}
+
+model OrderStatusHistory {
+  id      String      @id @default(cuid())
+  orderId String
+  status  OrderStatus
+  noteEn  String?
+  noteBn  String?
+  /// Null when the change came from a webhook or a scheduled job.
+  userId  String?
+  createdAt DateTime  @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+}
+
+// =============================================================================
+// PAYMENTS
+// =============================================================================
+
+model Payment {
+  id       String          @id @default(cuid())
+  orderId  String
+  provider PaymentProvider
+  mode     IntegrationMode @default(MOCK)
+  status   PaymentStatus   @default(UNPAID)
+
+  amountPoisha Int
+  /// Gateway transaction id. Unique per provider, which is what makes the
+  /// payment webhook idempotent.
+  providerTransactionId String?
+  /// Value id / validation id returned by the gateway.
+  providerReference     String?
+  paidAt                DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  order    Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  attempts PaymentAttempt[]
+  refunds  Refund[]
+
+  @@unique([provider, providerTransactionId])
+  @@index([orderId])
+  @@index([status, createdAt])
+}
+
+/// One round trip with the gateway, including the raw payloads, so a disputed
+/// payment can be reconstructed.
+model PaymentAttempt {
+  id        String               @id @default(cuid())
+  paymentId String
+  status    PaymentAttemptStatus @default(INITIATED)
+  requestPayload  Json?
+  responsePayload Json?
+  /// Set when the IPN was verified against the provider's validation API.
+  validatedAt     DateTime?
+  errorMessage    String?
+  createdAt       DateTime       @default(now())
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId, createdAt])
+}
+
+model Refund {
+  id        String       @id @default(cuid())
+  orderId   String
+  paymentId String?
+  method    RefundMethod
+  status    RefundStatus @default(PENDING)
+
+  amountPoisha Int
+  /// Bank transaction id, bKash/Nagad number or gateway refund reference.
+  reference    String?
+  note         String?
+
+  processedByUserId String?
+  processedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  payment     Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  processedBy User?    @relation(fields: [processedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([status, createdAt])
+}
+
+// =============================================================================
+// RETURNS
+// =============================================================================
+
+model ReturnRequest {
+  id        String       @id @default(cuid())
+  reference String       @unique
+  orderId   String
+  userId    String?
+  status    ReturnStatus @default(REQUESTED)
+
+  reason        String?
+  staffNote     String?
+  requestedAt   DateTime  @default(now())
+  approvedAt    DateTime?
+  rejectedAt    DateTime?
+  receivedAt    DateTime?
+  inspectedAt   DateTime?
+  completedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  items ReturnItem[]
+
+  @@index([orderId])
+  @@index([status, requestedAt])
+}
+
+model ReturnItem {
+  id              String @id @default(cuid())
+  returnRequestId String
+  orderItemId     String
+  quantity        Int
+
+  condition        ReturnItemCondition @default(UNUSED_WITH_TAGS)
+  inspectionResult InspectionResult    @default(PENDING)
+  inspectionNote   String?
+
+  /// Where accepted stock goes back in. Null for a written-off item.
+  restockLocationId String?
+  restockedAt       DateTime?
+
+  returnRequest   ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)
+  orderItem       OrderItem     @relation(fields: [orderItemId], references: [id], onDelete: Restrict)
+  restockLocation Location?     @relation(fields: [restockLocationId], references: [id], onDelete: SetNull)
+
+  @@index([returnRequestId])
+}
+
+// =============================================================================
+// PROMOTIONS
+// =============================================================================
+
+model Coupon {
+  id          String        @id @default(cuid())
+  code        String        @unique
+  type        CouponType
+  /// Percentage (1-100) or a fixed amount in poisha, depending on `type`.
+  value       Int
+  channel     CouponChannel @default(ONLINE)
+  labelEn     String?
+  labelBn     String?
+
+  minSubtotalPoisha  Int?
+  maxDiscountPoisha  Int?
+  startsAt           DateTime?
+  endsAt             DateTime?
+  /// Null means unlimited.
+  usageLimit             Int?
+  usageLimitPerCustomer  Int?
+  usedCount              Int       @default(0)
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  redemptions CouponRedemption[]
+  orders      Order[]
+  carts       Cart[]
+
+  @@index([isActive, startsAt, endsAt])
+}
+
+/// One use of a coupon. Unique per order, written inside the order transaction
+/// together with the `usedCount` increment.
+model CouponRedemption {
+  id       String @id @default(cuid())
+  couponId String
+  orderId  String @unique
+  userId   String?
+  /// Customer phone, so a guest's usage limit can be enforced too.
+  customerPhone  String?
+  discountPoisha Int
+  createdAt      DateTime @default(now())
+
+  coupon Coupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  order  Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([couponId])
+  @@index([customerPhone])
+}
+
+// =============================================================================
+// SHIPPING
+// =============================================================================
+
+/// Delivery zones with their rates. Editable from the admin; every change is
+/// written to the audit log.
+model ShippingZone {
+  id     String  @id @default(cuid())
+  code   String  @unique
+  nameEn String
+  nameBn String?
+
+  ratePoisha Int
+  /// Order value from which delivery is free in this zone. Null falls back to
+  /// the global `shipping.freeThresholdPoisha` setting.
+  freeThresholdPoisha Int?
+
+  isDefault Boolean @default(false)
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders    Order[]
+  addresses Address[]
+}
+
+model Shipment {
+  id      String              @id @default(cuid())
+  orderId String
+  courier CourierProviderType @default(STEADFAST)
+  /// MOCK until real courier credentials exist. Shown as a badge in the admin
+  /// so a mock booking can never look real.
+  mode    IntegrationMode     @default(MOCK)
+  status  ShipmentStatus      @default(PENDING)
+
+  consignmentId  String?
+  trackingCode   String?
+  codAmountPoisha Int        @default(0)
+  /// Location the parcel was handed over from.
+  fromLocationId String?
+
+  bookedAt    DateTime?
+  deliveredAt DateTime?
+  /// Raw provider response, for support and reconciliation.
+  rawResponse Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  order  Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  events ShipmentEvent[]
+
+  @@unique([courier, consignmentId])
+  @@index([orderId])
+  @@index([status, createdAt])
+}
+
+model ShipmentEvent {
+  id         String         @id @default(cuid())
+  shipmentId String
+  status     ShipmentStatus
+  note       String?
+  /// "webhook", "polling" or "manual" — useful when a status is disputed.
+  source     String?
+  occurredAt DateTime       @default(now())
+  payload    Json?
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([shipmentId, occurredAt])
+}
+
+// =============================================================================
+// CONTENT
+// =============================================================================
+
+model Banner {
+  id        String          @id @default(cuid())
+  key       String          @unique
+  placement BannerPlacement @default(HOME_HERO)
+  status    ContentStatus   @default(DRAFT)
+
+  eyebrowEn String?
+  eyebrowBn String?
+  titleEn   String
+  titleBn   String?
+  bodyEn    String?
+  bodyBn    String?
+  ctaLabelEn String?
+  ctaLabelBn String?
+  href      String?
+  imageUrl  String?
+
+  startsAt  DateTime?
+  endsAt    DateTime?
+  sortOrder Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([placement, status, sortOrder])
+}
+
+/// Order and configuration of the home page sections.
+model HomeSection {
+  id      String          @id @default(cuid())
+  type    HomeSectionType
+  status  ContentStatus   @default(PUBLISHED)
+  titleEn String?
+  titleBn String?
+  descriptionEn String?
+  descriptionBn String?
+  /// Section-specific settings, e.g. {"limit":4,"categorySlug":"denim-jeans"}.
+  config  Json?
+  sortOrder Int           @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, sortOrder])
+}
+
+/// A content page (About, FAQ, policies). Draft pages are not served on the
+/// storefront — the return policy stays draft until the business approves it.
+model Page {
+  id      String        @id @default(cuid())
+  slug    String        @unique
+  status  ContentStatus @default(DRAFT)
+  titleEn String
+  titleBn String?
+  summaryEn String?
+  summaryBn String?
+  /// Sections as JSON: [{"heading":{...},"paragraphs":[...],"bullets":[...]}].
+  sectionsEn Json?
+  sectionsBn Json?
+
+  publishedAt       DateTime?
+  lastUpdatedUserId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lastUpdatedBy User? @relation(fields: [lastUpdatedUserId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+}
+
+model MenuItem {
+  id       String       @id @default(cuid())
+  location MenuLocation
+  labelEn  String
+  labelBn  String?
+  href     String
+  parentId String?
+  parent   MenuItem?    @relation("MenuTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children MenuItem[]   @relation("MenuTree")
+
+  isVisible Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([location, isVisible, sortOrder])
+}
+
+/// Newsletter sign-ups from the storefront footer.
+model NewsletterSubscriber {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  locale       String    @default("bn")
+  isActive     Boolean   @default(true)
+  confirmedAt  DateTime?
+  createdAt    DateTime  @default(now())
+}
+
+/// Messages sent from the Contact page.
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  subject   String?
+  message   String
+  isHandled Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([isHandled, createdAt])
+}
+
+// =============================================================================
+// SETTINGS & AUDIT
+// =============================================================================
+
+/// Typed key-value settings. Every business number the spec refuses to
+/// hardcode lives here: shipping rates, free-shipping threshold, return
+/// window, OTP lifetime, reservation timeout, order number format.
+model Setting {
+  id          String           @id @default(cuid())
+  key         String           @unique
+  valueType   SettingValueType @default(STRING)
+  value       String
+  group       String           @default("general")
+  labelEn     String?
+  labelBn     String?
+  description String?
+  /// True when a value may be read by the browser (never for secrets).
+  isPublic    Boolean          @default(false)
+
+  updatedByUserId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  updatedBy User? @relation(fields: [updatedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([group])
+}
+
+/// Append-only audit trail for every sensitive action: price changes, stock
+/// adjustments, transfers, refunds, role changes and setting changes.
+model AuditLog {
+  id         String  @id @default(cuid())
+  userId     String?
+  action     String
+  entityType String
+  entityId   String?
+  locationId String?
+  before     Json?
+  after      Json?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([entityType, entityId])
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+}

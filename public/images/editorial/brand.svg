@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" role="img" aria-label="SINCE 2009 placeholder">
+  <rect width="1200" height="900" fill="#F5F3EF"/>
+  <rect x="0" y="0" width="624" height="900" fill="#E8E0D4" opacity="0.55"/>
+  <rect x="96" y="126" width="432" height="648" fill="#FFFFFF" opacity="0.45"/>
+  <g transform="translate(696 72) scale(0.756)">
+    <path d="M300,235 L225,300 L258,422 L314,402 L300,830 Q400,848 500,830 L486,402 L542,422 L575,300 L500,235 L400,292 Z" fill="#D4D0C6"/>
+    
+    <path d="M352,236 L400,292 L344,276 Z" fill="#A9A396" opacity="0.45"/>
+    <path d="M448,236 L400,292 L456,276 Z" fill="#A9A396" opacity="0.45"/>
+    <line x1="400" y1="292" x2="400" y2="430" stroke="#A9A396" stroke-width="3" opacity="0.5"/>
+    <circle cx="400" cy="330" r="6" fill="#A9A396" opacity="0.6"/>
+    <circle cx="400" cy="382" r="6" fill="#A9A396" opacity="0.6"/>
+    <path d="M300,808 Q400,826 500,808" fill="none" stroke="#A9A396" stroke-width="3" opacity="0.35"/>
+  </g>
+  <text x="96" y="99" font-family="Inter, system-ui, sans-serif" font-size="32" letter-spacing="5" fill="#8C867A">SINCE 2009</text>
+  <text x="96" y="837" font-family="Inter, system-ui, sans-serif" font-size="25" letter-spacing="5" fill="#8C867A" opacity="0.8">PLACEHOLDER IMAGE</text>
+</svg>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000" role="img" aria-label="POLO T-SHIRT placeholder">
+  <rect width="800" height="1000" fill="#F1EFEA"/>
+  <circle cx="400" cy="520" r="300" fill="#FFFFFF" opacity="0.5"/>
+  <g>
+    <path d="M300,235 L225,300 L258,422 L314,402 L300,830 Q400,848 500,830 L486,402 L542,422 L575,300 L500,235 L400,292 Z" fill="#C9C4B9"/>
+    
+    <path d="M352,236 L400,292 L344,276 Z" fill="#A9A396" opacity="0.45"/>
+    <path d="M448,236 L400,292 L456,276 Z" fill="#A9A396" opacity="0.45"/>
+    <line x1="400" y1="292" x2="400" y2="430" stroke="#A9A396" stroke-width="3" opacity="0.5"/>
+    <circle cx="400" cy="330" r="6" fill="#A9A396" opacity="0.6"/>
+    <circle cx="400" cy="382" r="6" fill="#A9A396" opacity="0.6"/>
+    <path d="M300,808 Q400,826 500,808" fill="none" stroke="#A9A396" stroke-width="3" opacity="0.35"/>
+  </g>
+  <text x="48" y="78" font-family="Inter, system-ui, sans-serif" font-size="22" letter-spacing="4" fill="#8C867A">POLO T-SHIRT</text>
+  <text x="48" y="952" font-family="Inter, system-ui, sans-serif" font-size="19" letter-spacing="5" fill="#8C867A" opacity="0.8">PLACEHOLDER 02</text>
+</svg>

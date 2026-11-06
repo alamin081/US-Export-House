@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000" role="img" aria-label="FORMAL SHIRT placeholder">
+  <rect width="800" height="1000" fill="#F1EFEA"/>
+  <circle cx="400" cy="520" r="300" fill="#FFFFFF" opacity="0.5"/>
+  <g>
+    <path d="M300,235 L205,320 L250,470 L312,448 L300,830 Q400,848 500,830 L488,448 L550,470 L595,320 L500,235 L400,302 Z" fill="#C9C4B9"/>
+    
+    <path d="M358,232 L400,302 L350,268 Z" fill="#A9A396" opacity="0.45"/>
+    <path d="M442,232 L400,302 L450,268 Z" fill="#A9A396" opacity="0.45"/>
+    <line x1="400" y1="302" x2="400" y2="828" stroke="#A9A396" stroke-width="3" opacity="0.5"/>
+    <circle cx="400" cy="372" r="6" fill="#A9A396" opacity="0.6"/>
+    <circle cx="400" cy="450" r="6" fill="#A9A396" opacity="0.6"/>
+    <circle cx="400" cy="528" r="6" fill="#A9A396" opacity="0.6"/>
+    <circle cx="400" cy="606" r="6" fill="#A9A396" opacity="0.6"/>
+    <circle cx="400" cy="684" r="6" fill="#A9A396" opacity="0.6"/>
+    <circle cx="400" cy="762" r="6" fill="#A9A396" opacity="0.6"/>
+    <rect x="326" y="392" width="74" height="66" rx="4" fill="none" stroke="#A9A396" stroke-width="3" opacity="0.4" transform="translate(-74,0)"/>
+  </g>
+  <text x="48" y="78" font-family="Inter, system-ui, sans-serif" font-size="22" letter-spacing="4" fill="#8C867A">FORMAL SHIRT</text>
+  <text x="48" y="952" font-family="Inter, system-ui, sans-serif" font-size="19" letter-spacing="5" fill="#8C867A" opacity="0.8">PLACEHOLDER 02</text>
+</svg>

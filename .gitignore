@@ -1,0 +1,50 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+
+# production
+/build
+
+# testing
+/coverage
+/test-results
+/playwright-report
+
+# misc
+.DS_Store
+*.pem
+Thumbs.db
+
+# debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (NEVER commit real secrets)
+.env
+.env*.local
+.env.development
+.env.staging
+.env.production
+
+# typescript / tooling caches
+*.tsbuildinfo
+.eslintcache
+
+# vercel
+.vercel
+
+# local uploads / scratch
+/tmp
+/uploads
+
+# generated Prisma client (rebuilt by `npm run db:generate`)
+/src/generated

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000" role="img" aria-label="DENIM JEANS placeholder">
+  <rect width="800" height="1000" fill="#F3F1EB"/>
+  <circle cx="400" cy="520" r="300" fill="#FFFFFF" opacity="0.5"/>
+  <g>
+    <path d="M292,282 L508,282 L496,542 L478,862 L412,862 L400,582 L388,862 L322,862 L304,542 Z" fill="#CFCAC0"/>
+    
+    <rect x="292" y="258" width="216" height="46" rx="6" fill="#A9A396" opacity="0.55"/>
+    <line x1="400" y1="304" x2="400" y2="408" stroke="#A9A396" stroke-width="3" opacity="0.5"/>
+    <path d="M308,320 Q346,352 372,320" fill="none" stroke="#A9A396" stroke-width="3" opacity="0.45"/>
+    <path d="M428,320 Q466,352 492,320" fill="none" stroke="#A9A396" stroke-width="3" opacity="0.45"/>
+    <rect x="318" y="252" width="12" height="22" rx="3" fill="#A9A396" opacity="0.5"/>
+    <rect x="400" y="252" width="12" height="22" rx="3" fill="#A9A396" opacity="0.5"/>
+    <rect x="482" y="252" width="12" height="22" rx="3" fill="#A9A396" opacity="0.5"/>
+    <line x1="330" y1="560" x2="318" y2="846" stroke="#A9A396" stroke-width="2" opacity="0.3"/>
+    <line x1="470" y1="560" x2="482" y2="846" stroke="#A9A396" stroke-width="2" opacity="0.3"/>
+  </g>
+  <text x="48" y="78" font-family="Inter, system-ui, sans-serif" font-size="22" letter-spacing="4" fill="#8C867A">DENIM JEANS</text>
+  <text x="48" y="952" font-family="Inter, system-ui, sans-serif" font-size="19" letter-spacing="5" fill="#8C867A" opacity="0.8">PLACEHOLDER 04</text>
+</svg>
