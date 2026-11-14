@@ -9,4 +9,11 @@ export interface E2EFixture {
   managerEmail: string;
   inventoryEmail: string;
   categoryLabel: string;
+  /** Phase 7: a branch, its sales staff, and a published product with sizes M and L. */
+  salesEmail: string;
+  branchCode: string;
+  stockSlug: string;
+  stockName: string;
+  skuM: string;
+  skuL: string;
 }

@@ -34,6 +34,8 @@
     "test:integration": "vitest run --config vitest.integration.config.mts",
     "auth:bootstrap": "tsx scripts/bootstrap-super-admin.ts",
     "auth:retire-placeholder": "tsx scripts/retire-placeholder-admin.ts",
+    "inventory:verify": "tsx scripts/inventory-verify.ts",
+    "db:mark-sample": "tsx scripts/mark-sample-locations.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {

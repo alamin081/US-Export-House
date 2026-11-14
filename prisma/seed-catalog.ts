@@ -7,6 +7,10 @@ import {
   CATALOG_SETTING_KEYS,
   DEFAULT_CATALOG_SETTINGS,
 } from "../src/modules/settings/catalog-settings";
+import {
+  DEFAULT_INVENTORY_SETTINGS,
+  INVENTORY_SETTING_KEYS,
+} from "../src/modules/settings/inventory-settings";
 
 export const CATALOG_SETTINGS = [
   {
@@ -151,5 +155,48 @@ export const OPTION_PRESETS: PresetSeed[] = [
     valueEn: "Beige",
     valueBn: "বেইজ",
     hex: "#D9C7A7",
+  },
+];
+
+/**
+ * Phase 7 inventory settings (new keys only; `inventory.lowStockDefaultThreshold`
+ * already exists in the Phase 4 list and keeps its value).
+ */
+export const INVENTORY_SETTINGS = [
+  {
+    key: INVENTORY_SETTING_KEYS.fewLeftThreshold,
+    valueType: "INT" as const,
+    value: String(DEFAULT_INVENTORY_SETTINGS.fewLeftThreshold),
+    group: "storefront",
+    description: 'Storefront shows "Only a few left" at or below this many available online.',
+    isPublic: true,
+  },
+  {
+    key: INVENTORY_SETTING_KEYS.transferRequireApproval,
+    valueType: "BOOLEAN" as const,
+    value: String(DEFAULT_INVENTORY_SETTINGS.transferRequireApproval),
+    group: "inventory",
+    description: "Transfers need a Store Manager's approval before dispatch.",
+  },
+  {
+    key: INVENTORY_SETTING_KEYS.importMaxRows,
+    valueType: "INT" as const,
+    value: String(DEFAULT_INVENTORY_SETTINGS.importMaxRows),
+    group: "inventory",
+    description: "Most rows one stock CSV may have.",
+  },
+  {
+    key: INVENTORY_SETTING_KEYS.importMaxBytes,
+    valueType: "INT" as const,
+    value: String(DEFAULT_INVENTORY_SETTINGS.importMaxBytes),
+    group: "inventory",
+    description: "Largest stock CSV file, in bytes.",
+  },
+  {
+    key: INVENTORY_SETTING_KEYS.adjustConfirmAbove,
+    valueType: "INT" as const,
+    value: String(DEFAULT_INVENTORY_SETTINGS.adjustConfirmAbove),
+    group: "inventory",
+    description: "Stock adjustments larger than this many units need a confirmation.",
   },
 ];

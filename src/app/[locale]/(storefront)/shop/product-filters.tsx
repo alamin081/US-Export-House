@@ -23,6 +23,7 @@ export interface FilterState {
   brands: readonly string[];
   min?: number;
   max?: number;
+  inStock: boolean;
   sort: StorefrontSort;
   q?: string;
 }
@@ -59,6 +60,7 @@ export function filterStateFrom(query: SearchParams): FilterState & { page: numb
     brands: all(query.brand),
     ...(min === undefined ? {} : { min }),
     ...(max === undefined ? {} : { max }),
+    inStock: first(query.stock) === "in",
     sort: (STOREFRONT_SORTS as readonly string[]).includes(sort ?? "")
       ? (sort as StorefrontSort)
       : "featured",
@@ -76,6 +78,7 @@ export function filterQuery(state: FilterState, page?: number): Record<string, s
     ...(state.brands.length === 0 ? {} : { brand: [...state.brands] }),
     ...(state.min === undefined ? {} : { min: String(state.min) }),
     ...(state.max === undefined ? {} : { max: String(state.max) }),
+    ...(state.inStock ? { stock: "in" } : {}),
     ...(state.sort === "featured" ? {} : { sort: state.sort }),
     ...(state.q === undefined ? {} : { q: state.q }),
     ...(page === undefined || page <= 1 ? {} : { page: String(page) }),
@@ -223,6 +226,19 @@ export function ProductFilters({
             placeholder={t("priceMax")}
           />
         </div>
+      </fieldset>
+
+      <fieldset>
+        <legend className={legend}>{t("availabilityFilter")}</legend>
+        <label className="flex items-center gap-2 text-sm">
+          <Checkbox
+            name="stock"
+            value="in"
+            defaultChecked={state.inStock}
+            data-testid="in-stock-only"
+          />
+          {t("inStockOnly")}
+        </label>
       </fieldset>
 
       <fieldset>

@@ -88,6 +88,14 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
     group: "catalogue",
     permission: "transfer.create",
   },
+  {
+    label: "Stock counts",
+    href: "/admin/stock-counts",
+    icon: "clipboard-check",
+    phase: 7,
+    group: "catalogue",
+    permission: "inventory.count",
+  },
 
   {
     label: "Orders",
@@ -153,7 +161,7 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
     icon: "map-pin",
     phase: 7,
     group: "system",
-    permission: "settings.write",
+    permission: "location.manage",
   },
   {
     label: "Staff & roles",

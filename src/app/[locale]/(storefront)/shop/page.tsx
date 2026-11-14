@@ -5,6 +5,8 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { ProductGrid } from "@/components/shared/product-grid";
 import { countArgs } from "@/lib/number";
 import { cachedActiveCategories, cachedListing } from "@/modules/catalog/storefront-catalog.cached";
+import { withStockFlags } from "@/modules/catalog/storefront-catalog.service";
+import { cachedOutOfStockProductIds } from "@/modules/inventory/storefront-stock.cached";
 import { filterStateFrom, ListingPagination, ProductFilters } from "./product-filters";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -42,12 +44,13 @@ export default async function ShopPage({
       brands: [...state.brands],
       ...(state.min === undefined ? {} : { minTaka: state.min }),
       ...(state.max === undefined ? {} : { maxTaka: state.max }),
+      ...(state.inStock ? { inStock: true } : {}),
       sort: state.sort,
       page: state.page,
     }),
     cachedActiveCategories(),
   ]);
-  const products = listing?.products ?? [];
+  const products = withStockFlags(listing?.products ?? [], await cachedOutOfStockProductIds());
   const total = listing?.total ?? 0;
   const facets = listing?.facets ?? { sizes: [], colours: [], brands: [] };
   const topCategories = categories.filter((category) => category.parentId === null);

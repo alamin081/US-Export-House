@@ -25,6 +25,12 @@ function readFixture(): E2EFixture {
       managerEmail: "",
       inventoryEmail: "",
       categoryLabel: "",
+      salesEmail: "",
+      branchCode: "",
+      stockSlug: "",
+      stockName: "",
+      skuM: "",
+      skuL: "",
     };
   }
 }
@@ -101,6 +107,11 @@ test("a store manager creates, uploads, publishes; both storefronts show it", as
   await expect(page.getByTestId("product-status")).toHaveText("published");
 
   // --- Bengali storefront (default, no prefix) ------------------------------------
+  // This product has no stock; stock behaviour is covered by inventory.spec.ts.
+  // Here the availability endpoint reports nothing, so no option is disabled.
+  await page.route("**/api/storefront/products/*/availability", (route) =>
+    route.fulfill({ json: { variants: {} } }),
+  );
   await page.goto(`/product/${slug}`);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(nameBn);
   await expect(page.getByTestId("price").first()).toHaveText("৳2,490");
@@ -201,4 +212,8 @@ test("anonymous visitors cannot reach the admin APIs", async ({ request }) => {
   expect((await request.get("/api/admin/products")).status()).toBe(401);
   expect((await request.post("/api/admin/uploads/ticket")).status()).toBe(401);
   expect((await request.post("/api/admin/uploads/mock")).status()).toBe(401);
+  // Phase 7 inventory endpoints.
+  expect((await request.get("/api/admin/inventory/lookup?code=X")).status()).toBe(401);
+  expect((await request.get("/api/admin/inventory/export")).status()).toBe(401);
+  expect((await request.get("/api/admin/inventory/import-template")).status()).toBe(401);
 });

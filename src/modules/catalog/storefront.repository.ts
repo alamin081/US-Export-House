@@ -21,6 +21,8 @@ export interface StorefrontListingFilter {
   /** Already normalised and LIKE-escaped search terms. */
   terms?: readonly string[];
   flag?: "new" | "featured" | "bestseller";
+  /** At least one live variant with stock available at an online location. */
+  inStockOnly?: boolean;
   excludeProductId?: string;
   sort: "newest" | "price-asc" | "price-desc" | "featured";
   limit: number;
@@ -90,6 +92,16 @@ export async function findListingIds(filter: StorefrontListingFilter) {
   if (filter.flag === "new") conditions.push(Prisma.sql`p."isNew" = true`);
   if (filter.flag === "featured") conditions.push(Prisma.sql`p."isFeatured" = true`);
   if (filter.flag === "bestseller") conditions.push(Prisma.sql`p."isBestseller" = true`);
+  if (filter.inStockOnly === true) {
+    conditions.push(Prisma.sql`EXISTS (
+      SELECT 1 FROM "ProductVariant" sv
+      JOIN "InventoryLevel" il ON il."variantId" = sv."id"
+      JOIN "Location" l ON l."id" = il."locationId"
+      WHERE sv."productId" = p."id" AND sv."deletedAt" IS NULL AND sv."isActive" = true
+        AND l."isOnlineFulfillment" = true AND l."isActive" = true AND l."deletedAt" IS NULL
+        AND il."onHand" - il."reserved" > 0
+    )`);
+  }
   if (filter.excludeProductId !== undefined)
     conditions.push(Prisma.sql`p."id" <> ${filter.excludeProductId}`);
 

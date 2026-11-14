@@ -85,27 +85,62 @@ enum MovementType {
   PURCHASE_RECEIVE
   SALE_ONLINE
   SALE_STORE
+  /// RESERVE and RELEASE change `reserved`, not `onHand`.
   RESERVE
   RELEASE
   TRANSFER_OUT
   TRANSFER_IN
+  /// Deprecated (Phase 7): replaced by ADJUSTMENT_IN / ADJUSTMENT_OUT. Kept
+  /// because enum values are never dropped; no row uses it.
   ADJUSTMENT
   RETURN
   DAMAGE
+  OPENING
+  ADJUSTMENT_IN
+  ADJUSTMENT_OUT
+  TRANSFER_DISCREPANCY
+  COUNT_CORRECTION
 }
 
+/// DRAFT -> (APPROVED, when `transfer.requireApproval` is on) -> DISPATCHED
+/// -> RECEIVED. Only DRAFT and APPROVED transfers can be cancelled.
 enum TransferStatus {
   DRAFT
+  APPROVED
   DISPATCHED
   RECEIVED
   CANCELLED
 }
 
+/// IN_PROGRESS -> SUBMITTED -> APPLIED (or CANCELLED). DRAFT is unused
+/// (a count snapshots when it starts) and stays only because enum values are
+/// never dropped.
 enum StockCountStatus {
   DRAFT
-  COUNTING
-  COMPLETED
+  IN_PROGRESS
+  SUBMITTED
+  APPLIED
   CANCELLED
+}
+
+/// Why a transfer line arrived short (or over).
+enum TransferDiscrepancyReason {
+  LOST
+  DAMAGED
+  WRONG_ITEM
+  EXCESS
+}
+
+enum StockReceiptKind {
+  /// First stock of a variant at a location (no earlier movement for it there).
+  OPENING
+  /// Goods from a supplier or factory.
+  PURCHASE
+}
+
+enum StockReceiptSource {
+  MANUAL
+  CSV
 }
 
 enum SalesChannel {
@@ -289,23 +324,29 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  accounts         Account[]
-  sessions         Session[]
-  addresses        Address[]
-  carts            Cart[]
-  orders           Order[]
-  returnRequests   ReturnRequest[]
-  locationAccess   StaffLocationAccess[]
-  auditLogs        AuditLog[]
-  movements        InventoryMovement[]
-  transfersCreated StockTransfer[]       @relation("TransferCreatedBy")
-  transfersSent    StockTransfer[]       @relation("TransferDispatchedBy")
-  stockCounts      StockCount[]
-  refunds          Refund[]
-  settingsUpdated  Setting[]
-  pagesUpdated     Page[]
-  storeSales       Order[]               @relation("OrderSoldBy")
-  couponUses       CouponRedemption[]
+  accounts             Account[]
+  sessions             Session[]
+  addresses            Address[]
+  carts                Cart[]
+  orders               Order[]
+  returnRequests       ReturnRequest[]
+  locationAccess       StaffLocationAccess[]
+  auditLogs            AuditLog[]
+  movements            InventoryMovement[]
+  transfersCreated     StockTransfer[]       @relation("TransferCreatedBy")
+  transfersSent        StockTransfer[]       @relation("TransferDispatchedBy")
+  transfersApproved    StockTransfer[]       @relation("TransferApprovedBy")
+  transfersReceived    StockTransfer[]       @relation("TransferReceivedBy")
+  transfersCancelled   StockTransfer[]       @relation("TransferCancelledBy")
+  stockCounts          StockCount[]          @relation("StockCountCreatedBy")
+  stockCountsSubmitted StockCount[]          @relation("StockCountSubmittedBy")
+  stockCountsApplied   StockCount[]          @relation("StockCountAppliedBy")
+  stockReceipts        StockReceipt[]
+  refunds              Refund[]
+  settingsUpdated      Setting[]
+  pagesUpdated         Page[]
+  storeSales           Order[]               @relation("OrderSoldBy")
+  couponUses           CouponRedemption[]
 
   @@index([kind, isActive])
   @@index([deletedAt])
@@ -379,17 +420,17 @@ model VerificationToken {
 
 /// One SMS OTP challenge. The code itself is never stored in clear text.
 model OtpChallenge {
-  id        String     @id @default(cuid())
-  phone     String
-  codeHash  String
-  purpose   OtpPurpose @default(LOGIN)
-  expiresAt DateTime
+  id         String     @id @default(cuid())
+  phone      String
+  codeHash   String
+  purpose    OtpPurpose @default(LOGIN)
+  expiresAt  DateTime
   /// Failed verification attempts, for per-challenge lock-out.
-  attempts  Int        @default(0)
+  attempts   Int        @default(0)
   consumedAt DateTime?
   /// Request metadata for the per-IP rate limit.
-  requestIp String?
-  createdAt DateTime   @default(now())
+  requestIp  String?
+  createdAt  DateTime   @default(now())
 
   @@index([phone, createdAt])
   @@index([expiresAt])
@@ -398,18 +439,18 @@ model OtpChallenge {
 /// A named set of permission keys. The keys themselves live in code
 /// (src/lib/permissions.ts, Phase 5); this table decides which role holds them.
 model Role {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  description String?
+  id           String    @id @default(cuid())
+  name         String    @unique
+  description  String?
   /// Permission keys, e.g. ["product.write", "inventory.adjust"].
-  permissions String[]
+  permissions  String[]
   /// True for roles the app relies on and the admin must not delete.
-  isSystem    Boolean  @default(false)
+  isSystem     Boolean   @default(false)
   /// Grants every location without a StaffLocationAccess row.
-  allLocations Boolean @default(false)
-  deletedAt   DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  allLocations Boolean   @default(false)
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   users User[]
 }
@@ -460,24 +501,30 @@ model Address {
 /// A branch (showroom) or a warehouse. Both hold stock; only some fulfil
 /// online orders.
 model Location {
-  id      String       @id @default(cuid())
-  code    String       @unique
-  type    LocationType
-  nameEn  String
-  nameBn  String?
+  id        String       @id @default(cuid())
+  code      String       @unique
+  type      LocationType
+  nameEn    String
+  nameBn    String?
+  /// Street address; the administrative area is in division/district/thana.
   addressEn String?
   addressBn String?
-  phone   String?
+  division  String?
+  district  String?
+  thana     String?
+  phone     String?
   /// Opening hours, shown on the storefront.
-  hoursEn String?
-  hoursBn String?
+  hoursEn   String?
+  hoursBn   String?
 
-  isActive Boolean @default(true)
+  isActive                   Boolean @default(true)
   /// Online orders may be fulfilled from here.
-  isOnlineFulfillment Boolean @default(false)
+  isOnlineFulfillment        Boolean @default(false)
   /// The single default location online orders reserve stock from.
   isDefaultOnlineFulfillment Boolean @default(false)
-  sortOrder Int @default(0)
+  sortOrder                  Int     @default(0)
+  /// Local sample data from the seed. Shown with a "SAMPLE DATA" badge.
+  isSample                   Boolean @default(false)
 
   /// Soft delete: a location with history is deactivated, never removed.
   deletedAt DateTime?
@@ -493,6 +540,7 @@ model Location {
   carts           Cart[]
   staffAccess     StaffLocationAccess[]
   returnItems     ReturnItem[]
+  stockReceipts   StockReceipt[]
 
   @@index([type, isActive])
 }
@@ -516,11 +564,11 @@ model InventoryLevel {
 
   variant  ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
   location Location       @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  // A CHECK constraint keeps onHand/reserved non-negative and reserved <= onHand
+  // (added by migration SQL: Prisma has no @@check attribute).
 
   @@unique([variantId, locationId])
   @@index([locationId])
-  // A CHECK constraint keeps onHand/reserved non-negative and reserved <= onHand
-  // (added by migration SQL: Prisma has no @@check attribute).
 }
 
 /// Append-only stock ledger. Every row explains one change; rows are never
@@ -532,7 +580,16 @@ model InventoryMovement {
   type       MovementType
   /// Signed: negative for stock leaving, positive for stock arriving.
   quantity   Int
+  /// Stable reason code (DAMAGED, LOST, FOUND, CORRECTION, OTHER, ...).
+  reasonCode String?
+  /// Free-text note shown in the history.
   reason     String?
+
+  /// Stock after this movement. Null on rows written before Phase 7.
+  onHandAfter    Int?
+  reservedAfter  Int?
+  /// Purchase cost per unit (poisha) on OPENING / PURCHASE_RECEIVE rows.
+  unitCostPoisha Int?
 
   /// Loose reference to whatever caused the movement (order, transfer,
   /// adjustment, return). Loose on purpose: the ledger outlives its causes.
@@ -564,19 +621,26 @@ model StockTransfer {
   note           String?
 
   createdByUserId    String?
+  approvedByUserId   String?
   dispatchedByUserId String?
   receivedByUserId   String?
+  cancelledByUserId  String?
+  approvedAt         DateTime?
   dispatchedAt       DateTime?
   receivedAt         DateTime?
   cancelledAt        DateTime?
+  cancelReason       String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  fromLocation  Location @relation("TransferFrom", fields: [fromLocationId], references: [id], onDelete: Restrict)
-  toLocation    Location @relation("TransferTo", fields: [toLocationId], references: [id], onDelete: Restrict)
-  createdBy     User?    @relation("TransferCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
-  dispatchedBy  User?    @relation("TransferDispatchedBy", fields: [dispatchedByUserId], references: [id], onDelete: SetNull)
+  fromLocation Location @relation("TransferFrom", fields: [fromLocationId], references: [id], onDelete: Restrict)
+  toLocation   Location @relation("TransferTo", fields: [toLocationId], references: [id], onDelete: Restrict)
+  createdBy    User?    @relation("TransferCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  dispatchedBy User?    @relation("TransferDispatchedBy", fields: [dispatchedByUserId], references: [id], onDelete: SetNull)
+  approvedBy   User?    @relation("TransferApprovedBy", fields: [approvedByUserId], references: [id], onDelete: SetNull)
+  receivedBy   User?    @relation("TransferReceivedBy", fields: [receivedByUserId], references: [id], onDelete: SetNull)
+  cancelledBy  User?    @relation("TransferCancelledBy", fields: [cancelledByUserId], references: [id], onDelete: SetNull)
 
   items StockTransferItem[]
 
@@ -590,15 +654,18 @@ model StockTransferItem {
   transferId String
   variantId  String
 
-  quantitySent     Int
-  /// Null until the transfer is received; a lower value is a discrepancy.
-  quantityReceived Int?
-  note             String?
+  quantitySent      Int
+  /// Null until the transfer is received. Lower or higher than quantitySent
+  /// is a discrepancy, which needs a reason.
+  quantityReceived  Int?
+  discrepancyReason TransferDiscrepancyReason?
+  note              String?
 
   transfer StockTransfer  @relation(fields: [transferId], references: [id], onDelete: Cascade)
   variant  ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
 
   @@unique([transferId, variantId])
+  @@index([variantId])
 }
 
 /// A physical stock count at one location.
@@ -606,18 +673,29 @@ model StockCount {
   id         String           @id @default(cuid())
   reference  String           @unique
   locationId String
-  status     StockCountStatus @default(DRAFT)
+  /// Optional scope: variants of products in this category or its children.
+  categoryId String?
+  status     StockCountStatus @default(IN_PROGRESS)
   note       String?
 
-  createdByUserId String?
-  startedAt       DateTime?
-  completedAt     DateTime?
+  createdByUserId   String?
+  submittedByUserId String?
+  appliedByUserId   String?
+  /// When the expected quantities were snapshotted.
+  startedAt         DateTime?
+  submittedAt       DateTime?
+  /// When the corrections were applied.
+  completedAt       DateTime?
+  cancelledAt       DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  location  Location @relation(fields: [locationId], references: [id], onDelete: Restrict)
-  createdBy User?    @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  location    Location  @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdBy   User?     @relation("StockCountCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  submittedBy User?     @relation("StockCountSubmittedBy", fields: [submittedByUserId], references: [id], onDelete: SetNull)
+  appliedBy   User?     @relation("StockCountAppliedBy", fields: [appliedByUserId], references: [id], onDelete: SetNull)
 
   items StockCountItem[]
 
@@ -629,14 +707,19 @@ model StockCountItem {
   stockCountId String
   variantId    String
 
-  /// What the system believed when counting started.
-  systemQty  Int
-  /// What was actually on the shelf.
-  countedQty Int?
-  /// countedQty - systemQty, stored so the report does not recompute history.
-  differenceQty Int?
+  /// What the system believed at `snapshotAt`.
+  systemQty              Int
+  snapshotAt             DateTime  @default(now())
+  /// What was actually on the shelf, and when it was last counted.
+  countedQty             Int?
+  countedAt              DateTime?
+  /// onHand movements between snapshotAt and countedAt (sales, transfers),
+  /// fixed when the count is submitted.
+  movementsSinceSnapshot Int?
+  /// countedQty - (systemQty + movementsSinceSnapshot): the correction.
+  differenceQty          Int?
 
-  /// The ADJUSTMENT movement this count produced, if any.
+  /// The COUNT_CORRECTION movement this line produced, if any.
   movementId String?
 
   stockCount StockCount         @relation(fields: [stockCountId], references: [id], onDelete: Cascade)
@@ -646,24 +729,54 @@ model StockCountItem {
   @@unique([stockCountId, variantId])
 }
 
+/// One stock receipt: goods from a supplier, or opening stock, entered by hand
+/// or imported from CSV. Its lines are the InventoryMovement rows with
+/// referenceType "RECEIPT" and referenceId = this id.
+model StockReceipt {
+  id                String             @id @default(cuid())
+  reference         String             @unique
+  kind              StockReceiptKind
+  source            StockReceiptSource
+  /// Null for a CSV import that spans several locations.
+  locationId        String?
+  /// Supplier challan / invoice number.
+  supplierReference String?
+  note              String?
+
+  /// CSV only: the original file name and its SHA-256, to warn on re-import.
+  fileName      String?
+  fileHash      String?
+  rowCount      Int
+  totalQuantity Int
+
+  createdByUserId String?
+  createdAt       DateTime @default(now())
+
+  location  Location? @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  createdBy User?     @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([fileHash])
+  @@index([createdAt])
+}
+
 // =============================================================================
 // CATALOGUE
 // =============================================================================
 
 /// Category tree. One catalogue is shared by every location.
 model Category {
-  id       String  @id @default(cuid())
+  id              String  @id @default(cuid())
   /// One English slug serves both locales (decided 2026-11-14).
-  slug     String  @unique
+  slug            String  @unique
   /// Two to four capital letters used in product codes, e.g. "SH" -> UEH-SH0012.
-  code     String? @unique
-  nameEn   String
-  nameBn   String?
-  taglineEn String?
-  taglineBn String?
-  descriptionEn String?
-  descriptionBn String?
-  imageUrl String?
+  code            String? @unique
+  nameEn          String
+  nameBn          String?
+  taglineEn       String?
+  taglineBn       String?
+  descriptionEn   String?
+  descriptionBn   String?
+  imageUrl        String?
   /// Storage key of an uploaded image; null for the static seed placeholders.
   imageStorageKey String?
 
@@ -688,21 +801,22 @@ model Category {
 
   products      Product[]
   extraProducts ProductCategory[]
+  stockCounts   StockCount[]
 
   @@index([parentId])
   @@index([isActive, sortOrder])
 }
 
 model Brand {
-  id       String  @id @default(cuid())
-  slug     String  @unique
-  nameEn   String
-  nameBn   String?
-  descriptionEn String?
-  descriptionBn String?
-  logoUrl  String?
+  id             String  @id @default(cuid())
+  slug           String  @unique
+  nameEn         String
+  nameBn         String?
+  descriptionEn  String?
+  descriptionBn  String?
+  logoUrl        String?
   logoStorageKey String?
-  isActive Boolean @default(true)
+  isActive       Boolean @default(true)
 
   deletedAt DateTime?
   createdAt DateTime  @default(now())
@@ -713,7 +827,7 @@ model Brand {
 
 /// Garment measurements, attached to a product or a category.
 model SizeChart {
-  id      String  @id @default(cuid())
+  id      String        @id @default(cuid())
   nameEn  String
   nameBn  String?
   noteEn  String?
@@ -732,25 +846,25 @@ model SizeChart {
 }
 
 model Product {
-  id     String  @id @default(cuid())
-  slug   String  @unique
+  id            String  @id @default(cuid())
+  slug          String  @unique
   /// Product code used in SKUs, e.g. UEH-SH0012. Null for the Phase 4 samples.
-  code   String? @unique
-  nameEn String
-  nameBn String?
+  code          String? @unique
+  nameEn        String
+  nameBn        String?
   /// One-line summary used on cards and meta descriptions.
-  summaryEn String?
-  summaryBn String?
+  summaryEn     String?
+  summaryBn     String?
   /// Long description as an array of paragraphs.
   descriptionEn Json?
   descriptionBn Json?
-  fabricEn String?
-  fabricBn String?
+  fabricEn      String?
+  fabricBn      String?
   /// Care instructions as an array of lines.
-  careEn Json?
-  careBn Json?
+  careEn        Json?
+  careBn        Json?
   /// A key from the `catalog.fits` setting, e.g. "slim".
-  fit    String?
+  fit           String?
 
   seoTitleEn       String?
   seoTitleBn       String?
@@ -765,11 +879,11 @@ model Product {
   brandId     String?
   sizeChartId String?
 
-  status ProductStatus @default(DRAFT)
+  status       ProductStatus @default(DRAFT)
   /// Marketing flags that drive the storefront rows.
-  isNew        Boolean @default(false)
-  isBestseller Boolean @default(false)
-  isFeatured   Boolean @default(false)
+  isNew        Boolean       @default(false)
+  isBestseller Boolean       @default(false)
+  isFeatured   Boolean       @default(false)
 
   /// Shown when a product has no reviews yet; recalculated from Review rows.
   ratingAverage Float @default(0)
@@ -801,22 +915,22 @@ model Product {
 
 /// The image with the lowest sortOrder is the product's main image.
 model ProductImage {
-  id        String  @id @default(cuid())
-  productId String
-  url       String
+  id              String  @id @default(cuid())
+  productId       String
+  url             String
   /// "cloudinary" or "local-mock"; null for static files under public/.
   storageProvider String?
   /// Provider key (Cloudinary public_id or mock file name), server-generated.
   storageKey      String?
-  width     Int?
-  height    Int?
-  bytes     Int?
-  format    String?
-  altEn     String?
-  altBn     String?
-  sortOrder Int     @default(0)
+  width           Int?
+  height          Int?
+  bytes           Int?
+  format          String?
+  altEn           String?
+  altBn           String?
+  sortOrder       Int     @default(0)
   /// Set when the image belongs to one colour of the product.
-  optionValueId String?
+  optionValueId   String?
 
   createdAt DateTime @default(now())
 
@@ -842,17 +956,17 @@ model ProductOption {
 }
 
 model OptionValue {
-  id       String  @id @default(cuid())
-  optionId String
-  valueEn  String
-  valueBn  String?
+  id        String  @id @default(cuid())
+  optionId  String
+  valueEn   String
+  valueBn   String?
   /// Swatch colour for COLOUR options.
-  hex      String?
+  hex       String?
   /// Short code used in SKUs, e.g. "NVY" or "L". Null for the Phase 4 samples.
-  code     String?
+  code      String?
   /// The library entry this value was copied from, if any.
-  presetId String?
-  sortOrder Int    @default(0)
+  presetId  String?
+  sortOrder Int     @default(0)
 
   option ProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
   preset OptionPreset? @relation(fields: [presetId], references: [id], onDelete: SetNull)
@@ -933,14 +1047,14 @@ model ProductCategory {
 /// Search and merchandising tag, with alternative spellings so "panjabi",
 /// "punjabi" and "পাঞ্জাবি" all find the same products.
 model Tag {
-  id      String   @id @default(cuid())
-  slug    String   @unique
-  nameEn  String
-  nameBn  String?
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  nameEn     String
+  nameBn     String?
   /// Alternative spellings (Banglish, common misspellings), lower case.
-  aliases String[]
+  aliases    String[]
   /// Lower-cased names and aliases, maintained by the service; trigram-indexed.
-  searchText String @default("")
+  searchText String   @default("")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -964,17 +1078,17 @@ model ProductTag {
 /// Library of reusable option values (sizes, colours) offered by the variant
 /// matrix generator. Products copy the values they use into OptionValue.
 model OptionPreset {
-  id      String     @id @default(cuid())
-  type    OptionType
+  id        String     @id @default(cuid())
+  type      OptionType
   /// Size family ("apparel", "collar", "waist", "panjabi") or "colour".
-  group   String
+  group     String
   /// SKU code: capital letters and digits only, e.g. "NVY", "XL", "155".
-  code    String
-  valueEn String
-  valueBn String?
-  hex     String?
-  sortOrder Int     @default(0)
-  isActive  Boolean @default(true)
+  code      String
+  valueEn   String
+  valueBn   String?
+  hex       String?
+  sortOrder Int        @default(0)
+  isActive  Boolean    @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -988,19 +1102,19 @@ model OptionPreset {
 /// Customer product review. Moderated: nothing appears on the storefront until
 /// a staff member approves it.
 model Review {
-  id        String  @id @default(cuid())
-  productId String
+  id                 String  @id @default(cuid())
+  productId          String
   /// Null for a review left by a guest order.
-  userId    String?
-  authorName String
-  cityEn     String?
-  cityBn     String?
-  rating     Int
-  titleEn    String?
-  titleBn    String?
-  bodyEn     String?
-  bodyBn     String?
-  isApproved Boolean @default(false)
+  userId             String?
+  authorName         String
+  cityEn             String?
+  cityBn             String?
+  rating             Int
+  titleEn            String?
+  titleBn            String?
+  bodyEn             String?
+  bodyBn             String?
+  isApproved         Boolean @default(false)
   /// True when the reviewer's phone matches a delivered order for this product.
   isVerifiedPurchase Boolean @default(false)
 
@@ -1019,9 +1133,9 @@ model Review {
 /// A cart belongs to a signed-in customer or to a guest session token. The
 /// in-store till also uses carts, which is why `locationId` exists.
 model Cart {
-  id           String  @id @default(cuid())
+  id           String       @id @default(cuid())
   userId       String?
-  sessionToken String? @unique
+  sessionToken String?      @unique
   locationId   String?
   channel      SalesChannel @default(ONLINE)
   /// Applied coupon; re-validated at checkout, never trusted from here.
@@ -1070,7 +1184,7 @@ model Order {
   /// Which branch or warehouse fulfils (online) or sold (in store) this order.
   locationId String
 
-  userId String?
+  userId        String?
   /// Guest checkout keeps the contact details on the order itself.
   customerName  String
   customerPhone String
@@ -1102,12 +1216,12 @@ model Order {
   /// Staff member who rang up an in-store sale.
   soldByUserId String?
 
-  placedAt    DateTime  @default(now())
-  confirmedAt DateTime?
-  processedAt DateTime?
-  shippedAt   DateTime?
-  deliveredAt DateTime?
-  cancelledAt DateTime?
+  placedAt             DateTime  @default(now())
+  confirmedAt          DateTime?
+  processedAt          DateTime?
+  shippedAt            DateTime?
+  deliveredAt          DateTime?
+  cancelledAt          DateTime?
   /// When the stock reservation for an unpaid online order expires.
   reservationExpiresAt DateTime?
 
@@ -1139,8 +1253,8 @@ model Order {
 /// A line on an order. Product name, SKU and price are snapshots: editing the
 /// catalogue must never rewrite history.
 model OrderItem {
-  id      String @id @default(cuid())
-  orderId String
+  id        String  @id @default(cuid())
+  orderId   String
   /// Kept for reporting; restricted so a sold variant cannot be hard-deleted.
   variantId String?
 
@@ -1164,14 +1278,14 @@ model OrderItem {
 }
 
 model OrderStatusHistory {
-  id      String      @id @default(cuid())
-  orderId String
-  status  OrderStatus
-  noteEn  String?
-  noteBn  String?
+  id        String      @id @default(cuid())
+  orderId   String
+  status    OrderStatus
+  noteEn    String?
+  noteBn    String?
   /// Null when the change came from a webhook or a scheduled job.
-  userId  String?
-  createdAt DateTime  @default(now())
+  userId    String?
+  createdAt DateTime    @default(now())
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
@@ -1189,7 +1303,7 @@ model Payment {
   mode     IntegrationMode @default(MOCK)
   status   PaymentStatus   @default(UNPAID)
 
-  amountPoisha Int
+  amountPoisha          Int
   /// Gateway transaction id. Unique per provider, which is what makes the
   /// payment webhook idempotent.
   providerTransactionId String?
@@ -1212,15 +1326,15 @@ model Payment {
 /// One round trip with the gateway, including the raw payloads, so a disputed
 /// payment can be reconstructed.
 model PaymentAttempt {
-  id        String               @id @default(cuid())
-  paymentId String
-  status    PaymentAttemptStatus @default(INITIATED)
+  id              String               @id @default(cuid())
+  paymentId       String
+  status          PaymentAttemptStatus @default(INITIATED)
   requestPayload  Json?
   responsePayload Json?
   /// Set when the IPN was verified against the provider's validation API.
   validatedAt     DateTime?
   errorMessage    String?
-  createdAt       DateTime       @default(now())
+  createdAt       DateTime             @default(now())
 
   payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
 
@@ -1263,14 +1377,14 @@ model ReturnRequest {
   userId    String?
   status    ReturnStatus @default(REQUESTED)
 
-  reason        String?
-  staffNote     String?
-  requestedAt   DateTime  @default(now())
-  approvedAt    DateTime?
-  rejectedAt    DateTime?
-  receivedAt    DateTime?
-  inspectedAt   DateTime?
-  completedAt   DateTime?
+  reason      String?
+  staffNote   String?
+  requestedAt DateTime  @default(now())
+  approvedAt  DateTime?
+  rejectedAt  DateTime?
+  receivedAt  DateTime?
+  inspectedAt DateTime?
+  completedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1310,23 +1424,23 @@ model ReturnItem {
 // =============================================================================
 
 model Coupon {
-  id          String        @id @default(cuid())
-  code        String        @unique
-  type        CouponType
+  id      String        @id @default(cuid())
+  code    String        @unique
+  type    CouponType
   /// Percentage (1-100) or a fixed amount in poisha, depending on `type`.
-  value       Int
-  channel     CouponChannel @default(ONLINE)
-  labelEn     String?
-  labelBn     String?
+  value   Int
+  channel CouponChannel @default(ONLINE)
+  labelEn String?
+  labelBn String?
 
-  minSubtotalPoisha  Int?
-  maxDiscountPoisha  Int?
-  startsAt           DateTime?
-  endsAt             DateTime?
+  minSubtotalPoisha     Int?
+  maxDiscountPoisha     Int?
+  startsAt              DateTime?
+  endsAt                DateTime?
   /// Null means unlimited.
-  usageLimit             Int?
-  usageLimitPerCustomer  Int?
-  usedCount              Int       @default(0)
+  usageLimit            Int?
+  usageLimitPerCustomer Int?
+  usedCount             Int       @default(0)
 
   isActive  Boolean   @default(true)
   deletedAt DateTime?
@@ -1343,10 +1457,10 @@ model Coupon {
 /// One use of a coupon. Unique per order, written inside the order transaction
 /// together with the `usedCount` increment.
 model CouponRedemption {
-  id       String @id @default(cuid())
-  couponId String
-  orderId  String @unique
-  userId   String?
+  id             String   @id @default(cuid())
+  couponId       String
+  orderId        String   @unique
+  userId         String?
   /// Customer phone, so a guest's usage limit can be enforced too.
   customerPhone  String?
   discountPoisha Int
@@ -1372,7 +1486,7 @@ model ShippingZone {
   nameEn String
   nameBn String?
 
-  ratePoisha Int
+  ratePoisha          Int
   /// Order value from which delivery is free in this zone. Null falls back to
   /// the global `shipping.freeThresholdPoisha` setting.
   freeThresholdPoisha Int?
@@ -1397,11 +1511,11 @@ model Shipment {
   mode    IntegrationMode     @default(MOCK)
   status  ShipmentStatus      @default(PENDING)
 
-  consignmentId  String?
-  trackingCode   String?
-  codAmountPoisha Int        @default(0)
+  consignmentId   String?
+  trackingCode    String?
+  codAmountPoisha Int     @default(0)
   /// Location the parcel was handed over from.
-  fromLocationId String?
+  fromLocationId  String?
 
   bookedAt    DateTime?
   deliveredAt DateTime?
@@ -1444,16 +1558,16 @@ model Banner {
   placement BannerPlacement @default(HOME_HERO)
   status    ContentStatus   @default(DRAFT)
 
-  eyebrowEn String?
-  eyebrowBn String?
-  titleEn   String
-  titleBn   String?
-  bodyEn    String?
-  bodyBn    String?
+  eyebrowEn  String?
+  eyebrowBn  String?
+  titleEn    String
+  titleBn    String?
+  bodyEn     String?
+  bodyBn     String?
   ctaLabelEn String?
   ctaLabelBn String?
-  href      String?
-  imageUrl  String?
+  href       String?
+  imageUrl   String?
 
   startsAt  DateTime?
   endsAt    DateTime?
@@ -1467,16 +1581,16 @@ model Banner {
 
 /// Order and configuration of the home page sections.
 model HomeSection {
-  id      String          @id @default(cuid())
-  type    HomeSectionType
-  status  ContentStatus   @default(PUBLISHED)
-  titleEn String?
-  titleBn String?
+  id            String          @id @default(cuid())
+  type          HomeSectionType
+  status        ContentStatus   @default(PUBLISHED)
+  titleEn       String?
+  titleBn       String?
   descriptionEn String?
   descriptionBn String?
   /// Section-specific settings, e.g. {"limit":4,"categorySlug":"denim-jeans"}.
-  config  Json?
-  sortOrder Int           @default(0)
+  config        Json?
+  sortOrder     Int             @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1487,13 +1601,13 @@ model HomeSection {
 /// A content page (About, FAQ, policies). Draft pages are not served on the
 /// storefront — the return policy stays draft until the business approves it.
 model Page {
-  id      String        @id @default(cuid())
-  slug    String        @unique
-  status  ContentStatus @default(DRAFT)
-  titleEn String
-  titleBn String?
-  summaryEn String?
-  summaryBn String?
+  id         String        @id @default(cuid())
+  slug       String        @unique
+  status     ContentStatus @default(DRAFT)
+  titleEn    String
+  titleBn    String?
+  summaryEn  String?
+  summaryBn  String?
   /// Sections as JSON: [{"heading":{...},"paragraphs":[...],"bullets":[...]}].
   sectionsEn Json?
   sectionsBn Json?
@@ -1530,12 +1644,12 @@ model MenuItem {
 
 /// Newsletter sign-ups from the storefront footer.
 model NewsletterSubscriber {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  locale       String    @default("bn")
-  isActive     Boolean   @default(true)
-  confirmedAt  DateTime?
-  createdAt    DateTime  @default(now())
+  id          String    @id @default(cuid())
+  email       String    @unique
+  locale      String    @default("bn")
+  isActive    Boolean   @default(true)
+  confirmedAt DateTime?
+  createdAt   DateTime  @default(now())
 }
 
 /// Messages sent from the Contact page.
@@ -1583,7 +1697,7 @@ model Setting {
 /// Append-only audit trail for every sensitive action: price changes, stock
 /// adjustments, transfers, refunds, role changes and setting changes.
 model AuditLog {
-  id         String  @id @default(cuid())
+  id         String   @id @default(cuid())
   userId     String?
   action     String
   entityType String

@@ -5,10 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
-import { getProducts } from "@/modules/catalog/catalog.mock";
 import { MOCK_ORDERS } from "@/modules/orders/orders.mock";
 import { requireStaffPage } from "@/modules/access/access.service";
 import { hasPermission } from "@/modules/access/authorization";
+import { getLowStock } from "@/modules/inventory/inventory.service";
+import { LowStockWidget } from "./low-stock-widget";
 
 /**
  * Admin dashboard — visual shell.
@@ -26,6 +27,7 @@ const ADMIN_LOCALE = "en" as const;
 
 export default async function AdminDashboardPage() {
   const staff = await requireStaffPage();
+  const lowStock = hasPermission(staff, "inventory.read") ? await getLowStock(staff, 6) : null;
 
   if (!hasPermission(staff, "report.view")) {
     return (
@@ -37,6 +39,11 @@ export default async function AdminDashboardPage() {
           You are signed in as <span className="font-medium text-foreground">{staff.roleName}</span>
           . Use the menu to open the sections your role covers.
         </p>
+        {lowStock === null ? null : (
+          <div className="mt-6">
+            <LowStockWidget data={lowStock} />
+          </div>
+        )}
       </div>
     );
   }
@@ -46,9 +53,6 @@ export default async function AdminDashboardPage() {
   const codPendingPoisha = orders
     .filter((order) => order.paymentMethod === "COD" && order.paymentStatus === "UNPAID")
     .reduce((total, order) => total + order.totalPoisha, 0);
-  const lowStock = getProducts().filter(
-    (product) => product.availability === "low_stock" || product.availability === "out_of_stock",
-  );
 
   const kpis = [
     {
@@ -71,7 +75,7 @@ export default async function AdminDashboardPage() {
     },
     {
       label: "Low or no stock",
-      value: String(lowStock.length),
+      value: String(lowStock?.total ?? 0),
       hint: "Variants needing attention",
       icon: AlertTriangle,
     },
@@ -219,35 +223,8 @@ export default async function AdminDashboardPage() {
             </ul>
           </section>
 
-          {/* Low stock */}
-          <section className="rounded-lg border border-border bg-background p-5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold">Needs restocking</h2>
-              <Link
-                href="/admin/inventory"
-                className="text-xs text-muted-foreground hover:text-foreground"
-              >
-                Inventory
-              </Link>
-            </div>
-            <ul className="mt-4 flex flex-col gap-3">
-              {lowStock.slice(0, 5).map((product) => (
-                <li key={product.id} className="flex items-start justify-between gap-3 text-sm">
-                  <span className="min-w-0">
-                    <span className="block truncate">{product.name.en}</span>
-                    <span className="text-xs text-muted-foreground tabular-nums">
-                      {product.sku}
-                    </span>
-                  </span>
-                  <Badge
-                    variant={product.availability === "out_of_stock" ? "destructive" : "muted"}
-                  >
-                    {product.availability === "out_of_stock" ? "Out" : "Low"}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
-          </section>
+          {/* Low stock (real data, location-scoped) */}
+          {lowStock === null ? null : <LowStockWidget data={lowStock} />}
 
           {/* Pending work sketch */}
           <section className="rounded-lg border border-border bg-background p-5">

@@ -19,7 +19,8 @@ export interface ProductCardProps {
 /**
  * The single product card used by every grid on the site, so a product looks
  * identical on the homepage, a category page and search results. Images sit
- * in a 4:5 frame without cropping. Stock is not shown until Phase 7.
+ * in a 4:5 frame without cropping. A sold-out product stays listed (links and
+ * search keep working) with an "Out of stock" label.
  */
 export function ProductCard({ product, priority = false, className }: ProductCardProps) {
   const locale = useLocale() as Locale;
@@ -44,6 +45,11 @@ export function ProductCard({ product, priority = false, className }: ProductCar
             {product.isBestseller ? <Badge variant="accent">{t("tagBestseller")}</Badge> : null}
             {product.comparePricePoisha !== null ? (
               <Badge variant="muted">{t("tagSale")}</Badge>
+            ) : null}
+            {product.outOfStock === true ? (
+              <Badge variant="outline" data-testid="card-out-of-stock">
+                {t("outOfStock")}
+              </Badge>
             ) : null}
           </div>
         </div>

@@ -2,6 +2,7 @@ import "server-only";
 
 import { unstable_cache } from "next/cache";
 
+import { STOCK_REVALIDATE_SECONDS, STOCK_TAG } from "@/modules/inventory/stock-cache";
 import { getCatalogSettings } from "@/modules/settings/settings.service";
 import { CATALOG_TAGS, STOREFRONT_REVALIDATE_SECONDS } from "./cache-tags";
 import {
@@ -31,11 +32,25 @@ export const cachedHomeProducts = unstable_cache(getHomeProducts, ["sf-home"], {
   revalidate,
 });
 
-export const cachedListing = unstable_cache(
+const cachedFullListing = unstable_cache(
   (query: ListingQuery) => getListing(query),
   ["sf-listing"],
   { tags: [CATALOG_TAGS.lists, CATALOG_TAGS.categories], revalidate },
 );
+
+// "In stock only" depends on stock, so it follows the short stock cache.
+const cachedInStockListing = unstable_cache(
+  (query: ListingQuery) => getListing(query),
+  ["sf-listing-in-stock"],
+  {
+    tags: [CATALOG_TAGS.lists, CATALOG_TAGS.categories, STOCK_TAG],
+    revalidate: STOCK_REVALIDATE_SECONDS,
+  },
+);
+
+export function cachedListing(query: ListingQuery) {
+  return query.inStock === true ? cachedInStockListing(query) : cachedFullListing(query);
+}
 
 export function cachedProductPage(slug: string) {
   return unstable_cache(() => getProductPage(slug), ["sf-product", slug], {

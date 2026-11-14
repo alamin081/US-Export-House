@@ -21,12 +21,25 @@ export const PERMISSIONS = [
   "catalog.publish",
   /** Delete draft products, categories, brands and size charts. */
   "catalog.delete",
+  /** Create and edit branches and warehouses. */
+  "location.manage",
+  /** Stock at the locations the staff member may access. */
   "inventory.read",
+  /** Manual stock adjustments with a reason. */
   "inventory.adjust",
+  /** Receive stock from suppliers and import stock from CSV. */
+  "inventory.receive",
+  /** Run physical stock counts. */
+  "inventory.count",
+  /** Apply a submitted count's corrections to stock. */
+  "inventory.count.apply",
+  /** Purchase cost and stock value. Never for branch sales staff. */
+  "inventory.cost.read",
   "transfer.create",
+  /** Approve a transfer before dispatch (when `transfer.requireApproval` is on). */
+  "transfer.approve",
   "transfer.dispatch",
   "transfer.receive",
-  "stockcount.manage",
   "order.read",
   "order.process",
   "order.cancel",
@@ -69,12 +82,17 @@ export const PERMISSION_GROUPS: ReadonlyArray<{
   {
     label: "Inventory",
     keys: [
+      "location.manage",
       "inventory.read",
       "inventory.adjust",
+      "inventory.receive",
+      "inventory.count",
+      "inventory.count.apply",
+      "inventory.cost.read",
       "transfer.create",
+      "transfer.approve",
       "transfer.dispatch",
       "transfer.receive",
-      "stockcount.manage",
     ],
   },
   {
@@ -132,7 +150,9 @@ export const SYSTEM_ROLES: readonly SystemRoleDefinition[] = [
       "transfer.create",
       "transfer.dispatch",
       "transfer.receive",
-      "stockcount.manage",
+      // Counts, but not applying them; no receiving (all goods arrive at the
+      // warehouse first) and no purchase cost.
+      "inventory.count",
       "order.read",
       "order.process",
       "pos.sell",
@@ -170,10 +190,12 @@ export const SYSTEM_ROLES: readonly SystemRoleDefinition[] = [
       "catalog.read",
       "inventory.read",
       "inventory.adjust",
+      "inventory.receive",
+      // Counts, but a Store Manager applies them; no purchase cost.
+      "inventory.count",
       "transfer.create",
       "transfer.dispatch",
       "transfer.receive",
-      "stockcount.manage",
       "report.view",
     ],
     allLocations: false,

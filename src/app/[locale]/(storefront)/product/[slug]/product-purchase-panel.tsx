@@ -2,6 +2,7 @@
 
 import { ShoppingBag } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 
 import { Price } from "@/components/shared/price";
 import { Button } from "@/components/ui/button";
@@ -24,22 +25,54 @@ export interface PanelVariant {
   comparePricePoisha: number | null;
 }
 
+type StockState = "in" | "few" | "out";
+
 /**
- * Colour and size selection. The price, compare-at price and SKU follow the
- * chosen combination. "Add to cart" stays disabled until the cart exists
- * (Phase 8); stock is not shown until Phase 7.
+ * Online stock per variant ("in" / "few" / "out", never a number), fetched
+ * after the cached page loads so stock changes never rebuild the page. Until
+ * it arrives (or if it fails) nothing is marked unavailable.
+ */
+function useStockStates(slug: string): Record<string, StockState> | null {
+  const [states, setStates] = useState<Record<string, StockState> | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    // `no-store`: the browser must not reuse an older answer; the shared
+    // (CDN) cache and the server cache keep this cheap.
+    fetch(`/api/storefront/products/${encodeURIComponent(slug)}/availability`, {
+      signal: controller.signal,
+      cache: "no-store",
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((body: { variants?: Record<string, StockState> } | null) => {
+        if (body?.variants !== undefined) setStates(body.variants);
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [slug]);
+  return states;
+}
+
+/**
+ * Colour and size selection. The price, compare-at price, SKU and stock state
+ * follow the chosen combination; sold-out sizes and colours stay visible but
+ * are struck through and cannot be picked. "Add to cart" stays disabled until
+ * the cart exists (Phase 8).
  */
 export function ProductPurchasePanel({
   sizes,
   colours,
   variants,
+  slug,
 }: {
   sizes: readonly PanelOption[];
   colours: readonly PanelOption[];
   variants: readonly PanelVariant[];
+  slug: string;
 }) {
   const t = useTranslations("Product");
   const { colourId, sizeId, setColourId, setSizeId } = useProductSelection();
+  const stock = useStockStates(slug);
+  const inStock = (variant: PanelVariant) => stock === null || stock[variant.id] !== "out";
 
   const matches = (variant: PanelVariant, colour: string | null, size: string | null) =>
     (colours.length === 0 || variant.colourId === colour) &&
@@ -48,11 +81,34 @@ export function ProductPurchasePanel({
   const selected = variants.find((variant) => matches(variant, colourId, sizeId)) ?? null;
   const complete =
     (colours.length === 0 || colourId !== null) && (sizes.length === 0 || sizeId !== null);
-  const sizeAvailable = (size: string) =>
+  const sizeExists = (size: string) =>
     variants.some(
       (variant) =>
         variant.sizeId === size && (colours.length === 0 || variant.colourId === colourId),
     );
+  const sizeAvailable = (size: string) =>
+    variants.some(
+      (variant) =>
+        variant.sizeId === size &&
+        (colours.length === 0 || variant.colourId === colourId) &&
+        inStock(variant),
+    );
+  // A colour is sold out when none of its sizes has stock.
+  const colourAvailable = (colour: string) =>
+    variants.some((variant) => variant.colourId === colour && inStock(variant));
+  const selectedState: StockState | null =
+    selected === null || stock === null ? null : (stock[selected.id] ?? "out");
+
+  // Once stock is known: move off a sold-out colour, and drop a sold-out size.
+  useEffect(() => {
+    if (stock === null) return;
+    if (colourId !== null && !colourAvailable(colourId)) {
+      const next = colours.find((colour) => colourAvailable(colour.id));
+      if (next !== undefined) setColourId(next.id);
+    }
+    if (sizeId !== null && !sizeAvailable(sizeId)) setSizeId(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-check only when stock or colour changes
+  }, [stock, colourId]);
 
   const selectedColour = colours.find((colour) => colour.id === colourId);
 
@@ -71,13 +127,17 @@ export function ProductPurchasePanel({
           <div className="mt-3 flex flex-wrap gap-2.5">
             {colours.map((option) => {
               const isActive = option.id === colourId;
+              const available = colourAvailable(option.id);
               return (
                 <label
                   key={option.id}
-                  title={option.label}
+                  title={available ? option.label : `${option.label} — ${t("outOfStock")}`}
+                  data-testid="colour-option"
+                  data-sold-out={available ? undefined : "true"}
                   className={cn(
-                    "cursor-pointer rounded-full p-0.5 transition-shadow",
+                    "relative cursor-pointer rounded-full p-0.5 transition-shadow",
                     isActive ? "ring-2 ring-foreground ring-offset-2" : "ring-1 ring-border",
+                    !available && "cursor-not-allowed opacity-40",
                   )}
                 >
                   <input
@@ -85,6 +145,7 @@ export function ProductPurchasePanel({
                     name="colour"
                     value={option.id}
                     checked={isActive}
+                    disabled={!available}
                     onChange={() => setColourId(option.id)}
                     className="sr-only"
                   />
@@ -93,7 +154,16 @@ export function ProductPurchasePanel({
                     className="block size-7 rounded-full"
                     style={{ backgroundColor: option.hex ?? "var(--color-secondary)" }}
                   />
-                  <span className="sr-only">{option.label}</span>
+                  {available ? null : (
+                    <span
+                      aria-hidden="true"
+                      className="absolute top-1/2 left-0 h-px w-full -rotate-45 bg-foreground"
+                    />
+                  )}
+                  <span className="sr-only">
+                    {option.label}
+                    {available ? "" : ` — ${t("outOfStock")}`}
+                  </span>
                 </label>
               );
             })}
@@ -110,9 +180,13 @@ export function ProductPurchasePanel({
             {sizes.map((option) => {
               const isActive = option.id === sizeId;
               const available = sizeAvailable(option.id);
+              const soldOut = sizeExists(option.id) && !available;
               return (
                 <label
                   key={option.id}
+                  data-testid="size-option"
+                  data-sold-out={soldOut ? "true" : undefined}
+                  title={soldOut ? t("outOfStock") : undefined}
                   className={cn(
                     "cursor-pointer rounded-md border px-4 py-2.5 text-sm tabular-nums transition-colors",
                     isActive
@@ -131,6 +205,7 @@ export function ProductPurchasePanel({
                     className="sr-only"
                   />
                   {option.label}
+                  {soldOut ? <span className="sr-only"> — {t("outOfStock")}</span> : null}
                 </label>
               );
             })}
@@ -146,6 +221,24 @@ export function ProductPurchasePanel({
               comparePricePoisha={selected.comparePricePoisha}
               size="lg"
             />
+            {selectedState === null ? null : (
+              <p
+                className={cn(
+                  "text-sm font-medium",
+                  selectedState === "in" && "text-success",
+                  selectedState === "few" && "text-accent-foreground",
+                  selectedState === "out" && "text-destructive",
+                )}
+                data-testid="stock-state"
+                data-state={selectedState}
+              >
+                {selectedState === "in"
+                  ? t("inStock")
+                  : selectedState === "few"
+                    ? t("lowStock")
+                    : t("outOfStock")}
+              </p>
+            )}
             <p className="text-xs text-muted-foreground">
               {t("selectedSku")}:{" "}
               <span className="tabular-nums" data-testid="selected-sku">

@@ -43,7 +43,7 @@ import {
 } from "../src/modules/content/content.mock";
 import { SYSTEM_ROLES } from "../src/modules/access/permissions";
 import { MOCK_ORDERS } from "../src/modules/orders/orders.mock";
-import { CATALOG_SETTINGS, OPTION_PRESETS } from "./seed-catalog";
+import { CATALOG_SETTINGS, INVENTORY_SETTINGS, OPTION_PRESETS } from "./seed-catalog";
 
 if (process.env.APP_ENV === "production") {
   throw new Error("[seed] Refusing to seed a production database.");
@@ -230,7 +230,8 @@ const SETTINGS: readonly SeedSetting[] = [
     valueType: "STRING",
     value: "WH-DHK",
     group: "fulfillment",
-    description: "Location online orders reserve stock from by default.",
+    description:
+      "DEPRECATED (Phase 7): the location flagged isDefaultOnlineFulfillment is used instead.",
   },
   {
     key: "storefront.defaultLocale",
@@ -287,7 +288,7 @@ const SETTINGS: readonly SeedSetting[] = [
 ];
 
 async function seedSettings() {
-  const all: readonly SeedSetting[] = [...SETTINGS, ...CATALOG_SETTINGS];
+  const all: readonly SeedSetting[] = [...SETTINGS, ...CATALOG_SETTINGS, ...INVENTORY_SETTINGS];
   for (const setting of all) {
     await prisma.setting.upsert({
       where: { key: setting.key },
@@ -302,7 +303,7 @@ async function seedSettings() {
       },
     });
   }
-  log("settings", `${SETTINGS.length + CATALOG_SETTINGS.length} keys`);
+  log("settings", `${all.length} keys`);
 }
 
 // Phase 6: the size and colour library the variant generator offers.
@@ -385,6 +386,8 @@ async function seedLocations() {
     isOnlineFulfillment: true,
     isDefaultOnlineFulfillment: true,
     sortOrder: 0,
+    // Local sample data: shown with a "SAMPLE DATA" badge in the admin.
+    isSample: true,
   };
 
   await prisma.location.upsert({
@@ -404,6 +407,7 @@ async function seedLocations() {
       create: {
         code,
         type: "BRANCH",
+        isSample: true,
         nameEn: showroom.name.en,
         nameBn: showroom.name.bn ?? null,
         addressEn: showroom.address.en,

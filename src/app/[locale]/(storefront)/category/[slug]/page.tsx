@@ -9,6 +9,8 @@ import { ProductGrid } from "@/components/shared/product-grid";
 import { localize } from "@/lib/content";
 import { countArgs } from "@/lib/number";
 import { cachedActiveCategories, cachedListing } from "@/modules/catalog/storefront-catalog.cached";
+import { withStockFlags } from "@/modules/catalog/storefront-catalog.service";
+import { cachedOutOfStockProductIds } from "@/modules/inventory/storefront-stock.cached";
 import { filterStateFrom, ListingPagination, ProductFilters } from "../../shop/product-filters";
 import { breadcrumbJsonLd, JsonLd, localePath } from "../../seo";
 
@@ -71,6 +73,7 @@ export default async function CategoryPage({
     brands: [...state.brands],
     ...(state.min === undefined ? {} : { minTaka: state.min }),
     ...(state.max === undefined ? {} : { maxTaka: state.max }),
+    ...(state.inStock ? { inStock: true } : {}),
     sort: state.sort,
     page: state.page,
   });
@@ -154,7 +157,11 @@ export default async function CategoryPage({
               action={{ label: t("clearFilters"), href: `/category/${category.slug}` }}
             />
           ) : (
-            <ProductGrid products={listing.products} className="mt-8" priorityCount={4} />
+            <ProductGrid
+              products={withStockFlags(listing.products, await cachedOutOfStockProductIds())}
+              className="mt-8"
+              priorityCount={4}
+            />
           )}
 
           <ListingPagination

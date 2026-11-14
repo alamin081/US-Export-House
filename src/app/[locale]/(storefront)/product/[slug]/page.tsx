@@ -112,6 +112,7 @@ export default async function ProductPage({ params }: { params: RouteParams }) {
           brand: product.brand === null ? null : localize(product.brand, resolvedLocale),
           minPricePoisha: product.minPricePoisha,
           maxPricePoisha: product.maxPricePoisha,
+          inStock: product.inStock,
         })}
       />
       <JsonLd
@@ -187,6 +188,7 @@ export default async function ProductPage({ params }: { params: RouteParams }) {
                   hex: colour.hex,
                 }))}
                 variants={product.variants}
+                slug={product.slug}
               />
             </div>
 

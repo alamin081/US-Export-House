@@ -166,6 +166,8 @@
     "priceUnder": "Under {price}",
     "priceBetween": "{from} – {to}",
     "priceOver": "Over {price}",
+    "availabilityFilter": "Availability",
+    "inStockOnly": "In stock only",
     "sortLabel": "Sort by",
     "sortFeatured": "Featured",
     "sortNewest": "Newest",

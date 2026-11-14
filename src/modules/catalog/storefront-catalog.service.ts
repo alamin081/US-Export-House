@@ -1,5 +1,6 @@
 import { PAGE_SIZE } from "@/config/constants";
 import type { LocalizedText } from "@/lib/content";
+import { getOutOfStockProductIds } from "@/modules/inventory/inventory.service";
 import { getCatalogSettings } from "@/modules/settings/settings.service";
 import { buildTree, flattenTree, type TreeItem } from "./category-tree";
 import { escapeLike, searchTerms } from "./search-text";
@@ -59,6 +60,18 @@ export interface ProductCardData {
   priceVaries: boolean;
   isNew: boolean;
   isBestseller: boolean;
+  /** Every variant is out of stock online. Merged in at render time from the
+   * short-lived stock cache (see withStockFlags), never stored with the card. */
+  outOfStock?: boolean;
+}
+
+/** Marks cards whose product is sold out online. */
+export function withStockFlags<T extends ProductCardData>(
+  cards: readonly T[],
+  outOfStockIds: readonly string[],
+): T[] {
+  const out = new Set(outOfStockIds);
+  return cards.map((card) => ({ ...card, outOfStock: out.has(card.id) }));
 }
 
 function toCard(row: CardRow): ProductCardData | null {
@@ -181,6 +194,8 @@ export interface ListingQuery {
   brands?: string[];
   minTaka?: number;
   maxTaka?: number;
+  /** Only products with at least one variant available online. */
+  inStock?: boolean;
   sort?: StorefrontSort;
   page?: number;
 }
@@ -222,6 +237,7 @@ export async function getListing(query: ListingQuery): Promise<ListingResult | n
     ...(query.colours === undefined ? {} : { colours: query.colours }),
     ...(query.minTaka === undefined ? {} : { minPricePoisha: Math.round(query.minTaka * 100) }),
     ...(query.maxTaka === undefined ? {} : { maxPricePoisha: Math.round(query.maxTaka * 100) }),
+    ...(query.inStock === true ? { inStockOnly: true } : {}),
     terms,
     sort: query.sort ?? "featured",
     limit: take,
@@ -255,15 +271,21 @@ export async function getListing(query: ListingQuery): Promise<ListingResult | n
   };
 }
 
+/**
+ * Home rows. Their "out of stock" labels are taken when this (hourly,
+ * catalogue-tagged) cache entry is built: stock changes never rebuild the
+ * home page, so a label may lag by up to an hour.
+ */
 export async function getHomeProducts() {
-  const [newest, featured] = await Promise.all([
+  const [newest, featured, outOfStock] = await Promise.all([
     findListingIds({ sort: "newest", limit: 4, offset: 0 }),
     findListingIds({ flag: "featured", sort: "featured", limit: 4, offset: 0 }),
+    getOutOfStockProductIds(),
   ]);
   const categories = await getActiveCategories();
   return {
-    newArrivals: await cardsFor(newest.ids),
-    featured: await cardsFor(featured.ids),
+    newArrivals: withStockFlags(await cardsFor(newest.ids), outOfStock),
+    featured: withStockFlags(await cardsFor(featured.ids), outOfStock),
     categories: categories.filter((category) => category.parentId === null),
   };
 }
@@ -317,6 +339,9 @@ export interface ProductPageData {
   maxPricePoisha: number;
   sizeChart: SizeChartData | null;
   related: ProductCardData[];
+  /** For structured data only, as of when this hourly cache entry was built.
+   * Live per-variant stock comes from the availability endpoint. */
+  inStock: boolean;
 }
 
 function sizeChartFrom(chart: PublishedProductRow["sizeChart"]): SizeChartData | null {
@@ -385,13 +410,16 @@ export async function getProductPage(slug: string): Promise<ProductPageData | nu
   const strip = ({ sort: _sort, ...value }: ProductOptionValue & { sort: number }) => value;
   const fit = settings.fits.find((candidate) => candidate.key === row.fit);
 
-  const related = await findListingIds({
-    categoryIds: [row.categoryId],
-    excludeProductId: row.id,
-    sort: "featured",
-    limit: 4,
-    offset: 0,
-  });
+  const [related, outOfStock] = await Promise.all([
+    findListingIds({
+      categoryIds: [row.categoryId],
+      excludeProductId: row.id,
+      sort: "featured",
+      limit: 4,
+      offset: 0,
+    }),
+    getOutOfStockProductIds(),
+  ]);
 
   return {
     id: row.id,
@@ -423,7 +451,8 @@ export async function getProductPage(slug: string): Promise<ProductPageData | nu
     minPricePoisha: Math.min(...prices),
     maxPricePoisha: Math.max(...prices),
     sizeChart: sizeChartFrom(row.sizeChart ?? row.category.sizeChart),
-    related: await cardsFor(related.ids),
+    related: withStockFlags(await cardsFor(related.ids), outOfStock),
+    inStock: !outOfStock.includes(row.id),
   };
 }
 

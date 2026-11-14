@@ -51,7 +51,12 @@ export function productJsonLd(input: {
   brand: string | null;
   minPricePoisha: number;
   maxPricePoisha: number;
+  /** From the short-lived stock cache; refreshed with the page (ISR). */
+  inStock: boolean;
 }) {
+  const availability = input.inStock
+    ? "https://schema.org/InStock"
+    : "https://schema.org/OutOfStock";
   const price = (poisha: number) => (poisha / 100).toFixed(2);
   return {
     "@context": "https://schema.org",
@@ -62,13 +67,13 @@ export function productJsonLd(input: {
     ...(input.sku === null ? {} : { sku: input.sku }),
     ...(input.brand === null ? {} : { brand: { "@type": "Brand", name: input.brand } }),
     url: absoluteUrl(localePath(input.locale, input.path)),
-    // Availability is left out until stock is managed (Phase 7).
     offers:
       input.minPricePoisha === input.maxPricePoisha
         ? {
             "@type": "Offer",
             priceCurrency: "BDT",
             price: price(input.minPricePoisha),
+            availability,
             url: absoluteUrl(localePath(input.locale, input.path)),
           }
         : {
@@ -76,6 +81,7 @@ export function productJsonLd(input: {
             priceCurrency: "BDT",
             lowPrice: price(input.minPricePoisha),
             highPrice: price(input.maxPricePoisha),
+            availability,
           },
   };
 }

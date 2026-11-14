@@ -64,12 +64,74 @@ async function main() {
       data: { slug: `e2e-${run}`, code, nameEn: categoryName, nameBn: "ই২ই শার্ট", sortOrder: 99 },
     });
 
+    // Phase 7: a branch with its own sales staff, and a published product
+    // (sizes M and L, no stock anywhere yet) for the stock flow.
+    const tag = run
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .slice(-8);
+    const branchCode = `E2EB-${tag}`;
+    const branch = await prisma.location.create({
+      data: { code: branchCode, type: "BRANCH", nameEn: `E2E Branch ${run}`, isActive: true },
+    });
+    const salesEmail = `e2e-${run}-sales@test.local`;
+    await prisma.user.create({
+      data: {
+        kind: "STAFF",
+        email: salesEmail,
+        name: "E2E Sales",
+        passwordHash,
+        roleId: await role("Branch Sales Staff"),
+        locationAccess: { create: { locationId: branch.id } },
+      },
+    });
+    const stockSlug = `e2e-stock-${run}`;
+    // Named by the short tag, not the run id: catalog.spec searches by run id.
+    const stockName = `E2E Stock Shirt ${tag}`;
+    const skuM = `E2E-STK-${tag}-M`;
+    const skuL = `E2E-STK-${tag}-L`;
+    const product = await prisma.product.create({
+      data: {
+        slug: stockSlug,
+        nameEn: stockName,
+        nameBn: "ই২ই স্টক শার্ট",
+        categoryId: (await prisma.category.findFirstOrThrow({ where: { slug: `e2e-${run}` } })).id,
+        status: "PUBLISHED",
+        publishedAt: new Date(),
+        options: { create: { type: "SIZE", nameEn: "Size", nameBn: "সাইজ", sortOrder: 0 } },
+      },
+      select: { id: true, options: { select: { id: true } } },
+    });
+    const optionId = product.options[0]?.id ?? "";
+    for (const [index, size] of ["M", "L"].entries()) {
+      const value = await prisma.optionValue.create({
+        data: { optionId, valueEn: size, sortOrder: index },
+      });
+      await prisma.productVariant.create({
+        data: {
+          productId: product.id,
+          sku: size === "M" ? skuM : skuL,
+          barcode: `E2E${tag}${size}`,
+          pricePoisha: 145_000,
+          labelEn: size,
+          optionKey: value.id,
+          optionValues: { create: { optionValueId: value.id } },
+        },
+      });
+    }
+
     const fixture: E2EFixture = {
       run,
       password,
       managerEmail,
       inventoryEmail,
       categoryLabel: `${categoryName} [${code}]`,
+      salesEmail,
+      branchCode,
+      stockSlug,
+      stockName,
+      skuM,
+      skuL,
     };
     await mkdir(join(process.cwd(), "e2e-results"), { recursive: true });
     await writeFile(FIXTURE_FILE, JSON.stringify(fixture), "utf8");

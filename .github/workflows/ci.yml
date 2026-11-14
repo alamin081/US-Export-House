@@ -105,8 +105,12 @@ jobs:
       - run: npm run db:seed
       - run: npm run db:verify
 
-      # Sign-in, sessions, RBAC, location scoping, auditing, bootstrap.
+      # Sign-in, sessions, RBAC, location scoping, auditing, bootstrap,
+      # catalogue, and inventory (concurrency, transfers, counts, CSV).
       - run: npm run test:integration
+
+      # Read-only: every stock row still equals its ledger after all of the above.
+      - run: npm run inventory:verify
 
   e2e:
     name: End-to-end (Chromium) against a throwaway database

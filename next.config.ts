@@ -23,6 +23,10 @@ const nextConfig: NextConfig = {
   // longer runs ESLint during `next build`, so `npm run lint` (and CI) owns it.
   typescript: { ignoreBuildErrors: false },
 
+  // Stock CSV imports are posted to a Server Action; the service enforces the
+  // real limit (setting inventory.import.maxBytes, default 2 MB).
+  experimental: { serverActions: { bodySizeLimit: "3mb" } },
+
   // The E2E suite builds into its own folder so it never overwrites `.next`.
   ...(process.env.NEXT_DIST_DIR === undefined ? {} : { distDir: process.env.NEXT_DIST_DIR }),
 
