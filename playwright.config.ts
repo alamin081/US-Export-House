@@ -44,6 +44,9 @@ export default defineConfig({
       APP_URL: BASE_URL,
       NEXT_PUBLIC_APP_URL: BASE_URL,
       STORAGE_PROVIDER: "local",
+      // Mock storage is allowed only in automated test runs; with a *_test
+      // database this flag marks the E2E server as one (see env-rules.ts).
+      E2E_TEST_RUN: "1",
       APP_ENV: "local",
     },
   },

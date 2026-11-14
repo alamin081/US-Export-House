@@ -59,19 +59,23 @@ the service.
 
 ## Images
 
-`StorageProvider` (`src/integrations/storage/`) with two implementations:
+Images are stored on **Cloudinary in every environment** (local development,
+staging and production), behind `StorageProvider` (`src/integrations/storage/`).
 
 - **Cloudinary** (`STORAGE_PROVIDER=cloudinary`). The browser resizes the photo
   to at most 2400 px, asks `/api/admin/uploads/ticket` for signed upload fields
   (the API secret stays on the server), uploads straight to Cloudinary under a
   server-chosen key, then `/api/admin/uploads/complete` asks Cloudinary what was
   stored and deletes it unless it is JPEG/PNG/WebP/AVIF within the size limit
-  (setting `media.maxUploadBytes`, default 8 MB). **Not yet tested against a real
-  Cloudinary account.**
-- **Local mock** (`STORAGE_PROVIDER=local`, development only, refused when
-  `APP_ENV=production`). Files go to `public/uploads-dev/` (git-ignored) after a
-  MIME + file-signature check and are served by `/api/dev-uploads/[file]`. The
-  admin shows a **MOCK STORAGE** badge.
+  (setting `media.maxUploadBytes`, default 8 MB). Uploads go to
+  `ueh/dev/products`, `ueh/staging/products` or `ueh/prod/products` (from
+  `APP_ENV`). Required in every environment, local development included. The
+  live check is `tests/integration/cloudinary.live.test.ts` (runs only with
+  `CLOUDINARY_LIVE_TEST=1`; cleans up after itself).
+- **Test double** (`STORAGE_PROVIDER=local`): exists only so automated tests
+  (`NODE_ENV=test`, `CI=true`, or the E2E server on a `*_test` database) never
+  touch the real account. `env-rules.ts` and the storage factory refuse it
+  everywhere else, so it cannot be used for development.
 
 Every upload returns an HMAC token; a product save accepts a new image only
 with a valid token. Removed images are deleted from storage after the database

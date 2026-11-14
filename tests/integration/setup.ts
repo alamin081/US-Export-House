@@ -39,3 +39,5 @@ if (!databaseName.endsWith("_test")) {
 
 process.env.DATABASE_URL = url;
 process.env.DATABASE_URL_UNPOOLED = "";
+// Tests never touch the developer's Cloudinary account: mock storage only.
+process.env.STORAGE_PROVIDER = "local";

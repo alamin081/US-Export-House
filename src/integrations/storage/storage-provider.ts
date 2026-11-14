@@ -5,9 +5,8 @@
  *   CloudinaryStorageProvider  real storage; the browser uploads directly with
  *                              a server-made signature (API secret never leaves
  *                              the server), then the server inspects the result.
- *   LocalMockStorageProvider   development only; files land in
- *                              public/uploads-dev/ and the admin shows a
- *                              "MOCK STORAGE" badge. Refused in production.
+ *   LocalMockStorageProvider   automated tests only; files land in
+ *                              public/uploads-dev/. Refused everywhere else.
  */
 
 export type StorageProviderName = "cloudinary" | "local-mock";

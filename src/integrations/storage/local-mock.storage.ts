@@ -14,13 +14,14 @@ import {
 } from "./storage-provider";
 
 /**
- * MOCK STORAGE — development and tests only.
+ * MOCK STORAGE — automated tests only (Vitest, CI, the E2E server on a *_test
+ * database). Development, staging and production use Cloudinary.
  *
  * Files are written to public/uploads-dev/ (git-ignored) under a random,
  * server-generated name, and served by /api/dev-uploads/[file] (a route, not
  * the static public folder, because `next start` only serves public files that
- * existed at build time). The factory refuses this provider when
- * APP_ENV=production, and the admin shows a "MOCK STORAGE" badge.
+ * existed at build time). env-rules.ts and the factory refuse this provider
+ * outside automated tests; the admin shows a "MOCK STORAGE" badge.
  */
 
 export const MOCK_UPLOAD_DIR = join(process.cwd(), "public", "uploads-dev");

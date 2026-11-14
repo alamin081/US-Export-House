@@ -76,31 +76,33 @@ Open:
 
 ## Scripts
 
-| Command                           | What it does                                                          |
-| --------------------------------- | --------------------------------------------------------------------- |
-| `npm run dev`                     | Dev server on port 3000                                               |
-| `npm run build`                   | Production build                                                      |
-| `npm start`                       | Serve the production build                                            |
-| `npm run typecheck`               | `tsc --noEmit`                                                        |
-| `npm run lint`                    | ESLint, including the architecture boundary rules                     |
-| `npm run format`                  | Prettier write (`format:check` to verify only)                        |
-| `npm test`                        | Vitest unit tests                                                     |
-| `npm run test:integration`        | Auth/RBAC and catalogue tests against the `_test` database            |
-| `npm run test:e2e`                | Playwright (Chromium): admin to storefront, against `_test`           |
-| `npm run auth:bootstrap`          | One-time creation of the first Super Admin                            |
-| `npm run auth:retire-placeholder` | Deactivate the seed placeholder admin (dry run unless `-- --confirm`) |
-| `npm run verify`                  | typecheck + lint + format check + tests (what CI runs)                |
-| `npm run db:up`                   | Start the PostgreSQL container                                        |
-| `npm run db:down`                 | Stop it (data is kept in the `use_postgres_data` volume)              |
-| `npm run db:generate`             | Regenerate the Prisma client into `src/generated/prisma`              |
-| `npm run db:migrate`              | Create and apply a migration (development)                            |
-| `npm run db:migrate:deploy`       | Apply pending migrations (CI, staging, production)                    |
-| `npm run db:seed`                 | Load development data                                                 |
-| `npm run db:verify`               | Row counts, data integrity and guard-rail checks                      |
-| `npm run db:studio`               | Browse the data in Prisma Studio                                      |
-| `npm run db:reset`                | **Destroys all data**, re-migrates and re-seeds                       |
-| `npm run db:nuke`                 | Stop the container and delete its volume                              |
-| `npm run db:logs`                 | Follow database logs                                                  |
+| Command                           | What it does                                                                       |
+| --------------------------------- | ---------------------------------------------------------------------------------- |
+| `npm run dev`                     | Dev server on port 3000                                                            |
+| `npm run build`                   | Production build                                                                   |
+| `npm start`                       | Serve the production build                                                         |
+| `npm run typecheck`               | `tsc --noEmit`                                                                     |
+| `npm run lint`                    | ESLint, including the architecture boundary rules                                  |
+| `npm run format`                  | Prettier write (`format:check` to verify only)                                     |
+| `npm test`                        | Vitest unit tests                                                                  |
+| `npm run test:integration`        | Auth/RBAC and catalogue tests against the `_test` database                         |
+| `npm run test:e2e`                | Playwright (Chromium): admin to storefront, against `_test`                        |
+| `npm run auth:bootstrap`          | One-time creation of the first Super Admin                                         |
+| `npm run auth:retire-placeholder` | Deactivate the seed placeholder admin (dry run unless `-- --confirm`)              |
+| `npm run inventory:verify`        | Read-only: every stock row equals its ledger (see docs/INVENTORY.md)               |
+| `npm run db:mark-sample`          | Local only: flag the seed locations as sample data (dry run unless `-- --confirm`) |
+| `npm run verify`                  | typecheck + lint + format check + tests (what CI runs)                             |
+| `npm run db:up`                   | Start the PostgreSQL container                                                     |
+| `npm run db:down`                 | Stop it (data is kept in the `use_postgres_data` volume)                           |
+| `npm run db:generate`             | Regenerate the Prisma client into `src/generated/prisma`                           |
+| `npm run db:migrate`              | Create and apply a migration (development)                                         |
+| `npm run db:migrate:deploy`       | Apply pending migrations (CI, staging, production)                                 |
+| `npm run db:seed`                 | Load development data                                                              |
+| `npm run db:verify`               | Row counts, data integrity and guard-rail checks                                   |
+| `npm run db:studio`               | Browse the data in Prisma Studio                                                   |
+| `npm run db:reset`                | **Destroys all data**, re-migrates and re-seeds                                    |
+| `npm run db:nuke`                 | Stop the container and delete its volume                                           |
+| `npm run db:logs`                 | Follow database logs                                                               |
 
 ---
 
@@ -274,9 +276,14 @@ Full details: [docs/AUTH.md](docs/AUTH.md).
 `next.config.ts`, so the app refuses to start when something is missing or unsafe.
 Beyond the per-variable checks it rejects dangerous combinations, for example:
 
-- `APP_ENV=production` with `COURIER_STEADFAST_MODE=mock`, `SMS_PROVIDER=dev`,
-  `PAYMENT_SSLCOMMERZ_MODE=sandbox` or `STORAGE_PROVIDER=local` (mock image storage)
+- `APP_ENV=production` with `COURIER_STEADFAST_MODE=mock`, `SMS_PROVIDER=dev` or
+  `PAYMENT_SSLCOMMERZ_MODE=sandbox`
+- `STORAGE_PROVIDER=local` (mock image storage) anywhere but an automated test run
+  (`NODE_ENV=test`, `CI=true`, or the E2E server on a `*_test` database): local
+  development, staging and production all need Cloudinary credentials
 - a `sandbox`/`live` integration mode without its credentials
+
+Cloudinary uploads go to `ueh/dev`, `ueh/staging` or `ueh/prod` (from `APP_ENV`).
 
 `APP_ENV` (`local` | `staging` | `production`) describes the **deployment target**
 and is what the safety guards key on; `NODE_ENV` only describes the build.
@@ -292,7 +299,6 @@ See `.env.example` for the full list. Never commit real credentials.
 | Catalogue, reviews, cart and orders (`src/modules/*/*.mock.ts`)      | Phase 6 (catalogue), 8 (cart), 9 (orders) |
 | Product and editorial imagery (generated SVG under `public/images/`) | when real photography arrives             |
 | Brand colours, radius, fonts (Inter + Hind Siliguri)                 | when brand assets arrive                  |
-| `STORAGE_PROVIDER=local`                                             | Phase 6 (Cloudinary or S3)                |
 | `SMS_PROVIDER=dev` (console OTP)                                     | before launch (real SMS provider)         |
 | `COURIER_STEADFAST_MODE=mock`                                        | Phase 11 (Steadfast credentials)          |
 | `PAYMENT_SSLCOMMERZ_MODE=disabled`                                   | Phase 10 (sandbox, then live)             |

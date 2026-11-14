@@ -1,6 +1,7 @@
 import "server-only";
 
 import { env } from "@/config/env";
+import { isAutomatedTestRun } from "@/config/env-rules";
 import { CloudinaryStorageProvider } from "./cloudinary.storage";
 import { LocalMockStorageProvider } from "./local-mock.storage";
 import type { StorageProvider } from "./storage-provider";
@@ -9,8 +10,8 @@ export type { StorageProvider, StoredImage, DirectUploadTicket } from "./storage
 
 /**
  * The configured storage provider. env.ts already refuses STORAGE_PROVIDER=local
- * when APP_ENV=production; this factory repeats the check so the mock can never
- * be constructed in a production deployment, even if env.ts were bypassed.
+ * outside automated test runs; this factory repeats the check so the mock can
+ * never be constructed in a real environment, even if env.ts were bypassed.
  */
 let instance: StorageProvider | undefined;
 
@@ -26,8 +27,8 @@ export function getStorageProvider(): StorageProvider {
     return instance;
   }
 
-  if (env.APP_ENV === "production") {
-    throw new Error("[storage] The local mock storage provider is not allowed in production.");
+  if (env.APP_ENV === "production" || !isAutomatedTestRun(env)) {
+    throw new Error("[storage] The mock storage provider runs only in automated tests.");
   }
   instance = new LocalMockStorageProvider();
   return instance;

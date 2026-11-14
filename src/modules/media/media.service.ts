@@ -2,7 +2,7 @@ import "server-only";
 
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-import { env } from "@/config/env";
+import { env, storageFolder } from "@/config/env";
 import { AppError } from "@/lib/errors";
 import { getStorageProvider, isMockStorage, type StoredImage } from "@/integrations/storage";
 import type { DirectUploadTicket } from "@/integrations/storage/storage-provider";
@@ -38,7 +38,7 @@ const PRODUCT_FOLDER = "products";
 const TOKEN_TTL_MS = 6 * 60 * 60 * 1000;
 
 function folder(): string {
-  return `${env.CLOUDINARY_FOLDER}/${PRODUCT_FOLDER}`;
+  return `${storageFolder}/${PRODUCT_FOLDER}`;
 }
 
 /** Uploading needs either full catalogue rights or copy rights. */

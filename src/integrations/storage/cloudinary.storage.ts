@@ -16,8 +16,9 @@ import {
  * Cloudinary over its REST API (no SDK: signing is one SHA-1, and fewer
  * dependencies means less to audit).
  *
- * NOT YET TESTED AGAINST A REAL CLOUDINARY ACCOUNT — no credentials exist in
- * this environment. Unit tests cover the signing and URL building only.
+ * Verified against the real account on 2026-11-15 by
+ * tests/integration/cloudinary.live.test.ts (CLOUDINARY_LIVE_TEST=1): signed
+ * upload, server-side inspection, delivery URL and deletion.
  *
  * Signing (Cloudinary "authenticated requests"): sort the parameters, join as
  * `k=v&k=v`, append the API secret, SHA-1, hex. The secret itself is never

@@ -4,7 +4,7 @@ import { isMockStorage } from "@/integrations/storage";
 import { readMockUpload } from "@/integrations/storage/local-mock.storage";
 
 /**
- * Serves MOCK STORAGE files (development and tests only). Answers 404 when a
+ * Serves MOCK STORAGE files (automated tests only). Answers 404 when a
  * real provider is configured, and only for names the mock itself generated.
  */
 const CONTENT_TYPES: Record<string, string> = {
