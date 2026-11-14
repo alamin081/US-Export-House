@@ -5,6 +5,7 @@ first. Open questions stay in the master plan until they are answered here.
 
 | Date       | Decision                                                                                                                              | Takes effect |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| 2026-11-14 | Waist presets gain the odd sizes 29, 31 and 33 (34 and 36 already existed).                                                           | Phase 7      |
 | 2026-11-14 | SKU format `UEH-{CATEGORY_CODE}{4 digits}-{COLOUR}-{SIZE}`, capital letters/digits/hyphens only; existing SKUs unchanged.             | Phase 6      |
 | 2026-11-14 | Digits: setting `storefront.numerals`, default `latin`.                                                                               | Phase 6      |
 | 2026-11-14 | One English slug for both languages; no `slugBn` column.                                                                              | Phase 6      |

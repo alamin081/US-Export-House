@@ -314,7 +314,22 @@ async function seedOptionPresets() {
       select: { id: true },
     });
     if (existing !== null) continue;
-    await prisma.optionPreset.create({ data: { ...preset, sortOrder: index } });
+    // A preset inserted between existing ones (e.g. waist 29 between 28 and
+    // 30 in a database seeded earlier) shares its predecessor's sortOrder
+    // instead of renumbering existing rows; the admin breaks ties by code.
+    const sameGroup = (other: (typeof OPTION_PRESETS)[number]) =>
+      other.type === preset.type && other.group === preset.group;
+    const findSortOrder = (other: (typeof OPTION_PRESETS)[number] | undefined) =>
+      other === undefined
+        ? null
+        : prisma.optionPreset.findUnique({
+            where: { type_group_code: { type: other.type, group: other.group, code: other.code } },
+            select: { sortOrder: true },
+          });
+    const next = await findSortOrder(OPTION_PRESETS.slice(index + 1).find(sameGroup));
+    const previous = await findSortOrder(OPTION_PRESETS.slice(0, index).reverse().find(sameGroup));
+    const sortOrder = next !== null && previous !== null ? previous.sortOrder : index;
+    await prisma.optionPreset.create({ data: { ...preset, sortOrder } });
     created += 1;
   }
   log("option presets", `${created} added, ${OPTION_PRESETS.length - created} already present`);

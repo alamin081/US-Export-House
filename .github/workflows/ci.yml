@@ -90,3 +90,61 @@ jobs:
 
       # Sign-in, sessions, RBAC, location scoping, auditing, bootstrap.
       - run: npm run test:integration
+
+  e2e:
+    name: End-to-end (Chromium) against a throwaway database
+    runs-on: ubuntu-latest
+    # Local PostgreSQL service container only — never a cloud database.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: use_admin
+          POSTGRES_PASSWORD: use_dev_password
+          # The E2E harness refuses any database whose name does not end in "_test".
+          POSTGRES_DB: us_export_house_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U use_admin -d us_export_house_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      APP_ENV: local
+      APP_URL: http://localhost:3200
+      NEXT_PUBLIC_APP_URL: http://localhost:3200
+      NEXT_PUBLIC_SITE_NAME: US Export House
+      DATABASE_URL: postgresql://use_admin:use_dev_password@localhost:5432/us_export_house_test?schema=public
+      TEST_DATABASE_URL: postgresql://use_admin:use_dev_password@localhost:5432/us_export_house_test?schema=public
+      AUTH_SECRET: ci-only-secret-value-that-is-long-enough-32
+      SMS_PROVIDER: dev
+      PAYMENT_SSLCOMMERZ_MODE: disabled
+      COURIER_STEADFAST_MODE: mock
+      STORAGE_PROVIDER: local
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run db:migrate:deploy
+      - run: npm run db:seed
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      # playwright.config.ts builds into .next-e2e and starts the app on :3200.
+      - run: npm run test:e2e
+
+      - name: Upload traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: e2e-results/
+          retention-days: 7

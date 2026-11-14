@@ -147,7 +147,7 @@ export async function softDeleteBrand(brandId: string) {
 
 export async function listOptionPresets() {
   return db.optionPreset.findMany({
-    orderBy: [{ type: "asc" }, { group: "asc" }, { sortOrder: "asc" }],
+    orderBy: [{ type: "asc" }, { group: "asc" }, { sortOrder: "asc" }, { code: "asc" }],
     include: { _count: { select: { values: true } } },
   });
 }

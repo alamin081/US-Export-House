@@ -78,7 +78,7 @@ const sizes = (group: string, values: ReadonlyArray<string>): PresetSeed[] =>
 export const OPTION_PRESETS: PresetSeed[] = [
   ...sizes("apparel", ["S", "M", "L", "XL", "XXL", "3XL"]),
   ...sizes("collar", ["15", "15.5", "16", "16.5", "17"]),
-  ...sizes("waist", ["28", "30", "32", "34", "36", "38", "40"]),
+  ...sizes("waist", ["28", "29", "30", "31", "32", "33", "34", "36", "38", "40"]),
   ...sizes("panjabi", ["38", "40", "42", "44", "46"]),
   {
     type: "COLOUR",

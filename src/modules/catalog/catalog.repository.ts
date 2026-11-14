@@ -280,7 +280,7 @@ export async function listProductFormReferences() {
     }),
     db.optionPreset.findMany({
       where: { isActive: true },
-      orderBy: [{ type: "asc" }, { group: "asc" }, { sortOrder: "asc" }],
+      orderBy: [{ type: "asc" }, { group: "asc" }, { sortOrder: "asc" }, { code: "asc" }],
     }),
   ]);
   return { categories, brands, sizeCharts, tags, presets };
