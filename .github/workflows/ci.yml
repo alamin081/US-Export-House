@@ -14,6 +14,22 @@ jobs:
   verify:
     name: Typecheck, lint, test, build
     runs-on: ubuntu-latest
+    # `next build` prerenders storefront pages, whose generateStaticParams
+    # read the catalogue, so the build needs a (migrated, empty) database.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: us_export_house
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d us_export_house"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
       # Dummy values: CI only needs the shape to be valid, never real secrets.
       APP_ENV: local
@@ -40,6 +56,7 @@ jobs:
       - run: npm run lint
       - run: npm run format:check
       - run: npm test
+      - run: npm run db:migrate:deploy
       - run: npm run build
 
   database:
