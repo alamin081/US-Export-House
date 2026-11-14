@@ -61,15 +61,22 @@ enum OtpPurpose {
   PHONE_VERIFY
 }
 
+/// DRAFT -> PUBLISHED -> ARCHIVED. Only PUBLISHED products reach the storefront.
 enum ProductStatus {
   DRAFT
-  ACTIVE
+  PUBLISHED
   ARCHIVED
 }
 
+/// Add a value here (ALTER TYPE ... ADD VALUE) to offer a new option kind.
 enum OptionType {
   SIZE
   COLOUR
+}
+
+enum SizeChartUnit {
+  INCH
+  CM
 }
 
 /// Every reason stock can move. The ledger is append-only, so this list only
@@ -335,12 +342,31 @@ model Session {
   /// Useful when revoking a session from the admin UI.
   userAgent    String?
   ip           String?
+  /// Last request seen on this session, for the idle timeout. Refreshed at
+  /// most every few minutes, not on every request.
+  lastSeenAt   DateTime @default(now())
   createdAt    DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expires])
+  @@index([lastSeenAt])
+}
+
+/// Sign-in attempt counter for one throttled key (a SHA-256 of an email or an
+/// IP). Incremented atomically before the password is checked, so parallel
+/// requests on different server instances cannot slip past the limit.
+model AuthThrottle {
+  key             String   @id
+  attempts        Int      @default(0)
+  windowStartedAt DateTime @default(now())
+  /// End of the fixed window. Rows past it are reset on the next attempt and
+  /// removed by the scheduled clean-up.
+  expiresAt       DateTime
+  updatedAt       DateTime @updatedAt
+
+  @@index([expiresAt])
 }
 
 model VerificationToken {
@@ -627,7 +653,10 @@ model StockCountItem {
 /// Category tree. One catalogue is shared by every location.
 model Category {
   id       String  @id @default(cuid())
+  /// One English slug serves both locales (decided 2026-11-14).
   slug     String  @unique
+  /// Two to four capital letters used in product codes, e.g. "SH" -> UEH-SH0012.
+  code     String? @unique
   nameEn   String
   nameBn   String?
   taglineEn String?
@@ -635,6 +664,13 @@ model Category {
   descriptionEn String?
   descriptionBn String?
   imageUrl String?
+  /// Storage key of an uploaded image; null for the static seed placeholders.
+  imageStorageKey String?
+
+  seoTitleEn       String?
+  seoTitleBn       String?
+  seoDescriptionEn String?
+  seoDescriptionBn String?
 
   parentId String?
   parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
@@ -650,7 +686,8 @@ model Category {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  products Product[]
+  products      Product[]
+  extraProducts ProductCategory[]
 
   @@index([parentId])
   @@index([isActive, sortOrder])
@@ -661,7 +698,10 @@ model Brand {
   slug     String  @unique
   nameEn   String
   nameBn   String?
+  descriptionEn String?
+  descriptionBn String?
   logoUrl  String?
+  logoStorageKey String?
   isActive Boolean @default(true)
 
   deletedAt DateTime?
@@ -678,6 +718,7 @@ model SizeChart {
   nameBn  String?
   noteEn  String?
   noteBn  String?
+  unit    SizeChartUnit @default(INCH)
   /// Column headings, e.g. [{"en":"Chest","bn":"বুক"}].
   columns Json
   /// Rows, e.g. [{"size":"M","values":["40","17.5","29"]}].
@@ -693,6 +734,8 @@ model SizeChart {
 model Product {
   id     String  @id @default(cuid())
   slug   String  @unique
+  /// Product code used in SKUs, e.g. UEH-SH0012. Null for the Phase 4 samples.
+  code   String? @unique
   nameEn String
   nameBn String?
   /// One-line summary used on cards and meta descriptions.
@@ -706,7 +749,18 @@ model Product {
   /// Care instructions as an array of lines.
   careEn Json?
   careBn Json?
+  /// A key from the `catalog.fits` setting, e.g. "slim".
+  fit    String?
 
+  seoTitleEn       String?
+  seoTitleBn       String?
+  seoDescriptionEn String?
+  seoDescriptionBn String?
+
+  /// Optimistic lock: every save must name the version it started from.
+  version Int @default(0)
+
+  /// Primary category. Extra categories live in ProductCategory.
   categoryId  String
   brandId     String?
   sizeChartId String?
@@ -730,20 +784,34 @@ model Product {
   brand     Brand?     @relation(fields: [brandId], references: [id], onDelete: SetNull)
   sizeChart SizeChart? @relation(fields: [sizeChartId], references: [id], onDelete: SetNull)
 
-  images   ProductImage[]
-  options  ProductOption[]
-  variants ProductVariant[]
-  reviews  Review[]
+  images          ProductImage[]
+  options         ProductOption[]
+  variants        ProductVariant[]
+  reviews         Review[]
+  extraCategories ProductCategory[]
+  tags            ProductTag[]
 
   @@index([categoryId, status])
   @@index([status, publishedAt])
   @@index([deletedAt])
+  // Trigram indexes (pg_trgm) make ILIKE '%term%' search fast in both scripts.
+  @@index([nameEn(ops: raw("gin_trgm_ops"))], type: Gin, map: "Product_nameEn_trgm_idx")
+  @@index([nameBn(ops: raw("gin_trgm_ops"))], type: Gin, map: "Product_nameBn_trgm_idx")
 }
 
+/// The image with the lowest sortOrder is the product's main image.
 model ProductImage {
   id        String  @id @default(cuid())
   productId String
   url       String
+  /// "cloudinary" or "local-mock"; null for static files under public/.
+  storageProvider String?
+  /// Provider key (Cloudinary public_id or mock file name), server-generated.
+  storageKey      String?
+  width     Int?
+  height    Int?
+  bytes     Int?
+  format    String?
   altEn     String?
   altBn     String?
   sortOrder Int     @default(0)
@@ -780,9 +848,14 @@ model OptionValue {
   valueBn  String?
   /// Swatch colour for COLOUR options.
   hex      String?
+  /// Short code used in SKUs, e.g. "NVY" or "L". Null for the Phase 4 samples.
+  code     String?
+  /// The library entry this value was copied from, if any.
+  presetId String?
   sortOrder Int    @default(0)
 
   option ProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  preset OptionPreset? @relation(fields: [presetId], references: [id], onDelete: SetNull)
 
   variantLinks ProductVariantOption[]
   images       ProductImage[]
@@ -810,6 +883,9 @@ model ProductVariant {
   labelBn String?
 
   weightGrams Int?
+  /// Sorted option value ids joined with "+". A partial unique index (in the
+  /// migration SQL) stops one product having the same combination twice.
+  optionKey   String?
   isActive    Boolean   @default(true)
   deletedAt   DateTime?
   createdAt   DateTime  @default(now())
@@ -826,6 +902,7 @@ model ProductVariant {
   stockCountItems StockCountItem[]
 
   @@index([productId, isActive])
+  @@index([sku(ops: raw("gin_trgm_ops"))], type: Gin, map: "ProductVariant_sku_trgm_idx")
 }
 
 /// Join table: which option values make up a variant.
@@ -838,6 +915,74 @@ model ProductVariantOption {
 
   @@id([variantId, optionValueId])
   @@index([optionValueId])
+}
+
+/// Extra categories a product is listed in, besides its primary one.
+model ProductCategory {
+  productId  String
+  categoryId String
+  createdAt  DateTime @default(now())
+
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId])
+  @@index([categoryId])
+}
+
+/// Search and merchandising tag, with alternative spellings so "panjabi",
+/// "punjabi" and "পাঞ্জাবি" all find the same products.
+model Tag {
+  id      String   @id @default(cuid())
+  slug    String   @unique
+  nameEn  String
+  nameBn  String?
+  /// Alternative spellings (Banglish, common misspellings), lower case.
+  aliases String[]
+  /// Lower-cased names and aliases, maintained by the service; trigram-indexed.
+  searchText String @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products ProductTag[]
+
+  @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin, map: "Tag_searchText_trgm_idx")
+}
+
+model ProductTag {
+  productId String
+  tagId     String
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([productId, tagId])
+  @@index([tagId])
+}
+
+/// Library of reusable option values (sizes, colours) offered by the variant
+/// matrix generator. Products copy the values they use into OptionValue.
+model OptionPreset {
+  id      String     @id @default(cuid())
+  type    OptionType
+  /// Size family ("apparel", "collar", "waist", "panjabi") or "colour".
+  group   String
+  /// SKU code: capital letters and digits only, e.g. "NVY", "XL", "155".
+  code    String
+  valueEn String
+  valueBn String?
+  hex     String?
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  values OptionValue[]
+
+  @@unique([type, group, code])
+  @@index([type, isActive, sortOrder])
 }
 
 /// Customer product review. Moderated: nothing appears on the storefront until

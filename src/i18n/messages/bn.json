@@ -138,7 +138,17 @@
     "galleryThumb": "{number} নম্বর ছবি দেখুন",
     "translationPending": "বাংলা বিবরণ এখনো যোগ করা হয়নি, তাই ইংরেজি সংস্করণ দেখানো হচ্ছে।",
     "notFoundTitle": "পণ্যটি পাওয়া যায়নি",
-    "notFoundBody": "পণ্যটি সরিয়ে ফেলা হয়ে থাকতে পারে। পুরো কালেকশন দেখে নিন।"
+    "notFoundBody": "পণ্যটি সরিয়ে ফেলা হয়ে থাকতে পারে। পুরো কালেকশন দেখে নিন।",
+    "fromPrice": "{price} থেকে",
+    "saveBadge": "{percent}% ছাড়",
+    "selectColour": "একটি রঙ বেছে নিন",
+    "selectedSku": "এসকেইউ",
+    "fitTitle": "ফিট",
+    "brandTitle": "ব্র্যান্ড",
+    "sizeGuideUnitInch": "মাপ ইঞ্চিতে",
+    "sizeGuideUnitCm": "মাপ সেন্টিমিটারে",
+    "orderingSoon": "অনলাইন অর্ডার শিগগিরই চালু হবে। আজই অর্ডার করতে শোরুমে আসুন বা ফোন করুন।",
+    "unavailableCombination": "এই সমন্বয়টি পাওয়া যাচ্ছে না"
   },
   "Shop": {
     "title": "সব পণ্য",
@@ -164,7 +174,14 @@
     "sortRating": "সেরা রেটিং",
     "noResultsTitle": "এই ফিল্টারে কোনো পণ্য নেই",
     "noResultsBody": "একটি ফিল্টার সরিয়ে দেখুন, বা অন্য কিছু খুঁজুন।",
-    "clearFilters": "ফিল্টার মুছুন"
+    "clearFilters": "ফিল্টার মুছুন",
+    "colourFilter": "রঙ",
+    "brandFilter": "ব্র্যান্ড",
+    "priceMin": "সর্বনিম্ন (৳)",
+    "priceMax": "সর্বোচ্চ (৳)",
+    "pageStatus": "পৃষ্ঠা {page} / {pages}",
+    "previousPage": "আগের",
+    "nextPage": "পরের"
   },
   "Category": {
     "productCount": "{count, plural, other {{countText}টি পণ্য}}",
@@ -364,5 +381,8 @@
     "errorTitle": "কিছু একটা সমস্যা হয়েছে",
     "errorBody": "পেজটি লোড করা যায়নি। আবার চেষ্টা করুন।",
     "tryAgain": "আবার চেষ্টা করুন"
+  },
+  "Settings": {
+    "numerals": "latin"
   }
 }

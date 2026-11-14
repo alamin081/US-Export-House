@@ -1,0 +1,42 @@
+/**
+ * Stable audit action names. Reports, filters and tests rely on these strings,
+ * so they are never renamed — only added to.
+ */
+export const AUDIT_ACTIONS = {
+  loginSucceeded: "auth.login_succeeded",
+  loginFailed: "auth.login_failed",
+  loginThrottled: "auth.login_throttled",
+  logout: "auth.logout",
+  sessionsRevoked: "auth.sessions_revoked",
+  passwordChanged: "auth.password_changed",
+  staffCreated: "staff.created",
+  staffAccessChanged: "staff.access_changed",
+  staffDeactivated: "staff.deactivated",
+  staffReactivated: "staff.reactivated",
+  staffPasswordReset: "staff.password_reset",
+  superAdminBootstrapped: "staff.super_admin_bootstrapped",
+  rolePermissionsChanged: "role.permissions_changed",
+  productCreated: "catalog.product_created",
+  productUpdated: "catalog.product_updated",
+  productPublished: "catalog.product_published",
+  productArchived: "catalog.product_archived",
+  productUnpublished: "catalog.product_unpublished",
+  productDeleted: "catalog.product_deleted",
+  priceChanged: "catalog.price_changed",
+  categoryCreated: "catalog.category_created",
+  categoryUpdated: "catalog.category_updated",
+  categoryMoved: "catalog.category_moved",
+  categoryReordered: "catalog.category_reordered",
+  categoryDeleted: "catalog.category_deleted",
+  brandCreated: "catalog.brand_created",
+  brandUpdated: "catalog.brand_updated",
+  brandDeleted: "catalog.brand_deleted",
+  optionPresetSaved: "catalog.option_preset_saved",
+  tagSaved: "catalog.tag_saved",
+  sizeChartSaved: "catalog.size_chart_saved",
+  sizeChartDeleted: "catalog.size_chart_deleted",
+  imageUploaded: "media.image_uploaded",
+  imageRejected: "media.image_rejected",
+} as const;
+
+export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];

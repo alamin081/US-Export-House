@@ -1,25 +1,15 @@
 import { ArrowRight } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { MediaImage } from "@/components/shared/media-image";
 import { NewsletterForm } from "@/components/shared/newsletter-form";
 import { CollectionTile, ProductGrid } from "@/components/shared/product-grid";
-import { RatingStars } from "@/components/shared/rating-stars";
-import { SampleContentNote } from "@/components/shared/sample-content-note";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { localize } from "@/lib/content";
-import { countArgs } from "@/lib/number";
-import {
-  getBestSellers,
-  getCategories,
-  getFeaturedReviews,
-  getNewArrivals,
-  countProductsInCategory,
-} from "@/modules/catalog/catalog.mock";
+import { cachedHomeProducts } from "@/modules/catalog/storefront-catalog.cached";
 import {
   MOCK_BRAND_INTRO,
   MOCK_COLLECTIONS,
@@ -33,16 +23,18 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return { title: t("homeTitle"), description: t("defaultDescription") };
 }
 
-export default function HomePage() {
-  const locale = useLocale() as Locale;
-  const t = useTranslations("Home");
-  const tCommon = useTranslations("Common");
-  const tCategory = useTranslations("Category");
+/**
+ * Home. Product rows and categories come from the database (cached by tag);
+ * the hero, promos, collections and brand story are still the Phase 3 content
+ * files until the content editor arrives (Phase 12).
+ */
+export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale: rawLocale } = await params;
+  const locale: Locale = rawLocale === "bn" ? "bn" : "en";
+  const t = await getTranslations({ locale, namespace: "Home" });
+  const tCommon = await getTranslations({ locale, namespace: "Common" });
 
-  const categories = getCategories();
-  const newArrivals = getNewArrivals(4);
-  const bestSellers = getBestSellers(4);
-  const reviews = getFeaturedReviews(3);
+  const { newArrivals, featured, categories } = await cachedHomeProducts();
   const [promoOne, promoTwo] = MOCK_PROMO_BANNERS;
 
   return (
@@ -99,7 +91,7 @@ export default function HomePage() {
             <li key={category.slug}>
               <Link href={`/category/${category.slug}`} className="group block">
                 <MediaImage
-                  src={category.image}
+                  src={category.imageUrl ?? "/images/categories/formal-shirts.svg"}
                   alt={localize(category.name, locale)}
                   ratio="product"
                   className="rounded-lg"
@@ -110,9 +102,11 @@ export default function HomePage() {
                   <h3 className="text-sm font-medium group-hover:underline group-hover:underline-offset-4">
                     {localize(category.name, locale)}
                   </h3>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {tCategory("productCount", countArgs(countProductsInCategory(category.slug)))}
-                  </p>
+                  {category.tagline === null ? null : (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {localize(category.tagline, locale)}
+                    </p>
+                  )}
                 </div>
               </Link>
             </li>
@@ -170,7 +164,7 @@ export default function HomePage() {
           description={t("bestSellersDescription")}
           action={{ label: tCommon("viewAll"), href: "/shop" }}
         />
-        <ProductGrid products={bestSellers} className="mt-10" />
+        <ProductGrid products={featured} className="mt-10" />
       </section>
 
       {/* ----------------------------------------------------------- collections */}
@@ -239,27 +233,6 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-      </section>
-
-      {/* --------------------------------------------------------------- reviews */}
-      <section className="site-container py-16 lg:py-20">
-        <SectionHeading eyebrow={t("reviewsEyebrow")} title={t("reviewsTitle")} align="center" />
-        <SampleContentNote messageKey="sampleReviews" className="mx-auto mt-6 max-w-xl" />
-
-        <ul className="mt-10 grid gap-6 md:grid-cols-3">
-          {reviews.map((review) => (
-            <li key={review.id} className="rounded-lg border border-border bg-card p-6">
-              <RatingStars rating={review.rating} />
-              <h3 className="mt-4 text-sm font-semibold">{localize(review.title, locale)}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                {localize(review.body, locale)}
-              </p>
-              <p className="mt-4 text-xs text-muted-foreground">
-                {review.author} · {localize(review.city, locale)}
-              </p>
-            </li>
-          ))}
-        </ul>
       </section>
 
       {/* ------------------------------------------- promo banner 2 + newsletter */}

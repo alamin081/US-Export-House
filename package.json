@@ -30,23 +30,31 @@
     "db:seed": "prisma db seed",
     "db:verify": "tsx prisma/verify.ts",
     "db:studio": "prisma studio",
-    "db:nuke": "docker compose down -v"
+    "db:nuke": "docker compose down -v",
+    "test:integration": "vitest run --config vitest.integration.config.mts",
+    "auth:bootstrap": "tsx scripts/bootstrap-super-admin.ts",
+    "auth:retire-placeholder": "tsx scripts/retire-placeholder-admin.ts",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@node-rs/argon2": "2.2.2",
     "@prisma/adapter-pg": "7.10.1",
     "@prisma/client": "7.10.1",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "lucide-react": "1.70.0",
     "next": "16.4.5",
+    "next-auth": "5.0.0-beta.32",
     "next-intl": "4.14.9",
     "pg": "8.23.1",
+    "radix-ui": "1.8.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "tailwind-merge": "3.7.0",
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "1.65.1",
     "@tailwindcss/postcss": "4.3.4",
     "@types/node": "26.6.6",
     "@types/pg": "8.23.1",

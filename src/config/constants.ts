@@ -52,6 +52,27 @@ export const SEED_DEFAULTS = {
   },
 } as const;
 
+/**
+ * Staff authentication policy. These are security limits rather than business
+ * rules, so they live in code; changing them is a reviewed code change.
+ */
+export const AUTH_POLICY = {
+  /**
+   * How often an active session's `lastSeenAt` is refreshed. The idle timeout
+   * and the absolute lifetime themselves are deployment settings
+   * (STAFF_SESSION_IDLE_TIMEOUT_MINUTES, STAFF_SESSION_MAX_AGE_HOURS in env.ts).
+   */
+  sessionTouchIntervalSeconds: 5 * 60,
+  /** Window over which failed sign-ins are counted. */
+  loginWindowSeconds: 15 * 60,
+  /** Failed attempts for one email within the window before it is throttled. */
+  maxFailuresPerEmail: 5,
+  /** Failed attempts from one IP within the window before it is throttled. */
+  maxFailuresPerIp: 20,
+  passwordMinLength: 12,
+  passwordMaxLength: 128,
+} as const;
+
 /** Pagination defaults for admin tables and storefront listings. */
 export const PAGE_SIZE = {
   storefront: 24,

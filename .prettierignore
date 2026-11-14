@@ -7,3 +7,8 @@ package-lock.json
 next-env.d.ts
 prisma/migrations
 src/generated
+
+# Playwright E2E build output and reports
+.next-e2e
+e2e-results
+public/uploads-dev

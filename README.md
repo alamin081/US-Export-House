@@ -6,27 +6,27 @@ location-based inventory, orders, in-store sales, payments, courier and reports.
 
 Built as a **modular full-stack monolith** on Next.js — there is no separate backend.
 
-> **Status: Phase 4 of 13 complete** (database design). The PostgreSQL schema,
-> its migrations and a development seed are in place: 48 tables, 245 sample
-> variants and stock at four locations. The storefront still renders the Phase 3
-> sample data; Phase 6 points it at these tables.
+> **Status: Phase 5 of 13 complete** (authentication and RBAC). Staff sign in
+> at `/admin/login` with Argon2id-hashed passwords and revocable database
+> sessions; seven roles, location-scoped access and an audit log are enforced
+> on the server. The storefront still renders Phase 3 sample data (Phase 6).
 
 ---
 
 ## Tech stack
 
-| Area       | Choice                                                  |
-| ---------- | ------------------------------------------------------- |
-| Framework  | Next.js 16 (App Router, Turbopack), React 19            |
-| Language   | TypeScript 5.9, `strict` + `noUncheckedIndexedAccess`   |
-| Styling    | Tailwind CSS v4 (CSS-first config) + shadcn/ui          |
-| i18n       | next-intl 4 — `bn` (default, no prefix), `en` (`/en`)   |
-| Validation | Zod 4 (env, and every user input from Phase 4 on)       |
-| Database   | PostgreSQL 17 (Docker locally; Neon/Supabase later)     |
-| ORM        | Prisma 7.10.1 (`prisma-client` generator, `pg` adapter) |
-| Auth       | Auth.js v5 — added in Phase 5                           |
-| Icons      | lucide-react                                            |
-| Tests      | Vitest (unit); Playwright e2e in Phase 13               |
+| Area       | Choice                                                     |
+| ---------- | ---------------------------------------------------------- |
+| Framework  | Next.js 16 (App Router, Turbopack), React 19               |
+| Language   | TypeScript 5.9, `strict` + `noUncheckedIndexedAccess`      |
+| Styling    | Tailwind CSS v4 (CSS-first config) + shadcn/ui             |
+| i18n       | next-intl 4 — `bn` (default, no prefix), `en` (`/en`)      |
+| Validation | Zod 4 (env, and every user input from Phase 4 on)          |
+| Database   | PostgreSQL 17 (Docker locally; Neon/Supabase later)        |
+| ORM        | Prisma 7.10.1 (`prisma-client` generator, `pg` adapter)    |
+| Auth       | Auth.js v5 (credentials) + Argon2id, DB-validated sessions |
+| Icons      | lucide-react                                               |
+| Tests      | Vitest (unit); Playwright e2e in Phase 13                  |
 
 All versions are pinned exactly in `package.json` (no `^`), so every machine and
 CI run installs the same tree.
@@ -76,27 +76,31 @@ Open:
 
 ## Scripts
 
-| Command                     | What it does                                             |
-| --------------------------- | -------------------------------------------------------- |
-| `npm run dev`               | Dev server on port 3000                                  |
-| `npm run build`             | Production build                                         |
-| `npm start`                 | Serve the production build                               |
-| `npm run typecheck`         | `tsc --noEmit`                                           |
-| `npm run lint`              | ESLint, including the architecture boundary rules        |
-| `npm run format`            | Prettier write (`format:check` to verify only)           |
-| `npm test`                  | Vitest unit tests                                        |
-| `npm run verify`            | typecheck + lint + format check + tests (what CI runs)   |
-| `npm run db:up`             | Start the PostgreSQL container                           |
-| `npm run db:down`           | Stop it (data is kept in the `use_postgres_data` volume) |
-| `npm run db:generate`       | Regenerate the Prisma client into `src/generated/prisma` |
-| `npm run db:migrate`        | Create and apply a migration (development)               |
-| `npm run db:migrate:deploy` | Apply pending migrations (CI, staging, production)       |
-| `npm run db:seed`           | Load development data                                    |
-| `npm run db:verify`         | Row counts, data integrity and guard-rail checks         |
-| `npm run db:studio`         | Browse the data in Prisma Studio                         |
-| `npm run db:reset`          | **Destroys all data**, re-migrates and re-seeds          |
-| `npm run db:nuke`           | Stop the container and delete its volume                 |
-| `npm run db:logs`           | Follow database logs                                     |
+| Command                           | What it does                                                          |
+| --------------------------------- | --------------------------------------------------------------------- |
+| `npm run dev`                     | Dev server on port 3000                                               |
+| `npm run build`                   | Production build                                                      |
+| `npm start`                       | Serve the production build                                            |
+| `npm run typecheck`               | `tsc --noEmit`                                                        |
+| `npm run lint`                    | ESLint, including the architecture boundary rules                     |
+| `npm run format`                  | Prettier write (`format:check` to verify only)                        |
+| `npm test`                        | Vitest unit tests                                                     |
+| `npm run test:integration`        | Auth/RBAC and catalogue tests against the `_test` database            |
+| `npm run test:e2e`                | Playwright (Chromium): admin to storefront, against `_test`           |
+| `npm run auth:bootstrap`          | One-time creation of the first Super Admin                            |
+| `npm run auth:retire-placeholder` | Deactivate the seed placeholder admin (dry run unless `-- --confirm`) |
+| `npm run verify`                  | typecheck + lint + format check + tests (what CI runs)                |
+| `npm run db:up`                   | Start the PostgreSQL container                                        |
+| `npm run db:down`                 | Stop it (data is kept in the `use_postgres_data` volume)              |
+| `npm run db:generate`             | Regenerate the Prisma client into `src/generated/prisma`              |
+| `npm run db:migrate`              | Create and apply a migration (development)                            |
+| `npm run db:migrate:deploy`       | Apply pending migrations (CI, staging, production)                    |
+| `npm run db:seed`                 | Load development data                                                 |
+| `npm run db:verify`               | Row counts, data integrity and guard-rail checks                      |
+| `npm run db:studio`               | Browse the data in Prisma Studio                                      |
+| `npm run db:reset`                | **Destroys all data**, re-migrates and re-seeds                       |
+| `npm run db:nuke`                 | Stop the container and delete its volume                              |
+| `npm run db:logs`                 | Follow database logs                                                  |
 
 ---
 
@@ -239,6 +243,17 @@ and the current UI cannot drift apart.
 - The connection string, migrations directory and seed command are configured
   in `prisma.config.ts`.
 
+## Staff access (Phase 5)
+
+- Sign in: `/admin/login`. First Super Admin: `npm run auth:bootstrap`
+  (password from an environment variable, one run only).
+- Seven roles, server-side permission checks on every page, Server Action,
+  API route and service; staff see only their assigned locations.
+- Sessions are revocable instantly; sign-ins, failures and staff changes are
+  written to the audit log (`/admin/audit`).
+
+Full details: [docs/AUTH.md](docs/AUTH.md).
+
 ## Conventions
 
 - **Money is integer poisha** (1 BDT = 100 poisha). Never use floats for money;
@@ -260,8 +275,7 @@ and the current UI cannot drift apart.
 Beyond the per-variable checks it rejects dangerous combinations, for example:
 
 - `APP_ENV=production` with `COURIER_STEADFAST_MODE=mock`, `SMS_PROVIDER=dev`,
-  `PAYMENT_SSLCOMMERZ_MODE=sandbox`, `USE_MOCK_STOREFRONT_DATA=true` or
-  `STORAGE_PROVIDER=local`
+  `PAYMENT_SSLCOMMERZ_MODE=sandbox` or `STORAGE_PROVIDER=local` (mock image storage)
 - a `sandbox`/`live` integration mode without its credentials
 
 `APP_ENV` (`local` | `staging` | `production`) describes the **deployment target**

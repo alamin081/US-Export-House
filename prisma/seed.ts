@@ -22,7 +22,6 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { SEED_DEFAULTS } from "../src/config/constants";
 import { PrismaClient } from "../src/generated/prisma/client";
-import type { LocalizedText } from "../src/lib/content";
 import {
   MOCK_CATEGORIES,
   MOCK_PRODUCTS,
@@ -42,7 +41,9 @@ import {
   MOCK_SHOWROOMS,
   type MockPolicySection,
 } from "../src/modules/content/content.mock";
+import { SYSTEM_ROLES } from "../src/modules/access/permissions";
 import { MOCK_ORDERS } from "../src/modules/orders/orders.mock";
+import { CATALOG_SETTINGS, OPTION_PRESETS } from "./seed-catalog";
 
 if (process.env.APP_ENV === "production") {
   throw new Error("[seed] Refusing to seed a production database.");
@@ -58,14 +59,6 @@ const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) })
 // ---------------------------------------------------------------------------
 // helpers
 // ---------------------------------------------------------------------------
-
-/** Bilingual pair -> the two columns the schema uses. */
-function pair<T extends string>(field: T, text: LocalizedText) {
-  return {
-    [`${field}En`]: text.en,
-    [`${field}Bn`]: text.bn ?? null,
-  } as Record<string, string | null>;
-}
 
 /** Policy/About sections, split per language for the admin editor. */
 function sectionsFor(sections: readonly MockPolicySection[], locale: "en" | "bn") {
@@ -294,15 +287,11 @@ const SETTINGS: readonly SeedSetting[] = [
 ];
 
 async function seedSettings() {
-  for (const setting of SETTINGS) {
+  const all: readonly SeedSetting[] = [...SETTINGS, ...CATALOG_SETTINGS];
+  for (const setting of all) {
     await prisma.setting.upsert({
       where: { key: setting.key },
-      update: {
-        valueType: setting.valueType,
-        group: setting.group,
-        description: setting.description,
-        isPublic: setting.isPublic ?? false,
-      },
+      update: {},
       create: {
         key: setting.key,
         valueType: setting.valueType,
@@ -313,7 +302,22 @@ async function seedSettings() {
       },
     });
   }
-  log("settings", `${SETTINGS.length} keys`);
+  log("settings", `${SETTINGS.length + CATALOG_SETTINGS.length} keys`);
+}
+
+// Phase 6: the size and colour library the variant generator offers.
+async function seedOptionPresets() {
+  let created = 0;
+  for (const [index, preset] of OPTION_PRESETS.entries()) {
+    const existing = await prisma.optionPreset.findUnique({
+      where: { type_group_code: { type: preset.type, group: preset.group, code: preset.code } },
+      select: { id: true },
+    });
+    if (existing !== null) continue;
+    await prisma.optionPreset.create({ data: { ...preset, sortOrder: index } });
+    created += 1;
+  }
+  log("option presets", `${created} added, ${OPTION_PRESETS.length - created} already present`);
 }
 
 // ---------------------------------------------------------------------------
@@ -343,7 +347,7 @@ async function seedShippingZones() {
   for (const zone of zones) {
     await prisma.shippingZone.upsert({
       where: { code: zone.code },
-      update: { nameEn: zone.nameEn, nameBn: zone.nameBn, ratePoisha: zone.ratePoisha },
+      update: {},
       create: zone,
     });
   }
@@ -370,7 +374,7 @@ async function seedLocations() {
 
   await prisma.location.upsert({
     where: { code: warehouse.code },
-    update: { nameEn: warehouse.nameEn, nameBn: warehouse.nameBn },
+    update: {},
     create: warehouse,
   });
 
@@ -381,7 +385,7 @@ async function seedLocations() {
     const code = branchCodes[index] ?? `BR-${index}`;
     await prisma.location.upsert({
       where: { code },
-      update: { ...pair("name", showroom.name), ...pair("address", showroom.address) },
+      update: {},
       create: {
         code,
         type: "BRANCH",
@@ -408,134 +412,25 @@ async function seedLocations() {
 // ---------------------------------------------------------------------------
 
 /**
- * Permission keys. The authoritative list lives in code in Phase 5
- * (src/lib/permissions.ts); these are the keys the roles below are built from.
+ * The seven system roles come from src/modules/access/permissions.ts, the same
+ * definitions the authorization code checks against. Create-only: re-running
+ * the seed never overwrites a role an administrator has since edited.
  */
-const ALL_PERMISSIONS = [
-  "product.read",
-  "product.write",
-  "category.write",
-  "inventory.read",
-  "inventory.adjust",
-  "transfer.create",
-  "transfer.dispatch",
-  "transfer.receive",
-  "stockcount.manage",
-  "order.read",
-  "order.process",
-  "order.cancel",
-  "order.refund",
-  "pos.sell",
-  "return.manage",
-  "shipment.book",
-  "customer.read",
-  "report.view",
-  "content.write",
-  "settings.write",
-  "staff.manage",
-  "audit.view",
-] as const;
-
 async function seedRoles() {
-  const roles = [
-    {
-      name: "Super Admin",
-      description: "Full access to every location and every setting.",
-      permissions: [...ALL_PERMISSIONS],
-      allLocations: true,
-      isSystem: true,
-    },
-    {
-      name: "Store Manager",
-      description: "Everything operational across all locations, except staff and settings.",
-      permissions: ALL_PERMISSIONS.filter(
-        (key) => key !== "staff.manage" && key !== "settings.write",
-      ),
-      allLocations: true,
-      isSystem: true,
-    },
-    {
-      name: "Branch Manager",
-      description: "Full control of the branches assigned to them.",
-      permissions: [
-        "product.read",
-        "inventory.read",
-        "inventory.adjust",
-        "transfer.create",
-        "transfer.dispatch",
-        "transfer.receive",
-        "stockcount.manage",
-        "order.read",
-        "order.process",
-        "pos.sell",
-        "return.manage",
-        "customer.read",
-        "report.view",
-      ],
-      allLocations: false,
-      isSystem: true,
-    },
-    {
-      name: "Branch Sales Staff",
-      description: "In-store selling and stock lookup at their own branch.",
-      permissions: ["product.read", "inventory.read", "pos.sell", "order.read", "customer.read"],
-      allLocations: false,
-      isSystem: true,
-    },
-    {
-      name: "Order Staff",
-      description: "Processes online orders and books couriers.",
-      permissions: [
-        "product.read",
-        "inventory.read",
-        "order.read",
-        "order.process",
-        "order.cancel",
-        "shipment.book",
-        "return.manage",
-        "customer.read",
-      ],
-      allLocations: false,
-      isSystem: true,
-    },
-    {
-      name: "Inventory Staff",
-      description: "Stock, transfers and counts; no access to orders or money.",
-      permissions: [
-        "product.read",
-        "inventory.read",
-        "inventory.adjust",
-        "transfer.create",
-        "transfer.dispatch",
-        "transfer.receive",
-        "stockcount.manage",
-        "report.view",
-      ],
-      allLocations: false,
-      isSystem: true,
-    },
-    {
-      name: "Content Editor",
-      description: "Catalogue copy, banners and pages. No stock, orders or money.",
-      permissions: ["product.read", "product.write", "category.write", "content.write"],
-      allLocations: true,
-      isSystem: true,
-    },
-  ];
-
-  for (const role of roles) {
+  for (const role of SYSTEM_ROLES) {
     await prisma.role.upsert({
       where: { name: role.name },
-      update: {
+      update: {},
+      create: {
+        name: role.name,
         description: role.description,
-        permissions: role.permissions,
+        permissions: [...role.permissions],
         allLocations: role.allLocations,
-        isSystem: role.isSystem,
+        isSystem: true,
       },
-      create: role,
     });
   }
-  log("roles", roles.map((role) => role.name).join(", "));
+  log("roles", SYSTEM_ROLES.map((role) => role.name).join(", "));
 }
 
 async function seedStaff() {
@@ -547,7 +442,7 @@ async function seedStaff() {
   // command to set the first password.
   const user = await prisma.user.upsert({
     where: { email: "admin@usexporthouse.local" },
-    update: { roleId: superAdmin.id, kind: "STAFF" },
+    update: {},
     create: {
       email: "admin@usexporthouse.local",
       name: "Seed Super Admin",
@@ -600,10 +495,7 @@ async function seedSizeCharts(): Promise<Map<string, string>> {
       })),
     };
 
-    const chart =
-      existing === null
-        ? await prisma.sizeChart.create({ data })
-        : await prisma.sizeChart.update({ where: { id: existing.id }, data });
+    const chart = existing ?? (await prisma.sizeChart.create({ data }));
 
     charts.set(categorySlug, chart.id);
   }
@@ -632,17 +524,7 @@ async function seedCategories(sizeCharts: Map<string, string>): Promise<Map<stri
   for (const [index, category] of MOCK_CATEGORIES.entries()) {
     const record = await prisma.category.upsert({
       where: { slug: category.slug },
-      update: {
-        nameEn: category.name.en,
-        nameBn: category.name.bn ?? null,
-        taglineEn: category.tagline.en,
-        taglineBn: category.tagline.bn ?? null,
-        descriptionEn: category.description.en,
-        descriptionBn: category.description.bn ?? null,
-        imageUrl: category.image,
-        sizeChartId: sizeCharts.get(category.slug) ?? null,
-        sortOrder: index,
-      },
+      update: {},
       create: {
         slug: category.slug,
         nameEn: category.name.en,
@@ -706,7 +588,7 @@ async function seedProducts(
       categoryId,
       brandId,
       sizeChartId: sizeCharts.get(product.categorySlug) ?? null,
-      status: "ACTIVE" as const,
+      status: "PUBLISHED" as const,
       isNew: product.tags.includes("new"),
       isBestseller: product.tags.includes("bestseller"),
       isFeatured: product.tags.includes("bestseller"),
@@ -715,10 +597,8 @@ async function seedProducts(
       publishedAt: new Date("2026-10-01T00:00:00+06:00"),
     };
 
-    if (existing !== null) {
-      await prisma.product.update({ where: { id: existing.id }, data: scalars });
-      continue; // children already seeded; db:reset rebuilds them from scratch
-    }
+    // Create-only: an existing product (and everything under it) is left as is.
+    if (existing !== null) continue;
 
     const created = await prisma.product.create({
       data: { slug: product.slug, ...scalars },
@@ -866,7 +746,7 @@ async function seedCoupons() {
   for (const coupon of coupons) {
     await prisma.coupon.upsert({
       where: { code: coupon.code },
-      update: { labelEn: coupon.labelEn, labelBn: coupon.labelBn, value: coupon.value },
+      update: {},
       create: coupon,
     });
   }
@@ -1074,7 +954,7 @@ async function seedContent(staffUserId: string) {
   for (const page of pages) {
     await prisma.page.upsert({
       where: { slug: page.slug },
-      update: { ...page, lastUpdatedUserId: staffUserId },
+      update: {},
       create: { ...page, lastUpdatedUserId: staffUserId },
     });
   }
@@ -1163,35 +1043,37 @@ async function seedSampleOrders(staffUserId: string) {
     },
   });
 
-  await prisma.address.deleteMany({ where: { userId: customer.id } });
-  await prisma.address.createMany({
-    data: [
-      {
-        userId: customer.id,
-        label: "Home",
-        fullName: "Imran Hossain",
-        phone: "+8801712345678",
-        line1: "House 42, Road 11",
-        area: "Banani",
-        city: "Dhaka",
-        postcode: "1213",
-        zoneId: insideDhaka.id,
-        isDefault: true,
-      },
-      {
-        userId: customer.id,
-        label: "Office",
-        fullName: "Imran Hossain",
-        phone: "+8801712345678",
-        line1: "Level 7, Placeholder Tower",
-        area: "Tejgaon",
-        city: "Dhaka",
-        postcode: "1208",
-        zoneId: insideDhaka.id,
-        isDefault: false,
-      },
-    ],
-  });
+  // Create-only: the seed never deletes or replaces existing records.
+  const existingAddresses = await prisma.address.count({ where: { userId: customer.id } });
+  if (existingAddresses === 0)
+    await prisma.address.createMany({
+      data: [
+        {
+          userId: customer.id,
+          label: "Home",
+          fullName: "Imran Hossain",
+          phone: "+8801712345678",
+          line1: "House 42, Road 11",
+          area: "Banani",
+          city: "Dhaka",
+          postcode: "1213",
+          zoneId: insideDhaka.id,
+          isDefault: true,
+        },
+        {
+          userId: customer.id,
+          label: "Office",
+          fullName: "Imran Hossain",
+          phone: "+8801712345678",
+          line1: "Level 7, Placeholder Tower",
+          area: "Tejgaon",
+          city: "Dhaka",
+          postcode: "1208",
+          zoneId: insideDhaka.id,
+          isDefault: false,
+        },
+      ],
+    });
 
   const welcomeCoupon = await prisma.coupon.findUnique({ where: { code: "WELCOME10" } });
 
@@ -1367,6 +1249,7 @@ async function main() {
   console.info("\nSeeding US Export House development database\n");
 
   await seedSettings();
+  await seedOptionPresets();
   await seedShippingZones();
   await seedLocations();
   await seedRoles();

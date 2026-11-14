@@ -3,7 +3,7 @@ import { ProductCard } from "@/components/shared/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import type { MockProduct } from "@/modules/catalog/catalog.mock";
+import type { ProductCardData } from "@/modules/catalog/storefront-catalog.service";
 
 /**
  * Responsive product grid: 2 columns on mobile, 3 on tablet, 4 on desktop
@@ -14,7 +14,7 @@ export function ProductGrid({
   className,
   priorityCount = 0,
 }: {
-  products: readonly MockProduct[];
+  products: readonly ProductCardData[];
   className?: string;
   /** How many cards load their image eagerly (above the fold). */
   priorityCount?: number;

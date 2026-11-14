@@ -84,6 +84,13 @@ architecture is how it is reached:
   migrations path and the seed command. The application never reads it; it uses
   the Zod-validated `env` module.
 
+## Access control
+
+Staff authentication and RBAC are described in [AUTH.md](AUTH.md). In short:
+the proxy only checks that a session cookie exists; the admin layout, every
+page, every Server Action, every API route and every service re-check the
+session against the database and the required permission and location.
+
 ## Request flow
 
 ```

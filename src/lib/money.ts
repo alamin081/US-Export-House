@@ -118,3 +118,33 @@ export function formatMoney(
 
   return `${CURRENCY_SYMBOL}${formatted}`;
 }
+
+const BENGALI_DIGITS = "০১২৩৪৫৬৭৮৯";
+
+/**
+ * Parse a taka amount typed into an admin form ("1250", "1,250.50", "১২৫০")
+ * into integer poisha, without floating point. Returns null for anything that
+ * is not a non-negative amount with at most two decimals.
+ */
+export function parseTakaInput(input: string): Poisha | null {
+  const latin = input
+    .trim()
+    .replace(/[০-৯]/g, (digit) => String(BENGALI_DIGITS.indexOf(digit)))
+    .replace(/[,\s]/g, "")
+    .replace(/^৳/, "");
+
+  const match = /^(\d{1,9})(?:\.(\d{1,2}))?$/.exec(latin);
+  if (match === null) return null;
+
+  const whole = Number(match[1]);
+  const fraction = Number((match[2] ?? "").padEnd(2, "0"));
+  return whole * POISHA_PER_TAKA + fraction;
+}
+
+/** The value an admin price field shows for a poisha amount: "1250" or "1250.50". */
+export function formatTakaInput(poisha: Poisha): string {
+  assertPoisha(poisha);
+  const whole = Math.trunc(poisha / POISHA_PER_TAKA);
+  const fraction = Math.abs(poisha % POISHA_PER_TAKA);
+  return fraction === 0 ? String(whole) : `${whole}.${String(fraction).padStart(2, "0")}`;
+}

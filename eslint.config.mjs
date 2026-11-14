@@ -48,6 +48,8 @@ const eslintConfig = [
     name: "use/ignores",
     ignores: [
       ".next/**",
+      ".next-e2e/**",
+      "e2e-results/**",
       "src/generated/**",
       "node_modules/**",
       "coverage/**",

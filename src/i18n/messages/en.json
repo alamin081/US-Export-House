@@ -138,7 +138,17 @@
     "galleryThumb": "Show image {number}",
     "translationPending": "Bengali description is not available yet, so the English version is shown.",
     "notFoundTitle": "Product not found",
-    "notFoundBody": "This product may have been removed. Browse the full collection instead."
+    "notFoundBody": "This product may have been removed. Browse the full collection instead.",
+    "fromPrice": "From {price}",
+    "saveBadge": "Save {percent}%",
+    "selectColour": "Please select a colour",
+    "selectedSku": "SKU",
+    "fitTitle": "Fit",
+    "brandTitle": "Brand",
+    "sizeGuideUnitInch": "Measurements in inches",
+    "sizeGuideUnitCm": "Measurements in centimetres",
+    "orderingSoon": "Online ordering opens soon. Visit a showroom or call us to order today.",
+    "unavailableCombination": "This combination is not available"
   },
   "Shop": {
     "title": "Shop all",
@@ -164,7 +174,14 @@
     "sortRating": "Top rated",
     "noResultsTitle": "No products match these filters",
     "noResultsBody": "Try removing a filter or searching for something else.",
-    "clearFilters": "Clear filters"
+    "clearFilters": "Clear filters",
+    "colourFilter": "Colour",
+    "brandFilter": "Brand",
+    "priceMin": "Min (৳)",
+    "priceMax": "Max (৳)",
+    "pageStatus": "Page {page} of {pages}",
+    "previousPage": "Previous",
+    "nextPage": "Next"
   },
   "Category": {
     "productCount": "{count, plural, one {{countText} product} other {{countText} products}}",
@@ -364,5 +381,8 @@
     "errorTitle": "Something went wrong",
     "errorBody": "We could not load this page. Please try again.",
     "tryAgain": "Try again"
+  },
+  "Settings": {
+    "numerals": "latin"
   }
 }

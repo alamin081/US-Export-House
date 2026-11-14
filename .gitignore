@@ -48,3 +48,12 @@ yarn-error.log*
 
 # generated Prisma client (rebuilt by `npm run db:generate`)
 /src/generated
+
+# mock image storage (development only; STORAGE_PROVIDER=local)
+/public/uploads-dev/
+
+# Playwright E2E: separate build output and reports. Browsers are installed
+# outside the repository (Playwright's per-user cache), never committed.
+/.next-e2e/
+/e2e-results/
+/playwright/.cache/

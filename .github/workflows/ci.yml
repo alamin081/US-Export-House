@@ -26,7 +26,6 @@ jobs:
       PAYMENT_SSLCOMMERZ_MODE: disabled
       COURIER_STEADFAST_MODE: mock
       STORAGE_PROVIDER: local
-      USE_MOCK_STOREFRONT_DATA: "false"
     steps:
       - uses: actions/checkout@v4
 
@@ -44,7 +43,7 @@ jobs:
       - run: npm run build
 
   database:
-    name: Migrate and seed a clean database
+    name: Migrate, seed and integration-test a clean database
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -52,11 +51,12 @@ jobs:
         env:
           POSTGRES_USER: use_admin
           POSTGRES_PASSWORD: use_dev_password
-          POSTGRES_DB: us_export_house
+          # The "_test" suffix is required by tests/integration/setup.ts.
+          POSTGRES_DB: us_export_house_test
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U use_admin -d us_export_house"
+          --health-cmd "pg_isready -U use_admin -d us_export_house_test"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
@@ -65,13 +65,12 @@ jobs:
       APP_URL: http://localhost:3000
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXT_PUBLIC_SITE_NAME: US Export House
-      DATABASE_URL: postgresql://use_admin:use_dev_password@localhost:5432/us_export_house?schema=public
+      DATABASE_URL: postgresql://use_admin:use_dev_password@localhost:5432/us_export_house_test?schema=public
       AUTH_SECRET: ci-only-secret-value-that-is-long-enough-32
       SMS_PROVIDER: dev
       PAYMENT_SSLCOMMERZ_MODE: disabled
       COURIER_STEADFAST_MODE: mock
       STORAGE_PROVIDER: local
-      USE_MOCK_STOREFRONT_DATA: "false"
     steps:
       - uses: actions/checkout@v4
 
@@ -82,8 +81,12 @@ jobs:
 
       - run: npm ci
 
-      # Proves the migrations apply to an empty database, that the seed runs,
-      # and that every database guard rail rejects invalid data.
+      # Proves the migrations apply to an empty database, that the seed runs
+      # (twice, to prove it is create-only), and that every guard rail holds.
       - run: npm run db:migrate:deploy
       - run: npm run db:seed
+      - run: npm run db:seed
       - run: npm run db:verify
+
+      # Sign-in, sessions, RBAC, location scoping, auditing, bootstrap.
+      - run: npm run test:integration

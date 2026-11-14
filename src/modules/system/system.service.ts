@@ -22,7 +22,7 @@ export interface SystemHealth {
     sslcommerz: string;
     steadfast: string;
     storage: string;
-    mockStorefrontData: boolean;
+    mockStorage: boolean;
   };
 }
 
@@ -43,7 +43,7 @@ export async function getSystemHealth(): Promise<SystemHealth> {
       sslcommerz: env.PAYMENT_SSLCOMMERZ_MODE,
       steadfast: env.COURIER_STEADFAST_MODE,
       storage: env.STORAGE_PROVIDER,
-      mockStorefrontData: env.USE_MOCK_STOREFRONT_DATA,
+      mockStorage: env.STORAGE_PROVIDER !== "cloudinary",
     },
   };
 }

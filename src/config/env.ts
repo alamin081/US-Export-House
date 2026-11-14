@@ -8,7 +8,7 @@
  * Rules enforced here (see master spec sections 1, 3.3, 3.4, 8):
  *  - Secrets live only in server environment variables.
  *  - Development-only providers (DevSmsProvider, MockCourierProvider, mock
- *    storefront data) can never be active in a production deployment.
+ *    image storage) can never be active in a production deployment.
  *  - A `live` integration mode must come with real credentials.
  */
 import { z } from "zod";
@@ -42,6 +42,21 @@ const serverSchema = z.object({
   /** Auth.js secret. Generate with: openssl rand -base64 32 */
   AUTH_SECRET: z.string().min(32, "AUTH_SECRET must be at least 32 characters"),
 
+  /** Staff are signed out after this many minutes without a request (default 8 hours). */
+  STAFF_SESSION_IDLE_TIMEOUT_MINUTES: z.coerce
+    .number()
+    .int()
+    .min(5)
+    .max(30 * 24 * 60)
+    .default(8 * 60),
+  /** Absolute staff session lifetime in hours, however active (default 7 days). */
+  STAFF_SESSION_MAX_AGE_HOURS: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(90 * 24)
+    .default(7 * 24),
+
   /** SMS/OTP delivery. `dev` only logs the OTP to the server console. */
   SMS_PROVIDER: z.enum(["dev", "bulksms_bd"]).default("dev"),
   SMS_API_KEY: z.string().optional(),
@@ -58,28 +73,25 @@ const serverSchema = z.object({
   STEADFAST_SECRET_KEY: z.string().optional(),
   STEADFAST_BASE_URL: z.string().optional(),
 
-  /** Image storage. Final choice is made in Phase 6 (open question 9). */
-  STORAGE_PROVIDER: z.enum(["local", "cloudinary", "s3"]).default("local"),
-  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  /**
+   * Image storage: Cloudinary (decided 2026-11-14). `local` is the development
+   * mock (files in public/uploads-dev/) and is refused when APP_ENV=production.
+   */
+  STORAGE_PROVIDER: z.enum(["local", "cloudinary"]).default("local"),
+  CLOUDINARY_CLOUD_NAME: z
+    .string()
+    .regex(/^[a-z0-9_-]*$/i, "CLOUDINARY_CLOUD_NAME may only contain letters, digits, - and _")
+    .optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
-  S3_ENDPOINT: z.string().optional(),
-  S3_REGION: z.string().optional(),
-  S3_BUCKET: z.string().optional(),
-  S3_ACCESS_KEY_ID: z.string().optional(),
-  S3_SECRET_ACCESS_KEY: z.string().optional(),
+  /** Top-level Cloudinary folder, so several environments can share one account. */
+  CLOUDINARY_FOLDER: z
+    .string()
+    .regex(/^[a-z0-9_-]+$/)
+    .default("ueh"),
 
   /** Shared secret for scheduled jobs (reservation release, courier polling). */
   CRON_SECRET: z.string().optional(),
-
-  /**
-   * The Phase 3 storefront renders from typed mock files while the database is
-   * not wired up yet. Must be off in any production deployment.
-   */
-  USE_MOCK_STOREFRONT_DATA: z
-    .enum(["true", "false"])
-    .default("false")
-    .transform((value) => value === "true"),
 });
 
 const clientSchema = z.object({
@@ -133,12 +145,15 @@ function assertSafeCombinations(parsedEnv: ServerEnv): void {
     if (parsedEnv.PAYMENT_SSLCOMMERZ_MODE === "sandbox") {
       problems.push("  - PAYMENT_SSLCOMMERZ_MODE=sandbox is not allowed when APP_ENV=production");
     }
-    if (parsedEnv.USE_MOCK_STOREFRONT_DATA) {
-      problems.push("  - USE_MOCK_STOREFRONT_DATA=true is not allowed when APP_ENV=production");
-    }
     if (parsedEnv.STORAGE_PROVIDER === "local") {
       problems.push("  - STORAGE_PROVIDER=local is not allowed when APP_ENV=production");
     }
+  }
+
+  if (parsedEnv.STAFF_SESSION_IDLE_TIMEOUT_MINUTES > parsedEnv.STAFF_SESSION_MAX_AGE_HOURS * 60) {
+    problems.push(
+      "  - STAFF_SESSION_IDLE_TIMEOUT_MINUTES must not be longer than STAFF_SESSION_MAX_AGE_HOURS",
+    );
   }
 
   if (parsedEnv.SMS_PROVIDER !== "dev" && !parsedEnv.SMS_API_KEY) {
@@ -173,14 +188,6 @@ function assertSafeCombinations(parsedEnv: ServerEnv): void {
     ) {
       problems.push(
         "  - STORAGE_PROVIDER=cloudinary requires CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET",
-      );
-    }
-  }
-
-  if (parsedEnv.STORAGE_PROVIDER === "s3") {
-    if (!parsedEnv.S3_BUCKET || !parsedEnv.S3_ACCESS_KEY_ID || !parsedEnv.S3_SECRET_ACCESS_KEY) {
-      problems.push(
-        "  - STORAGE_PROVIDER=s3 requires S3_BUCKET, S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY",
       );
     }
   }

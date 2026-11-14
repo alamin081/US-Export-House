@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
 
 import { fontVariables } from "@/lib/fonts";
-import { AdminShell } from "./admin-shell";
 
 import "../globals.css";
 
 /**
- * Admin root layout.
+ * Admin root layout: document shell only.
  *
  * The dashboard sits outside `[locale]` on purpose: it is English-only for now
- * (master spec section 3.6) and must never be indexed. It carries its own
- * `<html>` because the storefront's locale layout is not an ancestor.
+ * (master spec section 3.6) and must never be indexed. Access control lives in
+ * `(dashboard)/layout.tsx`, so the sign-in page in `(auth)` stays reachable.
  */
 export const metadata: Metadata = {
   title: {
@@ -20,11 +19,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-GB" suppressHydrationWarning>
       <body className={`${fontVariables} min-h-dvh bg-background text-foreground antialiased`}>
-        <AdminShell>{children}</AdminShell>
+        {children}
       </body>
     </html>
   );
