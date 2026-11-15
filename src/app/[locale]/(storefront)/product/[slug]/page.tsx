@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { RotateCcw, Truck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { cachedContentSettings } from "@/modules/content/content.storefront";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { Price } from "@/components/shared/price";
 import { ProductGrid } from "@/components/shared/product-grid";
@@ -94,6 +95,8 @@ export default async function ProductPage({ params }: { params: RouteParams }) {
   const resolvedLocale = resolve(locale);
   const t = await getTranslations({ locale, namespace: "Product" });
   const tShop = await getTranslations({ locale, namespace: "Shop" });
+  // The return window comes from settings, never from the label text.
+  const contentSettings = await cachedContentSettings();
   const name = localize(product.name, resolvedLocale);
   const showFallbackNote = resolvedLocale === "bn" && needsBengaliTranslation(product.name);
   const path = `/product/${product.slug}`;
@@ -200,7 +203,7 @@ export default async function ProductPage({ params }: { params: RouteParams }) {
               </li>
               <li className="flex items-start gap-2.5">
                 <RotateCcw aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-                {t("returnsNote")}
+                {t("returnsNote", { days: String(contentSettings.placeholders.returnWindowDays) })}
               </li>
             </ul>
 

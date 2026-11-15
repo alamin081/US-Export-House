@@ -4,6 +4,8 @@ import { hasLocale } from "next-intl";
 import { getRequestConfig } from "next-intl/server";
 
 import { cachedCatalogSettings } from "@/modules/catalog/storefront-catalog.cached";
+import { cachedLabelOverrides } from "@/modules/content/ui-labels.service";
+import { applyLabelOverrides, type Messages } from "./editable-labels";
 import { DEFAULT_CATALOG_SETTINGS } from "@/modules/settings/catalog-settings";
 import { routing } from "./routing";
 
@@ -13,6 +15,15 @@ async function numeralsSetting(): Promise<string> {
     return (await cachedCatalogSettings()).numerals;
   } catch {
     return DEFAULT_CATALOG_SETTINGS.numerals;
+  }
+}
+
+/** Admin rewordings of allowlisted labels; the code's labels if anything fails. */
+async function withOverrides(messages: Messages, locale: string): Promise<Messages> {
+  try {
+    return applyLabelOverrides(messages, await cachedLabelOverrides(locale));
+  } catch {
+    return messages;
   }
 }
 
@@ -34,7 +45,10 @@ export default getRequestConfig(async ({ locale }) => {
     }
   }
 
-  const messages = (await import(`./messages/${resolvedLocale}.json`)).default;
+  const messages = await withOverrides(
+    (await import(`./messages/${resolvedLocale}.json`)).default as Messages,
+    resolvedLocale,
+  );
 
   return {
     locale: resolvedLocale,

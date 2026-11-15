@@ -278,6 +278,36 @@ export async function findUserNames(ids: readonly string[]): Promise<Map<string,
   return new Map(rows.map((row) => [row.id, row.name ?? row.email ?? "staff"]));
 }
 
+// ---------------------------------------------------------------------------
+// UI label overrides
+// ---------------------------------------------------------------------------
+
+export async function findLabelOverrides(locale?: string) {
+  return db.uiLabelOverride.findMany({
+    where: locale === undefined ? {} : { locale },
+    select: { locale: true, key: true, value: true, updatedAt: true, updatedById: true },
+    orderBy: { key: "asc" },
+  });
+}
+
+export async function upsertLabelOverride(
+  locale: string,
+  key: string,
+  value: string,
+  userId: string,
+) {
+  await db.uiLabelOverride.upsert({
+    where: { locale_key: { locale, key } },
+    create: { locale, key, value, updatedById: userId },
+    update: { value, updatedById: userId },
+  });
+}
+
+/** Removing an override brings back the label written in the code. */
+export async function deleteLabelOverride(locale: string, key: string) {
+  await db.uiLabelOverride.deleteMany({ where: { locale, key } });
+}
+
 export function isUniqueViolation(error: unknown): boolean {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
 }

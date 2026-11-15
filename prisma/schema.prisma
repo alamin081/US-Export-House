@@ -2207,6 +2207,23 @@ model ContentVersion {
   @@unique([documentId, number])
 }
 
+/// Phase 12: an admin's replacement for one storefront UI label (a key from
+/// src/i18n/messages/<locale>.json). Only keys on the allowlist in
+/// src/i18n/editable-labels.ts are applied; removing the row brings back the
+/// label written in the code.
+model UiLabelOverride {
+  id          String   @id @default(cuid())
+  locale      String
+  /// "Namespace.key", e.g. "Home.newArrivalsTitle".
+  key         String
+  value       String
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([locale, key])
+}
+
 /// DEPRECATED (Phase 12): replaced by ContentDocument "menu.header" and
 /// "footer". Rows are kept; nothing reads them.
 model MenuItem {

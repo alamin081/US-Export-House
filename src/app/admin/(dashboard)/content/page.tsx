@@ -134,6 +134,17 @@ export default async function ContentPage() {
         </div>
       </section>
 
+      <p className="mt-6 text-sm">
+        <Link
+          href="/admin/content/labels"
+          className="underline underline-offset-4"
+          data-testid="labels-link"
+        >
+          Storefront labels
+        </Link>{" "}
+        <span className="text-muted-foreground">: reword buttons and headings.</span>
+      </p>
+
       <section
         className="mt-8 rounded-lg border border-border bg-background p-4"
         aria-labelledby="new-page-title"

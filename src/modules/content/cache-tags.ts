@@ -10,6 +10,8 @@ export const CONTENT_TAGS = {
   branches: "content:branches",
   /** Settings that feed placeholders, the footer and contact details. */
   settings: "settings",
+  /** Admin rewordings of storefront UI labels. */
+  labels: "ui-labels",
   /** Products sold most in the last days (home "best selling" rows). */
   bestSellers: "reports:best-sellers",
 } as const;

@@ -16,6 +16,7 @@ import {
   saveDraft,
   unpublishPage,
 } from "./content.service";
+import { saveLabel } from "./ui-labels.service";
 
 /**
  * Content editor actions (Phase 12). The service checks every permission
@@ -139,5 +140,24 @@ export async function searchProductsAction(term: string, ids: string[] = []) {
     return await findProductsForPicker(staff, term, ids.slice(0, 30));
   } catch {
     return { results: [], named: [] };
+  }
+}
+
+export async function saveLabelAction(input: {
+  key: string;
+  locale: "en" | "bn";
+  value: string;
+}): Promise<ActionResult> {
+  try {
+    const staff = await requireStaffAction("content.publish");
+    await saveLabel(staff, input, await getRequestMeta());
+    updateTag(CONTENT_TAGS.labels);
+    revalidatePath("/admin/content/labels");
+    return {
+      status: "success",
+      message: input.value.trim() === "" ? "Back to the original label." : "Label saved: live now.",
+    };
+  } catch (error) {
+    return actionError(error);
   }
 }
