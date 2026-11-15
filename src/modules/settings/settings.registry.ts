@@ -40,6 +40,11 @@ import {
   reportSettingParsers,
 } from "./report-settings";
 import {
+  DEFAULT_IMPORT_SETTINGS,
+  IMPORT_SETTING_KEYS,
+  importSettingParsers,
+} from "./import-settings";
+import {
   DEFAULT_RETURNS_SETTINGS,
   RETURNS_SETTING_KEYS,
   returnsSettingParsers,
@@ -172,6 +177,7 @@ const P = POS_SETTING_KEYS;
 const I = INVENTORY_SETTING_KEYS;
 const K = CATALOG_SETTING_KEYS;
 const RP = REPORT_SETTING_KEYS;
+const IM = IMPORT_SETTING_KEYS;
 const SI = SITE_SETTING_KEYS;
 
 export const SETTING_DEFINITIONS: readonly SettingDefinition[] = [
@@ -765,6 +771,70 @@ export const SETTING_DEFINITIONS: readonly SettingDefinition[] = [
     ["Images are shrunk to at most", "ছবি সর্বোচ্চ এত পিক্সেলে ছোট হবে"],
     ["", ""],
     { unit: "px" },
+  ),
+
+  entry(
+    IM.maxBytes,
+    "catalog",
+    "int",
+    importSettingParsers.maxBytes,
+    DEFAULT_IMPORT_SETTINGS.maxBytes,
+    ["Largest import file", "আমদানির ফাইলের সর্বোচ্চ আকার"],
+    ["CSV or Excel product import.", "CSV বা Excel প্রোডাক্ট আমদানি।"],
+    { unit: "bytes" },
+  ),
+  entry(
+    IM.maxRows,
+    "catalog",
+    "int",
+    importSettingParsers.maxRows,
+    DEFAULT_IMPORT_SETTINGS.maxRows,
+    ["Most rows in an import file", "আমদানির ফাইলে সর্বোচ্চ সারি"],
+    ["", ""],
+    { unit: "rows" },
+  ),
+  entry(
+    IM.atomicMaxRows,
+    "catalog",
+    "int",
+    importSettingParsers.atomicMaxRows,
+    DEFAULT_IMPORT_SETTINGS.atomicMaxRows,
+    ["All-or-nothing import up to", "সব-অথবা-কিছুই-না আমদানি সর্বোচ্চ"],
+    [
+      "Larger files must be split, or use “good products only”.",
+      "এর বড় ফাইল ভাগ করুন, অথবা “শুধু ভালোগুলো” মোড।",
+    ],
+    { unit: "rows" },
+  ),
+  entry(
+    IM.allowPartial,
+    "catalog",
+    "bool",
+    importSettingParsers.allowPartial,
+    DEFAULT_IMPORT_SETTINGS.allowPartial,
+    ["Allow “good products only” imports", "“শুধু ভালোগুলো” আমদানির অনুমতি"],
+    [
+      "Products without errors are saved one by one; the rest are skipped.",
+      "ত্রুটিহীন প্রোডাক্ট একে একে সেভ হয়, বাকিগুলো বাদ যায়।",
+    ],
+  ),
+  entry(
+    IM.createMissingOptions,
+    "catalog",
+    "bool",
+    importSettingParsers.createMissingOptions,
+    DEFAULT_IMPORT_SETTINGS.createMissingOptions,
+    ["Import may add new sizes and colours", "আমদানি নতুন সাইজ/রঙ যোগ করতে পারবে"],
+    ["Off: an unknown size or colour is an error.", "বন্ধ থাকলে অজানা সাইজ/রঙ ত্রুটি।"],
+  ),
+  entry(
+    IM.bulkConcurrency,
+    "catalog",
+    "int",
+    importSettingParsers.bulkConcurrency,
+    DEFAULT_IMPORT_SETTINGS.bulkConcurrency,
+    ["Images uploaded at once (bulk)", "একসাথে কয়টা ছবি আপলোড (বাল্ক)"],
+    ["", ""],
   ),
 
   // storefront

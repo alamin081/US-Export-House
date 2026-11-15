@@ -15,6 +15,7 @@ import { PERMISSION_DESCRIPTIONS, PERMISSIONS } from "@/modules/access/permissio
 import { auditDiff, maskPhone, maskPhones } from "@/modules/audit/audit-view";
 import { CATALOG_SETTING_KEYS } from "@/modules/settings/catalog-settings";
 import { CHECKOUT_SETTING_KEYS } from "@/modules/settings/checkout-settings";
+import { IMPORT_SETTING_KEYS } from "@/modules/settings/import-settings";
 import { INVENTORY_SETTING_KEYS } from "@/modules/settings/inventory-settings";
 import { ORDER_SETTING_KEYS } from "@/modules/settings/order-settings";
 import { POS_SETTING_KEYS } from "@/modules/settings/pos-settings";
@@ -32,6 +33,7 @@ describe("settings registry", () => {
   const codeKeys = [
     CATALOG_SETTING_KEYS,
     CHECKOUT_SETTING_KEYS,
+    IMPORT_SETTING_KEYS,
     INVENTORY_SETTING_KEYS,
     ORDER_SETTING_KEYS,
     POS_SETTING_KEYS,

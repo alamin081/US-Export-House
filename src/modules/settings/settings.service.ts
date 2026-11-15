@@ -48,6 +48,12 @@ import {
   type ReportSettings,
 } from "./report-settings";
 import {
+  DEFAULT_IMPORT_SETTINGS,
+  IMPORT_SETTING_KEYS,
+  parseImportSettings,
+  type ImportSettings,
+} from "./import-settings";
+import {
   DEFAULT_SITE_SETTINGS,
   parseSiteSettings,
   SITE_SETTING_KEYS,
@@ -152,6 +158,17 @@ export async function getReportSettings(): Promise<ReportSettings> {
   } catch (error) {
     console.error("[settings] could not load settings", error instanceof Error ? error.name : "");
     return DEFAULT_REPORT_SETTINGS;
+  }
+}
+
+/** Product import limits and the bulk image upload. */
+export async function getImportSettings(): Promise<ImportSettings> {
+  try {
+    const raw = await findSettingValues(Object.values(IMPORT_SETTING_KEYS));
+    return parseImportSettings(raw, (message) => console.warn(`[settings] ${message}`));
+  } catch (error) {
+    console.error("[settings] could not load settings", error instanceof Error ? error.name : "");
+    return DEFAULT_IMPORT_SETTINGS;
   }
 }
 
