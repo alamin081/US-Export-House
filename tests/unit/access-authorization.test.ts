@@ -32,9 +32,9 @@ function staff(overrides: Partial<StaffContext> = {}): StaffContext {
 describe("permissions", () => {
   it("grants only what the role holds", () => {
     expect(hasPermission(staff(), "pos.sell")).toBe(true);
-    expect(hasPermission(staff(), "order.refund")).toBe(false);
-    expect(hasAnyPermission(staff(), ["order.refund", "pos.sell"])).toBe(true);
-    expect(hasAnyPermission(staff(), ["order.refund", "staff.manage"])).toBe(false);
+    expect(hasPermission(staff(), "refund.record")).toBe(false);
+    expect(hasAnyPermission(staff(), ["refund.record", "pos.sell"])).toBe(true);
+    expect(hasAnyPermission(staff(), ["refund.record", "staff.manage"])).toBe(false);
   });
 
   it("throws a FORBIDDEN AppError when a permission is missing", () => {

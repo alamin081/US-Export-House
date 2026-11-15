@@ -117,7 +117,7 @@ describe("staff sign-in", () => {
 
     const context = await validateSessionToken(result.sessionToken);
     expect(context?.roleName).toBe("Order Staff");
-    expect(context?.permissions).toContain("order.process");
+    expect(context?.permissions).toContain("order.confirm");
     expect(context?.permissions).not.toContain("staff.manage");
 
     const user = await db.user.findUniqueOrThrow({ where: { email: email("ok") } });

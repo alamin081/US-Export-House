@@ -17,10 +17,24 @@ import {
   parseInventorySettings,
   type InventorySettings,
 } from "./inventory-settings";
+import {
+  DEFAULT_ORDER_SETTINGS,
+  ORDER_SETTING_KEYS,
+  parseOrderSettings,
+  type OrderSettings,
+} from "./order-settings";
+import {
+  DEFAULT_STORE_SETTINGS,
+  STORE_SETTING_KEYS,
+  parseStoreSettings,
+  type StoreSettings,
+} from "./store-settings";
 
 export { DEFAULT_CATALOG_SETTINGS, type CatalogSettings };
 export { DEFAULT_INVENTORY_SETTINGS, type InventorySettings };
 export { DEFAULT_CHECKOUT_SETTINGS, type CheckoutSettings };
+export { DEFAULT_ORDER_SETTINGS, type OrderSettings };
+export { DEFAULT_STORE_SETTINGS, type StoreSettings };
 
 /**
  * Catalogue settings from the database. A database error falls back to the
@@ -55,5 +69,27 @@ export async function getCheckoutSettings(): Promise<CheckoutSettings> {
   } catch (error) {
     console.error("[settings] could not load settings", error instanceof Error ? error.name : "");
     return DEFAULT_CHECKOUT_SETTINGS;
+  }
+}
+
+/** Order processing settings from the database, falling back to the defaults. */
+export async function getOrderSettings(): Promise<OrderSettings> {
+  try {
+    const raw = await findSettingValues(Object.values(ORDER_SETTING_KEYS));
+    return parseOrderSettings(raw, (message) => console.warn(`[settings] ${message}`));
+  } catch (error) {
+    console.error("[settings] could not load settings", error instanceof Error ? error.name : "");
+    return DEFAULT_ORDER_SETTINGS;
+  }
+}
+
+/** Shop details and VAT display switches, falling back to the defaults. */
+export async function getStoreSettings(): Promise<StoreSettings> {
+  try {
+    const raw = await findSettingValues(Object.values(STORE_SETTING_KEYS));
+    return parseStoreSettings(raw, (message) => console.warn(`[settings] ${message}`));
+  } catch (error) {
+    console.error("[settings] could not load settings", error instanceof Error ? error.name : "");
+    return DEFAULT_STORE_SETTINGS;
   }
 }

@@ -44,7 +44,7 @@ describe("system roles", () => {
     const manager = role("Store Manager");
     expect(manager.permissions).not.toContain("staff.manage");
     expect(manager.permissions).not.toContain("settings.write");
-    expect(manager.permissions).toContain("order.refund");
+    expect(manager.permissions).toContain("refund.record");
   });
 
   it("scopes branch roles to assigned locations", () => {
@@ -57,7 +57,7 @@ describe("system roles", () => {
     const sales = role("Branch Sales Staff");
     expect(sales.permissions).toContain("pos.sell");
     for (const denied of [
-      "order.refund",
+      "refund.record",
       "inventory.adjust",
       "report.view",
       "audit.view",
@@ -68,11 +68,11 @@ describe("system roles", () => {
 
   it("keeps money and stock away from Content Editor and Inventory Staff", () => {
     const editor = role("Content Editor");
-    for (const denied of ["order.read", "order.refund", "inventory.adjust", "pos.sell"] as const) {
+    for (const denied of ["order.read", "refund.record", "inventory.adjust", "pos.sell"] as const) {
       expect(editor.permissions).not.toContain(denied);
     }
     const inventory = role("Inventory Staff");
-    for (const denied of ["order.read", "order.refund", "pos.sell"] as const) {
+    for (const denied of ["order.read", "refund.record", "pos.sell"] as const) {
       expect(inventory.permissions).not.toContain(denied);
     }
   });

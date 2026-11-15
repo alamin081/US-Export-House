@@ -802,7 +802,7 @@ function assertSalesActor(
 ) {
   if (isSystem(actor)) return;
   if (!permissions.some((permission) => hasPermission(actor, permission))) {
-    assertPermission(actor, permissions[0] ?? "order.process");
+    assertPermission(actor, permissions[0] ?? "order.edit");
   }
   assertLocationAccess(actor, locationId);
 }
@@ -810,7 +810,7 @@ function assertSalesActor(
 /** Holds stock for an order: `reserved` goes up, `available` down. */
 export async function reserve(actor: InventoryActor, input: unknown) {
   const data = parse(reserveSchema, input);
-  assertSalesActor(actor, data.locationId, ["order.process", "pos.sell"]);
+  assertSalesActor(actor, data.locationId, ["order.edit", "pos.sell"]);
   return runInventoryTransaction((uow) =>
     applyStockMovements(
       uow,
@@ -831,7 +831,7 @@ export async function reserve(actor: InventoryActor, input: unknown) {
 /** Gives a reservation back (cancelled or expired order). */
 export async function release(actor: InventoryActor, input: unknown) {
   const data = parse(reserveSchema, input);
-  assertSalesActor(actor, data.locationId, ["order.process", "order.cancel", "pos.sell"]);
+  assertSalesActor(actor, data.locationId, ["order.edit", "order.cancel", "pos.sell"]);
   return runInventoryTransaction((uow) =>
     applyStockMovements(
       uow,
@@ -858,7 +858,7 @@ export async function commitSale(actor: InventoryActor, input: unknown) {
   assertSalesActor(
     actor,
     data.locationId,
-    data.channel === "STORE" ? ["pos.sell"] : ["order.process"],
+    data.channel === "STORE" ? ["pos.sell"] : ["order.fulfil"],
   );
   const saleType = data.channel === "STORE" ? ("SALE_STORE" as const) : ("SALE_ONLINE" as const);
   const base = {

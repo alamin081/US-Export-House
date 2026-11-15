@@ -49,11 +49,32 @@ export const PERMISSIONS = [
   "checkout.settings",
   /** Block / unblock phone numbers from ordering. */
   "customer.block",
-  "order.process",
+  /** Call log and confirming pending online orders. */
+  "order.confirm",
+  /** Items, quantities, variants, address and fulfilment location before packing. */
+  "order.edit",
   "order.cancel",
-  "order.refund",
+  /** Packing, shipping and delivery status (couriers typed in by hand). */
+  "order.fulfil",
+  /** Recording money received from couriers for cash-on-delivery orders. */
+  "order.cod.reconcile",
+  /** Recording a refund (the money itself moves outside the app). */
+  "refund.record",
+  /** Approving refunds above `refund.approvalAbovePoisha`. */
+  "refund.approve",
+  /** Invoices, packing slips and address labels. */
+  "invoice.print",
   "pos.sell",
+  /** Approving a till discount above the seller's role limit. */
+  "pos.discount.override",
+  /** Opening and closing the till day (cash drawer, Z-report). */
+  "pos.day.manage",
+  /** Barcode labels and generating missing barcodes. */
+  "label.print",
   "return.manage",
+  /** Approving and publishing the return policy page. */
+  "return.policy.publish",
+  /** Courier API bookings (Phase 11). */
   "shipment.book",
   "customer.read",
   "report.view",
@@ -107,14 +128,28 @@ export const PERMISSION_GROUPS: ReadonlyArray<{
     label: "Orders & sales",
     keys: [
       "order.read",
-      "order.process",
+      "order.confirm",
+      "order.edit",
       "order.cancel",
-      "order.refund",
-      "pos.sell",
-      "return.manage",
+      "order.fulfil",
+      "order.cod.reconcile",
+      "invoice.print",
       "shipment.book",
       "customer.read",
       "customer.block",
+    ],
+  },
+  {
+    label: "Returns & till",
+    keys: [
+      "return.manage",
+      "return.policy.publish",
+      "refund.record",
+      "refund.approve",
+      "pos.sell",
+      "pos.discount.override",
+      "pos.day.manage",
+      "label.print",
     ],
   },
   { label: "Checkout", keys: ["coupon.manage", "shipping.manage", "checkout.settings"] },
@@ -164,9 +199,12 @@ export const SYSTEM_ROLES: readonly SystemRoleDefinition[] = [
       // warehouse first) and no purchase cost.
       "inventory.count",
       "order.read",
-      "order.process",
       "pos.sell",
+      "pos.discount.override",
+      "pos.day.manage",
       "return.manage",
+      "refund.record",
+      "label.print",
       "customer.read",
       "report.view",
     ],
@@ -175,7 +213,14 @@ export const SYSTEM_ROLES: readonly SystemRoleDefinition[] = [
   {
     name: "Branch Sales Staff",
     description: "In-store selling and stock lookup at their own branch.",
-    permissions: ["catalog.read", "inventory.read", "pos.sell", "order.read", "customer.read"],
+    permissions: [
+      "catalog.read",
+      "inventory.read",
+      "pos.sell",
+      "label.print",
+      "order.read",
+      "customer.read",
+    ],
     allLocations: false,
   },
   {
@@ -185,8 +230,11 @@ export const SYSTEM_ROLES: readonly SystemRoleDefinition[] = [
       "catalog.read",
       "inventory.read",
       "order.read",
-      "order.process",
+      "order.confirm",
+      "order.edit",
       "order.cancel",
+      "order.fulfil",
+      "invoice.print",
       "shipment.book",
       "return.manage",
       "customer.read",
@@ -207,6 +255,7 @@ export const SYSTEM_ROLES: readonly SystemRoleDefinition[] = [
       "transfer.create",
       "transfer.dispatch",
       "transfer.receive",
+      "label.print",
       "report.view",
     ],
     allLocations: false,

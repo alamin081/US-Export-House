@@ -155,7 +155,32 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+  /// Deprecated (Phase 9): never used. A return after delivery leaves the order
+  /// DELIVERED; the ReturnRequest and the payment status carry the return.
   RETURNED
+  /// The courier could not deliver (refused, unreachable). The goods are on
+  /// their way back; stock is untouched until they arrive.
+  DELIVERY_FAILED
+  /// A failed delivery is back and inspected; stock was returned or written off.
+  RETURNED_TO_WAREHOUSE
+}
+
+/// Result of one confirmation call to the customer.
+enum CallOutcome {
+  CONFIRMED
+  NO_ANSWER
+  SWITCHED_OFF
+  WRONG_NUMBER
+  CALL_BACK_LATER
+  CANCEL_REQUESTED
+}
+
+enum CancelReason {
+  CUSTOMER_DECLINED
+  FAKE_ORDER
+  UNREACHABLE
+  OUT_OF_STOCK
+  OTHER
 }
 
 /// Tracked separately from OrderStatus on purpose: a COD order can be
@@ -249,7 +274,10 @@ enum CourierProviderType {
   STEADFAST
   PATHAO
   REDX
+  /// The shop's own delivery person.
   MANUAL
+  /// Any other courier; the name is in Shipment.courierName.
+  OTHER
 }
 
 /// Integration mode, stored per shipment so a mock booking can never be
@@ -258,6 +286,8 @@ enum IntegrationMode {
   MOCK
   SANDBOX
   LIVE
+  /// Typed in by staff (Phase 9): a real shipment, booked outside the app.
+  MANUAL
 }
 
 enum ShipmentStatus {
@@ -1377,6 +1407,23 @@ model Order {
   /// Staff member who rang up an in-store sale.
   soldByUserId String?
 
+  // --- Phase 9: processing ---------------------------------------------------
+  /// Money actually collected (COD settled, gateway paid, till). Refunds can
+  /// never exceed it (CHECK constraint).
+  paidPoisha            Int           @default(0)
+  /// Bumped on every change; an edit form sends the version it was opened on.
+  version               Int           @default(0)
+  confirmedByUserId     String?
+  /// Set when enough unanswered calls were made (orders.unreachableAfterAttempts).
+  unreachableAt         DateTime?
+  cancelReason          CancelReason?
+  cancelNote            String?
+  packedAt              DateTime?
+  packedByUserId        String?
+  deliveryFailedAt      DateTime?
+  deliveryFailedReason  String?
+  returnedToWarehouseAt DateTime?
+
   placedAt             DateTime  @default(now())
   confirmedAt          DateTime?
   processedAt          DateTime?
@@ -1402,6 +1449,10 @@ model Order {
   shipments      Shipment[]
   returnRequests ReturnRequest[]
   redemption     CouponRedemption?
+  callLogs       OrderCallLog[]
+  notes          OrderNote[]
+  invoices       Invoice[]
+  codItem        CodSettlementItem?
 
   @@index([status, placedAt])
   @@index([paymentStatus, placedAt])
@@ -1411,6 +1462,7 @@ model Order {
   @@index([reservationExpiresAt])
   @@index([customerPhone, status, placedAt])
   @@index([placedIpHash, placedAt])
+  @@index([channel, status, placedAt])
 }
 
 /// A line on an order. Product name, SKU and price are snapshots: editing the
@@ -1452,6 +1504,9 @@ model OrderStatusHistory {
   id        String      @id @default(cuid())
   orderId   String
   status    OrderStatus
+  /// What happened when the status itself did not change (Phase 9): EDITED,
+  /// LOCATION_CHANGED, PACKED, UNPACKED, ADDRESS_CORRECTED, COD_SETTLED, ...
+  event     String?
   noteEn    String?
   noteBn    String?
   /// Null when the change came from a webhook or a scheduled job.
@@ -1692,6 +1747,15 @@ model Shipment {
   /// Location the parcel was handed over from.
   fromLocationId  String?
 
+  /// Courier name when `courier` is OTHER.
+  courierName      String?
+  note             String?
+  failedReason     String?
+  returnedAt       DateTime?
+  /// Delivery charge lost on a failed delivery (what the courier still bills).
+  lostChargePoisha Int       @default(0)
+  createdByUserId  String?
+
   bookedAt    DateTime?
   deliveredAt DateTime?
   /// Raw provider response, for support and reconciliation.
@@ -1700,12 +1764,123 @@ model Shipment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  order  Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  events ShipmentEvent[]
+  order    Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  events   ShipmentEvent[]
+  codItems CodSettlementItem[]
 
   @@unique([courier, consignmentId])
   @@index([orderId])
   @@index([status, createdAt])
+}
+
+/// One attempt to reach the customer before confirming (Phase 9).
+model OrderCallLog {
+  id         String      @id @default(cuid())
+  orderId    String
+  userId     String?
+  outcome    CallOutcome
+  note       String?
+  /// When the customer asked to be called back.
+  callbackAt DateTime?
+  /// True when this attempt counts towards "unreachable": no answer or
+  /// switched off, at least orders.callRetryMinHours after the last counted one.
+  counted    Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+}
+
+/// Staff-only note on an order. Never shown to the customer.
+model OrderNote {
+  id        String   @id @default(cuid())
+  orderId   String
+  userId    String?
+  body      String
+  createdAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+}
+
+/// Staff-only note about a customer, keyed by the normalised phone number
+/// (guests have no account).
+model CustomerNote {
+  id        String   @id @default(cuid())
+  phone     String
+  userId    String?
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([phone, createdAt])
+}
+
+/// A tax invoice. The number (INV-YYMM-NNNNN) is taken when the goods leave
+/// (online: SHIPPED; in store: the sale), so a cancelled order never uses
+/// one. A correction adds a version with the same number; every version is
+/// kept, and `snapshot` holds exactly what was printed.
+model Invoice {
+  id             String   @id @default(cuid())
+  number         String
+  orderId        String
+  version        Int      @default(1)
+  isCurrent      Boolean  @default(true)
+  snapshot       Json
+  /// Why this version exists (null for the first one).
+  reason         String?
+  issuedByUserId String?
+  issuedAt       DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@unique([orderId, version])
+  @@unique([number, version])
+  @@index([issuedAt])
+}
+
+/// Money received from a courier for delivered cash-on-delivery orders.
+model CodSettlement {
+  id                  String              @id @default(cuid())
+  /// COD-YYMM-NNNNN
+  reference           String              @unique
+  courier             CourierProviderType
+  courierName         String?
+  receivedOn          DateTime            @db.Date
+  /// Sum of the COD amounts of the orders in it.
+  expectedPoisha      Int
+  /// What reached the shop's account or hand.
+  receivedPoisha      Int
+  /// Delivery and COD fees the courier kept.
+  courierChargePoisha Int                 @default(0)
+  /// (received + courier charge) - expected. Not zero means a mismatch.
+  differencePoisha    Int
+  courierReference    String?
+  note                String?
+  createdByUserId     String?
+  createdAt           DateTime            @default(now())
+
+  items CodSettlementItem[]
+
+  @@index([receivedOn])
+}
+
+/// One order in a COD settlement. An order is settled at most once.
+model CodSettlementItem {
+  id             String  @id @default(cuid())
+  settlementId   String
+  orderId        String  @unique
+  shipmentId     String?
+  expectedPoisha Int
+  /// What the courier paid for this order; PAID only when it equals expected.
+  receivedPoisha Int
+
+  settlement CodSettlement @relation(fields: [settlementId], references: [id], onDelete: Restrict)
+  order      Order         @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  shipment   Shipment?     @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+
+  @@index([settlementId])
 }
 
 model ShipmentEvent {

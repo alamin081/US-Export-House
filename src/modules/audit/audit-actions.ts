@@ -66,6 +66,23 @@ export const AUDIT_ACTIONS = {
   phoneBlocked: "customer.phone_blocked",
   phoneUnblocked: "customer.phone_unblocked",
   checkoutSettingsChanged: "checkout.settings_changed",
+  orderCallLogged: "order.call_logged",
+  orderConfirmed: "order.confirmed",
+  orderCancelled: "order.cancelled",
+  orderEdited: "order.edited",
+  orderLocationChanged: "order.location_changed",
+  orderAddressCorrected: "order.address_corrected",
+  orderPackingStarted: "order.packing_started",
+  orderUnpacked: "order.unpacked",
+  orderPacked: "order.packed",
+  orderShipped: "order.shipped",
+  orderDelivered: "order.delivered",
+  orderDeliveryFailed: "order.delivery_failed",
+  orderReturnedToWarehouse: "order.returned_to_warehouse",
+  orderNoteAdded: "order.note_added",
+  customerNoteAdded: "customer.note_added",
+  invoiceIssued: "invoice.issued",
+  codSettled: "cod.settled",
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];

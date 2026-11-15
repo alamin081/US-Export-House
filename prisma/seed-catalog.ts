@@ -15,6 +15,7 @@ import {
   DEFAULT_INVENTORY_SETTINGS,
   INVENTORY_SETTING_KEYS,
 } from "../src/modules/settings/inventory-settings";
+import { DEFAULT_ORDER_SETTINGS, ORDER_SETTING_KEYS } from "../src/modules/settings/order-settings";
 
 export const CATALOG_SETTINGS = [
   {
@@ -235,5 +236,27 @@ export const CHECKOUT_SETTINGS = (
   valueType,
   value: String(DEFAULT_CHECKOUT_SETTINGS[field]),
   group: "checkout",
+  description,
+}));
+
+/** Phase 9 order processing settings (new keys only; editable later in the admin). */
+export const ORDER_SETTINGS = (
+  [
+    [
+      "unreachableAfterAttempts",
+      "INT",
+      "Unanswered confirmation calls before an order is flagged unreachable (never auto-cancelled).",
+    ],
+    ["callRetryMinHours", "INT", "Hours between two call attempts that count separately."],
+    ["couriers", "STRING", "Couriers offered when shipping (comma-separated keys)."],
+    ["packingSlipSize", "STRING", "Packing slip paper size: A4 or A5."],
+  ] as const
+).map(([field, valueType, description]) => ({
+  key: ORDER_SETTING_KEYS[field],
+  valueType,
+  value: Array.isArray(DEFAULT_ORDER_SETTINGS[field])
+    ? (DEFAULT_ORDER_SETTINGS[field] as readonly string[]).join(",")
+    : String(DEFAULT_ORDER_SETTINGS[field]),
+  group: "orders",
   description,
 }));
