@@ -7,7 +7,7 @@ import { readCartToken } from "@/modules/cart/cart-session";
 import { getCheckoutCart } from "@/modules/cart/cart.service";
 import { getRequestMeta } from "@/modules/access/access.service";
 import { newFormToken, quoteCheckout } from "@/modules/checkout/checkout.service";
-import { MOCK_SHIPPING_RETURN_POLICY } from "@/modules/content/content.mock";
+import { isReturnPolicyPublished } from "@/modules/returns/returns.service";
 import { listDivisions } from "@/modules/shipping/shipping.service";
 import { CheckoutForm } from "./checkout-form";
 
@@ -49,8 +49,8 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
           formToken={newFormToken()}
           idempotencyKey={randomUUID()}
           storePhone={cart.settings.storeContactPhone}
-          // Linked only once the policy is published (it is a draft today).
-          showReturnsLink={MOCK_SHIPPING_RETURN_POLICY.status === "published"}
+          // Linked only once the return policy is approved and published.
+          showReturnsLink={await isReturnPolicyPublished()}
           initialQuote={initial.ok ? initial.quote : null}
         />
       </div>

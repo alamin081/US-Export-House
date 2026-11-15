@@ -6,6 +6,7 @@ import { Save } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import type { ActionResult } from "@/modules/access/action-state";
 import { saveCheckoutSettingsAction } from "@/modules/checkout-admin/checkout-admin.actions";
 import { TextField } from "../catalogue/fields";
 
@@ -18,8 +19,15 @@ export interface SettingRow {
 
 export function CheckoutSettingsForm({
   groups,
+  save = saveCheckoutSettingsAction,
+  testId = "checkout-settings-form",
+  submitLabel = "Save settings",
 }: {
   groups: ReadonlyArray<{ title: string; rows: readonly SettingRow[] }>;
+  /** The Server Action that saves the changed values. */
+  save?: (values: Record<string, string>) => Promise<ActionResult>;
+  testId?: string;
+  submitLabel?: string;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -35,11 +43,11 @@ export function CheckoutSettingsForm({
   return (
     <form
       className="mt-6 flex flex-col gap-8"
-      data-testid="checkout-settings-form"
+      data-testid={testId}
       onSubmit={(event) => {
         event.preventDefault();
         startTransition(async () => {
-          const result = await saveCheckoutSettingsAction(values);
+          const result = await save(values);
           if (result.status === "success") {
             setMessage({ ok: true, text: result.message });
             router.refresh();
@@ -91,7 +99,7 @@ export function CheckoutSettingsForm({
       )}
       <Button type="submit" disabled={pending} className="self-start">
         <Save aria-hidden="true" />
-        Save settings
+        {submitLabel}
       </Button>
     </form>
   );

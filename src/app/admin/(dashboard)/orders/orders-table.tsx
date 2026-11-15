@@ -92,6 +92,17 @@ export function OrdersTable({
               Packing slips
             </a>
           ) : null}
+          {canPrint ? (
+            <a
+              className="inline-flex items-center gap-1.5 underline"
+              href={`/admin/print/orders/address-labels?ids=${chosen.map((row) => row.id).join(",")}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Printer aria-hidden="true" className="size-4" />
+              Address labels
+            </a>
+          ) : null}
           {canShip ? (
             <Button
               type="button"

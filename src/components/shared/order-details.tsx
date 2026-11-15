@@ -62,6 +62,8 @@ export function OrderDetails({ order }: { order: OrderDetailsData }) {
         </h2>
         {order.status === "CANCELLED" ? (
           <p className="mt-4 text-sm text-destructive">{t("cancelled")}</p>
+        ) : order.status === "DELIVERY_FAILED" || order.status === "RETURNED_TO_WAREHOUSE" ? (
+          <p className="mt-4 text-sm text-destructive">{t("deliveryFailed")}</p>
         ) : (
           <ol className="mt-4 flex flex-col gap-3">
             {STEPS.map((step) => {

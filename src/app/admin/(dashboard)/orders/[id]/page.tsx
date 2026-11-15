@@ -342,9 +342,34 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                   </a>
                 </li>
               ) : null}
+              {actions.printSlip && order.channel === "ONLINE" ? (
+                <li>
+                  <a
+                    className="underline"
+                    href={`/admin/print/orders/address-labels?ids=${order.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Address label
+                  </a>
+                </li>
+              ) : null}
               {order.invoices.map((row) => (
                 <li key={row.id} data-testid="invoice-row">
-                  Invoice {row.number} v{row.version}
+                  {actions.printInvoice ? (
+                    <a
+                      className="underline"
+                      href={`/admin/print/orders/${order.id}/invoice?v=${row.version}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Invoice {row.number} v{row.version}
+                    </a>
+                  ) : (
+                    <>
+                      Invoice {row.number} v{row.version}
+                    </>
+                  )}
                   {row.isCurrent ? "" : " (superseded)"}
                   {row.reason === null ? null : (
                     <span className="block text-xs text-muted-foreground">{row.reason}</span>
@@ -359,6 +384,47 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               <p className="mt-1 text-xs text-muted-foreground">Issued {dhaka(invoice.issuedAt)}</p>
             )}
           </section>
+
+          {order.exchangeFor !== null || order.returnRequests.length > 0 || actions.startReturn ? (
+            <section className="rounded-lg border border-border bg-background p-4">
+              <h2 className="text-xs font-semibold text-muted-foreground uppercase">
+                Returns &amp; exchanges
+              </h2>
+              {order.exchangeFor === null ? null : (
+                <p className="mt-2" data-testid="exchange-of">
+                  Exchange for{" "}
+                  <Link className="underline" href={`/admin/orders/${order.exchangeFor.order.id}`}>
+                    {order.exchangeFor.order.orderNumber}
+                  </Link>{" "}
+                  (
+                  <Link className="underline" href={`/admin/returns/${order.exchangeFor.id}`}>
+                    {order.exchangeFor.reference}
+                  </Link>
+                  )
+                </p>
+              )}
+              <ul className="mt-2 flex flex-col gap-1">
+                {order.returnRequests.map((request) => (
+                  <li key={request.id}>
+                    <Link className="underline" href={`/admin/returns/${request.id}`}>
+                      {request.reference}
+                    </Link>{" "}
+                    · {request.type === "EXCHANGE" ? "exchange" : "return"} ·{" "}
+                    {request.status.toLowerCase()}
+                  </li>
+                ))}
+              </ul>
+              {actions.startReturn ? (
+                <Link
+                  className="mt-2 inline-block underline"
+                  href={`/admin/returns/new?order=${order.id}`}
+                  data-testid="start-return"
+                >
+                  Start a return or exchange
+                </Link>
+              ) : null}
+            </section>
+          ) : null}
 
           {order.status === "CANCELLED" && order.cancelReason !== null ? (
             <section className="rounded-lg border border-border bg-background p-4">

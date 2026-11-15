@@ -166,25 +166,32 @@ async function main() {
         categoryId: (await prisma.category.findFirstOrThrow({ where: { slug: `e2e-${run}` } })).id,
         status: "PUBLISHED",
         publishedAt: new Date(),
-        variants: { create: { sku: swapSku, pricePoisha: 130_000, labelEn: "L" } },
+        variants: {
+          create: [
+            { sku: swapSku, pricePoisha: 130_000, labelEn: "L" },
+            // Another size, for the exchange from the tracking page.
+            { sku: `${swapSku}-XL`, pricePoisha: 130_000, labelEn: "XL" },
+          ],
+        },
       },
       select: { variants: { select: { id: true } } },
     });
-    const swapVariantId = swapProduct.variants[0]?.id ?? "";
-    await prisma.inventoryLevel.create({
-      data: { variantId: swapVariantId, locationId: online.id, onHand: 20, reserved: 0 },
-    });
-    await prisma.inventoryMovement.create({
-      data: {
-        variantId: swapVariantId,
-        locationId: online.id,
-        type: "OPENING",
-        quantity: 20,
-        onHandAfter: 20,
-        reservedAfter: 0,
-        reason: "E2E fixture",
-      },
-    });
+    for (const variant of swapProduct.variants) {
+      await prisma.inventoryLevel.create({
+        data: { variantId: variant.id, locationId: online.id, onHand: 20, reserved: 0 },
+      });
+      await prisma.inventoryMovement.create({
+        data: {
+          variantId: variant.id,
+          locationId: online.id,
+          type: "OPENING",
+          quantity: 20,
+          onHandAfter: 20,
+          reservedAfter: 0,
+          reason: "E2E fixture",
+        },
+      });
+    }
     const couponCode = `E2E${tag}`;
     await prisma.coupon.create({
       data: { code: couponCode, type: "PERCENTAGE", value: 10, channel: "ONLINE" },

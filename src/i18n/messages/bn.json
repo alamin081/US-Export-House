@@ -333,7 +333,9 @@
     "methodCASH": "নগদ (শো-রুম)",
     "methodCARD": "কার্ড (শো-রুম)",
     "channelONLINE": "অনলাইন",
-    "channelSTORE": "শো-রুম"
+    "channelSTORE": "শো-রুম",
+    "statusDELIVERY_FAILED": "ডেলিভারি ব্যর্থ",
+    "statusRETURNED_TO_WAREHOUSE": "ফেরত এসেছে"
   },
   "TrackOrder": {
     "title": "অর্ডার ট্র্যাক করুন",
@@ -448,6 +450,34 @@
     "totalCod": "মোট (ক্যাশ অন ডেলিভারি)",
     "vatIncluded": "সব দাম VAT-সহ।",
     "delivery": "ডেলিভারি",
-    "phone": "মোবাইল: {phone}"
+    "phone": "মোবাইল: {phone}",
+    "deliveryFailed": "কুরিয়ার অর্ডারটি পৌঁছাতে পারেনি। এখনো চাইলে আমাদের ফোন করুন।"
+  },
+  "ReturnRequest": {
+    "heading": "রিটার্ন বা এক্সচেঞ্জ",
+    "intro": "{date} পর্যন্ত অনুরোধ করা যাবে। পণ্য অব্যবহৃত, না-ধোয়া, ট্যাগ ও প্যাকেজিংসহ হতে হবে।",
+    "policyLink": "রিটার্ন নীতি পড়ুন",
+    "typeLabel": "আপনি কী চান?",
+    "typeRETURN": "ফেরত দিয়ে টাকা ফেরত",
+    "typeEXCHANGE": "অন্য সাইজ বা রঙে বদল",
+    "itemsLabel": "কোন পণ্য?",
+    "quantityLabel": "কয়টি",
+    "replaceWith": "বদলে নেবেন",
+    "choose": "বাছুন…",
+    "noOptions": "এই মুহূর্তে অন্য কোনো সাইজ বা রঙ স্টকে নেই।",
+    "reasonLabel": "কারণ",
+    "reasonSIZE_MISMATCH": "সাইজ মেলেনি",
+    "reasonDEFECTIVE": "ত্রুটিপূর্ণ",
+    "reasonWRONG_ITEM": "ভুল পণ্য এসেছে",
+    "reasonCHANGED_MIND": "পছন্দ হয়নি",
+    "reasonOTHER": "অন্যান্য",
+    "detailsLabel": "আর কিছু জানাতে চান? (ঐচ্ছিক)",
+    "photosLabel": "ছবি (ঐচ্ছিক, সর্বোচ্চ {count}টি)",
+    "submit": "অনুরোধ পাঠান",
+    "sent": "অনুরোধ {reference} পাঠানো হয়েছে। পণ্য নেওয়ার ব্যবস্থা করতে আমরা ফোন করব।",
+    "errorEXPIRED": "পেজের সময় শেষ। অর্ডারটি আবার খুঁজুন।",
+    "errorRATE_LIMITED": "অনেকবার চেষ্টা হয়েছে। ১৫ মিনিট পর আবার চেষ্টা করুন।",
+    "errorNOT_ALLOWED": "এই অর্ডার আর অনলাইনে ফেরত দেওয়া যাবে না। আমাদের ফোন করুন।",
+    "errorINVALID": "ফর্মটি আবার দেখুন।"
   }
 }

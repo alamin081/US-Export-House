@@ -138,12 +138,20 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
     permission: "pos.sell",
   },
   {
-    label: "Returns",
+    label: "Returns & exchanges",
     href: "/admin/returns",
     icon: "rotate-ccw",
     phase: 9,
     group: "operations",
     permission: "return.manage",
+  },
+  {
+    label: "Refunds to approve",
+    href: "/admin/refunds",
+    icon: "banknote",
+    phase: 9,
+    group: "operations",
+    permission: "refund.approve",
   },
   {
     label: "Shipments",

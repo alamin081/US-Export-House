@@ -333,7 +333,9 @@
     "methodCASH": "Cash (in store)",
     "methodCARD": "Card (in store)",
     "channelONLINE": "Online",
-    "channelSTORE": "In store"
+    "channelSTORE": "In store",
+    "statusDELIVERY_FAILED": "Delivery failed",
+    "statusRETURNED_TO_WAREHOUSE": "Returned to us"
   },
   "TrackOrder": {
     "title": "Track your order",
@@ -448,6 +450,34 @@
     "totalCod": "Total (cash on delivery)",
     "vatIncluded": "All prices include VAT.",
     "delivery": "Delivery",
-    "phone": "Mobile: {phone}"
+    "phone": "Mobile: {phone}",
+    "deliveryFailed": "The courier could not deliver this order. Call us if you still want it."
+  },
+  "ReturnRequest": {
+    "heading": "Return or exchange",
+    "intro": "You can ask until {date}. Items must be unused, unwashed, with tags and packaging.",
+    "policyLink": "Read our return policy",
+    "typeLabel": "What would you like?",
+    "typeRETURN": "Return for a refund",
+    "typeEXCHANGE": "Exchange for another size or colour",
+    "itemsLabel": "Which items?",
+    "quantityLabel": "How many",
+    "replaceWith": "Replace with",
+    "choose": "Choose…",
+    "noOptions": "No other size or colour is in stock right now.",
+    "reasonLabel": "Reason",
+    "reasonSIZE_MISMATCH": "Size did not fit",
+    "reasonDEFECTIVE": "Defective",
+    "reasonWRONG_ITEM": "Wrong item sent",
+    "reasonCHANGED_MIND": "Did not like it",
+    "reasonOTHER": "Other",
+    "detailsLabel": "Anything we should know? (optional)",
+    "photosLabel": "Photos (optional, up to {count})",
+    "submit": "Send request",
+    "sent": "Request {reference} sent. We will call you to arrange the pickup.",
+    "errorEXPIRED": "This page timed out. Look the order up again.",
+    "errorRATE_LIMITED": "Too many requests. Please wait 15 minutes.",
+    "errorNOT_ALLOWED": "This order can no longer be returned online. Please call us.",
+    "errorINVALID": "Please check the form."
   }
 }

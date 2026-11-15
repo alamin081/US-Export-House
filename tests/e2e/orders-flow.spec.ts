@@ -133,3 +133,44 @@ test("packing slips print with the order number as a barcode", async ({ page }) 
   await expect(slip).not.toContainText("৳");
   await expect(slip.locator(`svg[data-barcode="${orderNumber}"]`)).toHaveCount(1);
 });
+
+test("the invoice prints as issued, in Bengali and English", async ({ page }) => {
+  test.skip(fixture === null || orderPath === "", "previous step did not run");
+  await signIn(page, fixture!.orderStaffEmail);
+  const orderId = orderPath.split("/").pop()!;
+  await page.goto(`/admin/print/orders/${orderId}/invoice`);
+  await expect(page.getByTestId("invoice-number")).toHaveText(/^INV-\d{4}-\d{5,}$/);
+  await expect(page.getByTestId("invoice")).toContainText("সব দাম ভ্যাট-সহ।");
+  await expect(page.getByTestId("invoice")).toContainText(orderNumber);
+  await page.goto(`/admin/print/orders/${orderId}/invoice?lang=en`);
+  await expect(page.getByTestId("invoice")).toContainText("All prices include VAT.");
+});
+
+test("customer asks for an exchange on the tracking page; staff approve it into a new order", async ({
+  page,
+}) => {
+  test.skip(fixture === null || orderNumber === "", "previous step did not run");
+  await page.context().clearCookies();
+  await page.goto("/en/track-order");
+  await page.fill("#orderNumber", orderNumber);
+  await page.fill("#trackPhone", fixture!.phoneBn);
+  await page.locator('[data-testid="track-form"] button[type="submit"]').click();
+  const form = page.getByTestId("return-request-form");
+  await expect(form).toBeVisible();
+  await form.locator('input[value="EXCHANGE"]').check();
+  await form.getByTestId("return-quantity").first().selectOption("1");
+  await form.getByTestId("return-replacement").first().selectOption({ label: "XL" });
+  await page.selectOption("#returnReason", "SIZE_MISMATCH");
+  await page.getByTestId("return-submit").click();
+  await expect(page.getByTestId("return-sent")).toContainText(/RET-\d{4}-\d{5}/);
+
+  await signIn(page, fixture!.managerEmail);
+  await page.goto(`/admin/returns?tab=requested&q=${orderNumber}`);
+  await page.getByTestId("return-row").first().getByRole("link").first().click();
+  await page.getByTestId("approve-return").click();
+  await expect(page.getByTestId("return-feedback")).toContainText("Exchange order UEH-");
+  await page.getByTestId("exchange-order-link").click();
+  await expect(page.getByTestId("exchange-of")).toContainText(orderNumber);
+  await expect(page.getByTestId("order-status")).toHaveText(/Confirmed/);
+  await expect(page.getByTestId("order-items")).toContainText(`${fixture!.swapSku}-XL`);
+});

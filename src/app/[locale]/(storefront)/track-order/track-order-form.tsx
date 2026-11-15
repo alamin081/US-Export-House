@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FieldHint, Label } from "@/components/ui/label";
 import { trackOrderAction } from "@/modules/checkout/checkout.actions";
+import type { CustomerReturnOptions } from "@/modules/returns/returns.service";
+import { ReturnRequestForm } from "./return-request-form";
 
 /**
  * Order tracking: the order number plus the mobile number it was placed
@@ -19,6 +21,8 @@ export function TrackOrderForm() {
   const [orderNumber, setOrderNumber] = useState("");
   const [phone, setPhone] = useState("");
   const [order, setOrder] = useState<OrderDetailsData | null>(null);
+  const [returns, setReturns] = useState<CustomerReturnOptions | null>(null);
+  const [showPolicy, setShowPolicy] = useState(false);
   const [error, setError] = useState<"NOT_FOUND" | "RATE_LIMITED" | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -29,8 +33,11 @@ export function TrackOrderForm() {
       const result = await trackOrderAction({ orderNumber, phone });
       if (result.ok) {
         setOrder(result.order);
+        setReturns(result.returns);
+        setShowPolicy(result.showReturnsPolicy);
       } else {
         setOrder(null);
+        setReturns(null);
         setError(result.error);
       }
     });
@@ -88,6 +95,9 @@ export function TrackOrderForm() {
             <div className="mt-6">
               <OrderDetails order={order} />
             </div>
+            {returns === null ? null : (
+              <ReturnRequestForm options={returns} phone={phone} showPolicy={showPolicy} />
+            )}
           </div>
         )}
       </div>
