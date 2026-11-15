@@ -364,6 +364,15 @@ enum MenuLocation {
   FOOTER
 }
 
+/// Phase 12: what a content document holds (its JSON shape is checked in code).
+enum ContentDocumentKind {
+  HOME
+  ANNOUNCEMENTS
+  MENU
+  FOOTER
+  PAGE
+}
+
 enum SettingValueType {
   STRING
   INT
@@ -601,6 +610,8 @@ model Location {
   /// Opening hours, shown on the storefront.
   hoursEn   String?
   hoursBn   String?
+  /// Google Maps link shown on the contact page and footer (Phase 12).
+  mapUrl    String?
 
   isActive                   Boolean @default(true)
   /// Online orders may be fulfilled from here.
@@ -2069,6 +2080,7 @@ model ShipmentEvent {
 // CONTENT
 // =============================================================================
 
+/// DEPRECATED (Phase 12): replaced by ContentDocument "home". Rows kept, unused.
 model Banner {
   id        String          @id @default(cuid())
   key       String          @unique
@@ -2097,6 +2109,7 @@ model Banner {
 }
 
 /// Order and configuration of the home page sections.
+/// DEPRECATED (Phase 12): replaced by ContentDocument "home". Rows kept, unused.
 model HomeSection {
   id            String          @id @default(cuid())
   type          HomeSectionType
@@ -2117,6 +2130,8 @@ model HomeSection {
 
 /// A content page (About, FAQ, policies). Draft pages are not served on the
 /// storefront — the return policy stays draft until the business approves it.
+/// DEPRECATED (Phase 12): replaced by ContentDocument "page.<slug>". Rows kept,
+/// unused (the return policy publish state moved too).
 model Page {
   id         String        @id @default(cuid())
   slug       String        @unique
@@ -2140,6 +2155,60 @@ model Page {
   @@index([status])
 }
 
+/// Phase 12 content: one editable thing (home page, announcement bar, header
+/// menu, footer or a page). Staff edit `draft`; publishing copies it into an
+/// immutable ContentVersion that the storefront shows. The JSON shape of
+/// `draft` and `ContentVersion.data` is validated by Zod in
+/// src/modules/content/content.schema.ts.
+model ContentDocument {
+  id                 String              @id @default(cuid())
+  /// "home", "announcements", "menu.header", "footer" or "page.<slug>".
+  key                String              @unique
+  kind               ContentDocumentKind
+  /// URL slug, pages only.
+  slug               String?             @unique
+  draft              Json
+  /// Optimistic lock: every save names the revision it started from.
+  draftRevision      Int                 @default(0)
+  draftUpdatedAt     DateTime            @default(now())
+  draftUpdatedById   String?
+  /// Imported sample text: never publishable when APP_ENV=production.
+  /// Cleared by the first save from the editor.
+  isSample           Boolean             @default(false)
+  /// The app relies on it (About, Privacy ...): can be unpublished, not deleted.
+  isSystem           Boolean             @default(false)
+  /// A permission needed to publish besides content.publish
+  /// (return.policy.publish for the return policy).
+  publishPermission  String?
+  publishedVersionId String?             @unique
+  publishedAt        DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  versions         ContentVersion[] @relation("DocumentVersions")
+  publishedVersion ContentVersion?  @relation("PublishedVersion", fields: [publishedVersionId], references: [id], onDelete: Restrict)
+
+  @@index([kind])
+}
+
+/// A published state of a ContentDocument. Never changed or deleted.
+model ContentVersion {
+  id            String   @id @default(cuid())
+  documentId    String
+  number        Int
+  data          Json
+  note          String?
+  publishedAt   DateTime @default(now())
+  publishedById String?
+
+  document    ContentDocument  @relation("DocumentVersions", fields: [documentId], references: [id], onDelete: Restrict)
+  publishedOf ContentDocument? @relation("PublishedVersion")
+
+  @@unique([documentId, number])
+}
+
+/// DEPRECATED (Phase 12): replaced by ContentDocument "menu.header" and
+/// "footer". Rows are kept; nothing reads them.
 model MenuItem {
   id       String       @id @default(cuid())
   location MenuLocation

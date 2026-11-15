@@ -47,6 +47,12 @@ import {
   REPORT_SETTING_KEYS,
   type ReportSettings,
 } from "./report-settings";
+import {
+  DEFAULT_SITE_SETTINGS,
+  parseSiteSettings,
+  SITE_SETTING_KEYS,
+  type SiteSettings,
+} from "./site-settings";
 
 export { DEFAULT_CATALOG_SETTINGS, type CatalogSettings };
 export { DEFAULT_INVENTORY_SETTINGS, type InventorySettings };
@@ -56,6 +62,7 @@ export { DEFAULT_STORE_SETTINGS, type StoreSettings };
 export { DEFAULT_RETURNS_SETTINGS, type ReturnsSettings };
 export { DEFAULT_POS_SETTINGS, type PosSettings };
 export { DEFAULT_REPORT_SETTINGS, type ReportSettings };
+export { DEFAULT_SITE_SETTINGS, type SiteSettings };
 
 /**
  * Catalogue settings from the database. A database error falls back to the
@@ -145,5 +152,16 @@ export async function getReportSettings(): Promise<ReportSettings> {
   } catch (error) {
     console.error("[settings] could not load settings", error instanceof Error ? error.name : "");
     return DEFAULT_REPORT_SETTINGS;
+  }
+}
+
+/** Social links, footer payment methods and the default share image. */
+export async function getSiteSettings(): Promise<SiteSettings> {
+  try {
+    const raw = await findSettingValues(Object.values(SITE_SETTING_KEYS));
+    return parseSiteSettings(raw, (message) => console.warn(`[settings] ${message}`));
+  } catch (error) {
+    console.error("[settings] could not load settings", error instanceof Error ? error.name : "");
+    return DEFAULT_SITE_SETTINGS;
   }
 }

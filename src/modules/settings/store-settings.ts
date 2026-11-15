@@ -14,6 +14,8 @@ export interface StoreSettings {
   addressBn: string;
   /** Shown to customers (also used by checkout; key store.contactPhone). */
   contactPhone: string;
+  /** WhatsApp number for the contact page and footer (wa.me link), digits only. */
+  whatsapp: string;
   /** An https image URL (Cloudinary); printed instead of the name when set. */
   logoUrl: string;
   vatEnabled: boolean;
@@ -29,6 +31,7 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   addressEn: "",
   addressBn: "",
   contactPhone: "",
+  whatsapp: "",
   logoUrl: "",
   vatEnabled: false,
   vatRatePercent: 0,
@@ -42,6 +45,7 @@ export const STORE_SETTING_KEYS = {
   addressEn: "store.addressEn",
   addressBn: "store.addressBn",
   contactPhone: "store.contactPhone",
+  whatsapp: "store.whatsapp",
   logoUrl: "store.logoUrl",
   vatEnabled: "vat.enabled",
   vatRatePercent: "vat.ratePercent",
@@ -58,6 +62,7 @@ export const storeSettingParsers = {
   addressEn: text(300),
   addressBn: text(300),
   contactPhone: text(40).refine((value) => value === "" || /^\+?[0-9 -]{6,20}$/.test(value)),
+  whatsapp: text(20).refine((value) => value === "" || /^\+?[0-9]{10,15}$/.test(value)),
   logoUrl: text(500).refine((value) => value === "" || /^https:\/\/\S+$/.test(value)),
   vatEnabled: bool,
   vatRatePercent: z.coerce.number().min(0).max(100),

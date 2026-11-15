@@ -104,6 +104,13 @@ export const AUDIT_ACTIONS = {
   posPinSet: "pos.pin_set",
   posBillHeld: "pos.bill_held",
   reportExported: "report.exported",
+  contentDraftSaved: "content.draft_saved",
+  contentPublished: "content.published",
+  contentUnpublished: "content.unpublished",
+  contentRestored: "content.restored",
+  contentCreated: "content.created",
+  contentDeleted: "content.deleted",
+  contentImported: "content.imported",
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];
