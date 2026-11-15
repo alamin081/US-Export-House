@@ -67,6 +67,33 @@ export class OrderTx {
     });
   }
 
+  /** Weighted average purchase cost per variant, read inside the sale's transaction. */
+  async variantCosts(ids: readonly string[]): Promise<Map<string, number | null>> {
+    const sorted = [...new Set(ids)].sort();
+    if (sorted.length === 0) return new Map();
+    const rows = await this.tx.productVariant.findMany({
+      where: { id: { in: sorted } },
+      select: { id: true, costPoisha: true },
+    });
+    return new Map(rows.map((row) => [row.id, row.costPoisha]));
+  }
+
+  /**
+   * Freezes each line's purchase cost at the moment the order becomes a sale
+   * (Phase 12 profit reports). Lines that already have one keep it.
+   */
+  async snapshotLineCosts(orderId: string, costs: ReadonlyMap<string, number | null>) {
+    const items = await this.tx.orderItem.findMany({
+      where: { orderId, unitCostPoisha: null, variantId: { not: null } },
+      select: { id: true, variantId: true },
+    });
+    for (const item of items) {
+      const cost = costs.get(item.variantId!) ?? null;
+      if (cost === null) continue;
+      await this.tx.orderItem.update({ where: { id: item.id }, data: { unitCostPoisha: cost } });
+    }
+  }
+
   /** Every change bumps the version, so a form opened earlier is refused. */
   async updateOrder(id: string, data: Prisma.OrderUncheckedUpdateInput) {
     await this.tx.order.update({

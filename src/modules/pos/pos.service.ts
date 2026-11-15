@@ -573,6 +573,7 @@ export async function sell(
       const option = (variantId: string, type: "SIZE" | "COLOUR") =>
         variants.get(variantId)!.optionValues.find((link) => link.optionValue.option.type === type)
           ?.optionValue ?? null;
+      const costs = await orderTx.variantCosts(variantIds);
       const created = await tx.createSale({
         orderNumber,
         idempotencyKey: input.idempotencyKey,
@@ -600,6 +601,7 @@ export async function sell(
         placedAt: now,
         confirmedAt: now,
         deliveredAt: now,
+        soldAt: now,
         items: {
           create: priced.map((line) => {
             const variant = variants.get(line.key)!;
@@ -614,6 +616,7 @@ export async function sell(
               sku: variant.sku,
               imageUrl: variant.product.images[0]?.url ?? null,
               unitPricePoisha: line.unitPricePoisha,
+              unitCostPoisha: costs.get(line.key) ?? null,
               quantity: line.quantity,
               lineTotalPoisha: total.lineTotalPoisha,
               discountPoisha: total.discountPoisha,
@@ -665,6 +668,7 @@ export async function sell(
           locationId: session.locationId,
           type: "SALE_STORE" as const,
           quantity: -line.quantity,
+          unitCostPoisha: costs.get(line.key) ?? null,
           referenceType: "ORDER",
           referenceId: created.id,
           userId: staff.userId,

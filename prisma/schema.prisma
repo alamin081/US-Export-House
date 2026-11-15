@@ -694,6 +694,7 @@ model InventoryMovement {
   @@index([variantId, locationId, createdAt])
   @@index([locationId, createdAt])
   @@index([type, createdAt])
+  @@index([type, locationId, createdAt])
   @@index([referenceType, referenceId])
 }
 
@@ -1479,6 +1480,10 @@ model Order {
   shippedAt            DateTime?
   deliveredAt          DateTime?
   cancelledAt          DateTime?
+  /// When the order counts as a sale (Phase 12 reports): the first SHIPPED
+  /// online (same transaction as the invoice), the moment of sale in store.
+  /// Never set for cancelled orders; unchanged by a second delivery attempt.
+  soldAt               DateTime?
   /// When the stock reservation for an unpaid online order expires.
   reservationExpiresAt DateTime?
 
@@ -1516,6 +1521,8 @@ model Order {
   @@index([channel, status, placedAt])
   @@index([exchangeOfOrderId])
   @@index([posSessionId])
+  @@index([soldAt])
+  @@index([channel, locationId, soldAt])
 }
 
 /// A line on an order. Product name, SKU and price are snapshots: editing the
@@ -1545,6 +1552,9 @@ model OrderItem {
   sizeLabelBn          String?
   colourLabelEn        String?
   colourLabelBn        String?
+  /// Weighted average purchase cost per unit when the line was sold (Phase 12
+  /// snapshot, for profit reports). Null on lines sold before the snapshot.
+  unitCostPoisha       Int?
 
   order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Restrict)
@@ -1665,6 +1675,7 @@ model Refund {
 
   @@index([orderId])
   @@index([status, createdAt])
+  @@index([status, processedAt])
 }
 
 // =============================================================================

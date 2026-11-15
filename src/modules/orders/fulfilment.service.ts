@@ -232,6 +232,7 @@ export async function shipOrder(
       let invoiceNumber: string | null = order.invoices[0]?.number ?? null;
       if (firstShipment) {
         const lines = order.items.filter((item) => item.variantId !== null);
+        const costs = await tx.variantCosts(lines.map((item) => item.variantId!));
         const base = {
           locationId: order.locationId,
           referenceType: "ORDER",
@@ -253,9 +254,11 @@ export async function shipOrder(
               variantId: item.variantId!,
               type: "SALE_ONLINE" as const,
               quantity: -item.quantity,
+              unitCostPoisha: costs.get(item.variantId!) ?? null,
             },
           ]),
         );
+        await tx.snapshotLineCosts(order.id, costs);
       }
 
       const courierName = input.courier === "OTHER" ? input.courierName : null;
@@ -297,7 +300,10 @@ export async function shipOrder(
       await tx.updateOrder(order.id, {
         status: "SHIPPED",
         shippedAt: at,
-        ...(firstShipment ? {} : { deliveryFailedAt: null, deliveryFailedReason: null }),
+        // The first hand-over is the sale (reports); a second attempt is not.
+        ...(firstShipment
+          ? { soldAt: at }
+          : { deliveryFailedAt: null, deliveryFailedReason: null }),
       });
       await tx.setCodPaymentAmount(order.id, codAmount);
       if (firstShipment && invoiceNumber === null) {
