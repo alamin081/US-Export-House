@@ -28,6 +28,12 @@ function readFixture(): E2EFixture {
       stockName: "",
       skuM: "",
       skuL: "",
+      checkoutSlug: "",
+      checkoutName: "",
+      couponCode: "",
+      orderStaffEmail: "",
+      phoneBn: "",
+      phoneEn: "",
     };
   }
 }

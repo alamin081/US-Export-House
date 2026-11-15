@@ -30,6 +30,8 @@ export interface CheckoutSettings {
   trackAttemptsPer15Min: number;
   /** Shown to customers (COD limit, blocked orders, confirmation page). */
   storeContactPhone: string;
+  /** Order numbers read <prefix>-YYMM-NNNNN. */
+  orderNumberPrefix: string;
 }
 
 export const DEFAULT_CHECKOUT_SETTINGS: CheckoutSettings = {
@@ -48,6 +50,7 @@ export const DEFAULT_CHECKOUT_SETTINGS: CheckoutSettings = {
   couponAttemptsPer15Min: 10,
   trackAttemptsPer15Min: 10,
   storeContactPhone: "",
+  orderNumberPrefix: "UEH",
 };
 
 export const CHECKOUT_SETTING_KEYS = {
@@ -66,6 +69,7 @@ export const CHECKOUT_SETTING_KEYS = {
   couponAttemptsPer15Min: "checkout.couponAttemptsPer15Min",
   trackAttemptsPer15Min: "checkout.trackAttemptsPer15Min",
   storeContactPhone: "store.contactPhone",
+  orderNumberPrefix: "orders.numberPrefix",
 } as const satisfies Record<keyof CheckoutSettings, string>;
 
 const int = (min: number, max: number) => z.coerce.number().int().min(min).max(max);
@@ -90,6 +94,7 @@ export const checkoutSettingParsers = {
     .trim()
     .max(40)
     .refine((value) => value === "" || /^\+?[0-9 -]{6,20}$/.test(value)),
+  orderNumberPrefix: z.string().regex(/^[A-Z]{2,6}$/),
 } satisfies Record<keyof CheckoutSettings, z.ZodType>;
 
 export function parseCheckoutSettings(

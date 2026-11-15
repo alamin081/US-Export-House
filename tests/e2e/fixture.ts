@@ -16,4 +16,11 @@ export interface E2EFixture {
   stockName: string;
   skuM: string;
   skuL: string;
+  /** Phase 8: a product with stock online, a 10% coupon, Order Staff, phones. */
+  checkoutSlug: string;
+  checkoutName: string;
+  couponCode: string;
+  orderStaffEmail: string;
+  phoneBn: string;
+  phoneEn: string;
 }

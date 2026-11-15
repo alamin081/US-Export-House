@@ -120,6 +120,60 @@ async function main() {
       });
     }
 
+    // Phase 8: a product with stock at the default online location (with its
+    // ledger row, so inventory:verify still passes), a 10% coupon and an
+    // Order Staff member (for the 403 on coupons).
+    const online = await prisma.location.findFirstOrThrow({
+      where: { isDefaultOnlineFulfillment: true, isActive: true, deletedAt: null },
+    });
+    const checkoutSlug = `e2e-checkout-${run}`;
+    const checkoutName = `E2E Checkout Shirt ${tag}`;
+    const checkoutProduct = await prisma.product.create({
+      data: {
+        slug: checkoutSlug,
+        nameEn: checkoutName,
+        nameBn: `ই২ই চেকআউট শার্ট ${tag}`,
+        categoryId: (await prisma.category.findFirstOrThrow({ where: { slug: `e2e-${run}` } })).id,
+        status: "PUBLISHED",
+        publishedAt: new Date(),
+        variants: {
+          create: { sku: `E2E-CO-${tag}`, pricePoisha: 120_000, labelEn: "One size" },
+        },
+      },
+      select: { variants: { select: { id: true } } },
+    });
+    const checkoutVariantId = checkoutProduct.variants[0]?.id ?? "";
+    await prisma.inventoryLevel.create({
+      data: { variantId: checkoutVariantId, locationId: online.id, onHand: 50, reserved: 0 },
+    });
+    await prisma.inventoryMovement.create({
+      data: {
+        variantId: checkoutVariantId,
+        locationId: online.id,
+        type: "OPENING",
+        quantity: 50,
+        onHandAfter: 50,
+        reservedAfter: 0,
+        reason: "E2E fixture",
+      },
+    });
+    const couponCode = `E2E${tag}`;
+    await prisma.coupon.create({
+      data: { code: couponCode, type: "PERCENTAGE", value: 10, channel: "ONLINE" },
+    });
+    const orderStaffEmail = `e2e-${run}-orders@test.local`;
+    await prisma.user.create({
+      data: {
+        kind: "STAFF",
+        email: orderStaffEmail,
+        name: "E2E Order Staff",
+        passwordHash,
+        roleId: await role("Order Staff"),
+        locationAccess: { create: { locationId: online.id } },
+      },
+    });
+    const digits = () => String(Math.floor(Math.random() * 1e8)).padStart(8, "0");
+
     const fixture: E2EFixture = {
       run,
       password,
@@ -132,6 +186,12 @@ async function main() {
       stockName,
       skuM,
       skuL,
+      checkoutSlug,
+      checkoutName,
+      couponCode,
+      orderStaffEmail,
+      phoneBn: `017${digits()}`,
+      phoneEn: `018${digits()}`,
     };
     await mkdir(join(process.cwd(), "e2e-results"), { recursive: true });
     await writeFile(FIXTURE_FILE, JSON.stringify(fixture), "utf8");
