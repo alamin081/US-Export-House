@@ -57,6 +57,15 @@ export const AUDIT_ACTIONS = {
   stockCountSubmitted: "stock_count.submitted",
   stockCountApplied: "stock_count.applied",
   stockCountCancelled: "stock_count.cancelled",
+  couponCreated: "coupon.created",
+  couponUpdated: "coupon.updated",
+  couponDeleted: "coupon.deleted",
+  shippingZoneUpdated: "shipping.zone_updated",
+  shippingAreaMapped: "shipping.area_mapped",
+  shippingAreaUnmapped: "shipping.area_unmapped",
+  phoneBlocked: "customer.phone_blocked",
+  phoneUnblocked: "customer.phone_unblocked",
+  checkoutSettingsChanged: "checkout.settings_changed",
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];

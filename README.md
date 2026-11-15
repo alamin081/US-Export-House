@@ -85,11 +85,12 @@ Open:
 | `npm run lint`                    | ESLint, including the architecture boundary rules                                  |
 | `npm run format`                  | Prettier write (`format:check` to verify only)                                     |
 | `npm test`                        | Vitest unit tests                                                                  |
-| `npm run test:integration`        | Auth/RBAC and catalogue tests against the `_test` database                         |
+| `npm run test:integration`        | Auth, catalogue, inventory and checkout tests against the `_test` database         |
 | `npm run test:e2e`                | Playwright (Chromium): admin to storefront, against `_test`                        |
 | `npm run auth:bootstrap`          | One-time creation of the first Super Admin                                         |
 | `npm run auth:retire-placeholder` | Deactivate the seed placeholder admin (dry run unless `-- --confirm`)              |
 | `npm run inventory:verify`        | Read-only: every stock row equals its ledger (see docs/INVENTORY.md)               |
+| `npm run db:seed-reference`       | Create-only: address lists, delivery zones and area mapping (docs/ADDRESS_DATA.md) |
 | `npm run db:mark-sample`          | Local only: flag the seed locations as sample data (dry run unless `-- --confirm`) |
 | `npm run verify`                  | typecheck + lint + format check + tests (what CI runs)                             |
 | `npm run db:up`                   | Start the PostgreSQL container                                                     |

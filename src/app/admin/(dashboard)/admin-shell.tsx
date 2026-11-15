@@ -18,6 +18,7 @@ import {
   MapPin,
   Menu,
   Palette,
+  PhoneOff,
   Receipt,
   RotateCcw,
   Ruler,
@@ -25,8 +26,10 @@ import {
   Settings,
   Shield,
   Shirt,
+  SlidersHorizontal,
   Store,
   Tags,
+  TicketPercent,
   Truck,
   UserRound,
   Users,
@@ -60,6 +63,9 @@ const ICONS: Record<string, LucideIcon> = {
   shield: Shield,
   "layout-template": LayoutTemplate,
   settings: Settings,
+  "ticket-percent": TicketPercent,
+  "phone-off": PhoneOff,
+  "sliders-horizontal": SlidersHorizontal,
 };
 
 const GROUP_ORDER: readonly AdminNavItem["group"][] = [

@@ -19,7 +19,6 @@ import {
  */
 
 export const GEO_TAG = "geo";
-export const ZONES_TAG = "shipping-zones";
 
 /** The address lists change only with a data release: cached for a day. */
 export const listDivisions = unstable_cache(findDivisions, ["geo-divisions"], {
