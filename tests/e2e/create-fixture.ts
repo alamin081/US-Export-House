@@ -192,6 +192,49 @@ async function main() {
         },
       });
     }
+    // Phase 9: a shop with its own manager and an item WITHOUT a barcode: the
+    // labels test generates it, prints it and the till sells by scanning it.
+    const tillBranch = await prisma.location.create({
+      data: { code: `E2ET-${tag}`, type: "BRANCH", nameEn: `E2E Till ${run}`, isActive: true },
+    });
+    const tillManagerEmail = `e2e-${run}-till@test.local`;
+    await prisma.user.create({
+      data: {
+        kind: "STAFF",
+        email: tillManagerEmail,
+        name: "E2E Till Manager",
+        passwordHash,
+        roleId: await role("Branch Manager"),
+        locationAccess: { create: { locationId: tillBranch.id } },
+      },
+    });
+    const tillSku = `E2E-TL-${tag}`;
+    const tillProduct = await prisma.product.create({
+      data: {
+        slug: `e2e-till-${run}`,
+        nameEn: `E2E Till Shirt ${tag}`,
+        categoryId: (await prisma.category.findFirstOrThrow({ where: { slug: `e2e-${run}` } })).id,
+        status: "PUBLISHED",
+        publishedAt: new Date(),
+        variants: { create: { sku: tillSku, pricePoisha: 100_000, labelEn: "M" } },
+      },
+      select: { variants: { select: { id: true } } },
+    });
+    const tillVariantId = tillProduct.variants[0]?.id ?? "";
+    await prisma.inventoryLevel.create({
+      data: { variantId: tillVariantId, locationId: tillBranch.id, onHand: 10, reserved: 0 },
+    });
+    await prisma.inventoryMovement.create({
+      data: {
+        variantId: tillVariantId,
+        locationId: tillBranch.id,
+        type: "OPENING",
+        quantity: 10,
+        onHandAfter: 10,
+        reservedAfter: 0,
+        reason: "E2E fixture",
+      },
+    });
     const couponCode = `E2E${tag}`;
     await prisma.coupon.create({
       data: { code: couponCode, type: "PERCENTAGE", value: 10, channel: "ONLINE" },
@@ -226,6 +269,9 @@ async function main() {
       couponCode,
       orderStaffEmail,
       swapSku,
+      tillManagerEmail,
+      tillSku,
+      tillBranchCode: tillBranch.code,
       phoneBn: `017${digits()}`,
       phoneEn: `018${digits()}`,
     };

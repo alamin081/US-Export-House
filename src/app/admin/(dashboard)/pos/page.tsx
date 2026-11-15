@@ -1,26 +1,36 @@
 import { requireStaffPage } from "@/modules/access/access.service";
-import { AdminPlaceholder } from "../admin-placeholder";
+import { getTillContext } from "@/modules/pos/pos.service";
+import { forPage } from "../page-guard";
+import { Till } from "./till";
 
-export const metadata = { title: "In-store sale" };
+export const metadata = { title: "Till" };
+export const dynamic = "force-dynamic";
 
-export default async function InstoresalePage() {
-  await requireStaffPage("pos.sell");
-
+/**
+ * The shop till. Pick the location and counter (only the ones this staff
+ * member may access), open the day if needed, then scan and sell. Works on a
+ * tablet or a laptop with a USB barcode scanner.
+ */
+export default async function TillPage() {
+  const staff = await requireStaffPage("pos.sell");
+  const context = await forPage(getTillContext(staff));
   return (
-    <AdminPlaceholder
-      title="In-store sale"
-      phase={9}
-      description={
-        "A simple till for branch staff: scan or type a SKU, take payment, stock drops immediately."
-      }
-      layout="form"
-      features={[
-        "Add items by SKU or barcode",
-        "Cash, card or mobile banking recorded against the sale",
-        "Stock deducted at the selling branch (SALE_STORE)",
-        "Printed or emailed receipt",
-        "Only the branches a staff member has access to",
-      ]}
-    />
+    <div className="mx-auto max-w-7xl">
+      <Till
+        context={{
+          ...context,
+          locations: context.locations.map((location) => ({
+            ...location,
+            counters: location.counters.map((counter) => ({
+              code: counter.code,
+              session:
+                counter.session === null
+                  ? null
+                  : { id: counter.session.id, reference: counter.session.reference },
+            })),
+          })),
+        }}
+      />
+    </div>
   );
 }

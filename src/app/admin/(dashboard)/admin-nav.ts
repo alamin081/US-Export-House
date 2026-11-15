@@ -81,6 +81,14 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
     permission: "inventory.read",
   },
   {
+    label: "Barcode labels",
+    href: "/admin/labels",
+    icon: "tags",
+    phase: 9,
+    group: "catalogue",
+    permission: "label.print",
+  },
+  {
     label: "Transfers",
     href: "/admin/transfers",
     icon: "arrow-left-right",
@@ -130,7 +138,7 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
     permission: "customer.block",
   },
   {
-    label: "In-store sale",
+    label: "Till",
     href: "/admin/pos",
     icon: "store",
     phase: 9,

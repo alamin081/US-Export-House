@@ -36,6 +36,9 @@ function readFixture(): E2EFixture {
       couponCode: "",
       orderStaffEmail: "",
       swapSku: "",
+      tillManagerEmail: "",
+      tillSku: "",
+      tillBranchCode: "",
       phoneBn: "",
       phoneEn: "",
     };

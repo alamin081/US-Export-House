@@ -23,6 +23,10 @@ export interface E2EFixture {
   orderStaffEmail: string;
   /** Phase 9: a second item stocked online, swapped in by the order edit. */
   swapSku: string;
+  /** Phase 9: a shop, its Branch Manager and an item without a barcode (labels and till). */
+  tillManagerEmail: string;
+  tillSku: string;
+  tillBranchCode: string;
   phoneBn: string;
   phoneEn: string;
 }

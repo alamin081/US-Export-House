@@ -1,6 +1,8 @@
 import { formatDateTime } from "@/lib/datetime";
 import { listAccessibleLocations, requireStaffPage } from "@/modules/access/access.service";
+import { hasPermission } from "@/modules/access/authorization";
 import { ChangePasswordForm } from "./change-password-form";
+import { TillPinForm } from "./till-pin-form";
 
 export const metadata = { title: "My account" };
 
@@ -44,6 +46,18 @@ export default async function AccountPage() {
           <ChangePasswordForm />
         </div>
       </section>
+
+      {hasPermission(staff, "pos.discount.override") ? (
+        <section className="mt-8 rounded-lg border border-border bg-background p-5">
+          <h2 className="text-sm font-semibold">Till PIN</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Typed at a counter, with your email, to allow a discount above the seller&apos;s limit.
+          </p>
+          <div className="mt-5">
+            <TillPinForm />
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
