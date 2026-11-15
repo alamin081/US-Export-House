@@ -21,6 +21,10 @@ export const PERMISSIONS = [
   "catalog.publish",
   /** Delete draft products, categories, brands and size charts. */
   "catalog.delete",
+  /** Import products from CSV / Excel and bulk-upload their images. */
+  "catalog.import",
+  /** Download the catalogue as CSV (purchase cost only with inventory.cost.read). */
+  "catalog.export",
   /** Create and edit branches and warehouses. */
   "location.manage",
   /** Stock at the locations the staff member may access. */
@@ -77,11 +81,21 @@ export const PERMISSIONS = [
   /** Courier API bookings (Phase 11). */
   "shipment.book",
   "customer.read",
+  /** Reports and dashboard figures, limited to the staff member's locations. */
   "report.view",
+  /** Download reports as CSV. */
+  "report.export",
+  /** Edit home page, menus, footer and pages (drafts). */
   "content.write",
+  /** Put content live: publish, unpublish and restore versions. */
+  "content.publish",
   "settings.write",
   "staff.manage",
+  /** Edit roles and their permissions. Super Admin only. */
+  "role.manage",
   "audit.view",
+  /** Download the audit log as CSV. */
+  "audit.export",
 ] as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[number];
@@ -106,6 +120,8 @@ export const PERMISSION_GROUPS: ReadonlyArray<{
       "catalog.price.write",
       "catalog.publish",
       "catalog.delete",
+      "catalog.import",
+      "catalog.export",
     ],
   },
   {
@@ -153,8 +169,9 @@ export const PERMISSION_GROUPS: ReadonlyArray<{
     ],
   },
   { label: "Checkout", keys: ["coupon.manage", "shipping.manage", "checkout.settings"] },
-  { label: "Insight", keys: ["report.view", "audit.view"] },
-  { label: "Administration", keys: ["content.write", "settings.write", "staff.manage"] },
+  { label: "Insight", keys: ["report.view", "report.export", "audit.view", "audit.export"] },
+  { label: "Content", keys: ["content.write", "content.publish"] },
+  { label: "Administration", keys: ["settings.write", "staff.manage", "role.manage"] },
 ];
 
 export const SUPER_ADMIN_ROLE = "Super Admin";
@@ -181,8 +198,10 @@ export const SYSTEM_ROLES: readonly SystemRoleDefinition[] = [
   },
   {
     name: "Store Manager",
-    description: "Everything operational across all locations, except staff and settings.",
-    permissions: PERMISSIONS.filter((key) => key !== "staff.manage" && key !== "settings.write"),
+    description: "Everything operational across all locations, except staff, roles and settings.",
+    permissions: PERMISSIONS.filter(
+      (key) => key !== "staff.manage" && key !== "settings.write" && key !== "role.manage",
+    ),
     allLocations: true,
   },
   {
@@ -207,6 +226,7 @@ export const SYSTEM_ROLES: readonly SystemRoleDefinition[] = [
       "label.print",
       "customer.read",
       "report.view",
+      "report.export",
     ],
     allLocations: false,
   },

@@ -47,6 +47,18 @@ describe("system roles", () => {
     expect(manager.permissions).toContain("refund.record");
   });
 
+  it("gives role editing to Super Admin only and publishing to managers, not editors", () => {
+    const holders = (key: string) =>
+      SYSTEM_ROLES.filter((r) => (r.permissions as readonly string[]).includes(key)).map(
+        (r) => r.name,
+      );
+    expect(holders("role.manage")).toEqual([SUPER_ADMIN_ROLE]);
+    expect(holders("content.publish")).toEqual([SUPER_ADMIN_ROLE, "Store Manager"]);
+    expect(role("Content Editor").permissions).toContain("content.write");
+    expect(holders("report.export")).toEqual([SUPER_ADMIN_ROLE, "Store Manager", "Branch Manager"]);
+    expect(role("Branch Manager").permissions).not.toContain("inventory.cost.read");
+  });
+
   it("scopes branch roles to assigned locations", () => {
     for (const name of ["Branch Manager", "Branch Sales Staff", "Order Staff", "Inventory Staff"]) {
       expect(role(name).allLocations).toBe(false);

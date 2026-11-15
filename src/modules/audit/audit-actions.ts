@@ -103,6 +103,7 @@ export const AUDIT_ACTIONS = {
   posDiscountOverride: "pos.discount_override",
   posPinSet: "pos.pin_set",
   posBillHeld: "pos.bill_held",
+  reportExported: "report.exported",
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];
