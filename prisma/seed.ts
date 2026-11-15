@@ -28,7 +28,7 @@ import {
   MOCK_REVIEWS,
   SIZE_GUIDES,
   type MockProduct,
-} from "../src/modules/catalog/catalog.mock";
+} from "./seed-data/catalog";
 import {
   MOCK_ABOUT_SECTIONS,
   MOCK_BRAND_INTRO,
@@ -40,9 +40,9 @@ import {
   MOCK_SHIPPING_RETURN_POLICY,
   MOCK_SHOWROOMS,
   type MockPolicySection,
-} from "../src/modules/content/content.mock";
+} from "./seed-data/content";
 import { SYSTEM_ROLES } from "../src/modules/access/permissions";
-import { MOCK_ORDERS } from "../src/modules/orders/orders.mock";
+import { MOCK_ORDERS } from "./seed-data/orders";
 import {
   CATALOG_SETTINGS,
   CHECKOUT_SETTINGS,

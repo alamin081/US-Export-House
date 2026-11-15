@@ -2,6 +2,7 @@
 
 import { revalidatePath, updateTag } from "next/cache";
 
+import { CONTENT_TAGS } from "@/modules/content/cache-tags";
 import { getRequestMeta, requireStaffAction } from "@/modules/access/access.service";
 import { inventoryActionError } from "./inventory-action-error";
 import type { InventoryActionResult } from "./inventory-action-state";
@@ -53,6 +54,8 @@ export async function saveLocationAction(
     const staff = await requireStaffAction("location.manage");
     const saved = await saveLocationForStaff(staff, payload, await getRequestMeta());
     refreshStock("/admin/locations");
+    // Branch details on the footer and contact page.
+    updateTag(CONTENT_TAGS.branches);
     return { status: "success", message: `${saved.code} saved.`, data: { id: saved.id } };
   } catch (error) {
     return inventoryActionError(error);

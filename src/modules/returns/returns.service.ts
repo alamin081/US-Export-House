@@ -14,7 +14,7 @@ import {
   locationScope,
   type StaffContext,
 } from "@/modules/access/authorization";
-import { AUDIT_ACTIONS, recordAudit, type RequestMeta } from "@/modules/audit/audit.service";
+import { AUDIT_ACTIONS, type RequestMeta } from "@/modules/audit/audit.service";
 import { findCartVariants } from "@/modules/cart/cart.repository";
 import { formatOrderNumber } from "@/modules/checkout/checkout-rules";
 import { maskBdMobile, normalizeBdMobile } from "@/modules/checkout/phone";
@@ -53,7 +53,6 @@ import {
   listReturns,
   reserveThrottleAttempt,
   ReturnTx,
-  setReturnPolicyPublished,
   type LockedReturn,
 } from "./returns.repository";
 
@@ -1085,38 +1084,15 @@ export async function getReturnStart(staff: StaffContext, orderId: string) {
 
 /**
  * The policy is linked from checkout and tracking only once someone with
- * return.policy.publish has approved and published it (owner rule).
+ * return.policy.publish has approved it — since Phase 12 that means
+ * publishing the "shipping-returns" page in the content editor, which also
+ * sets returns.policyApproved (owner rule).
  */
 export async function isReturnPolicyPublished(): Promise<boolean> {
   try {
     const [page, settings] = await Promise.all([findReturnPolicyPage(), getReturnsSettings()]);
-    return settings.policyApproved && page?.status === "PUBLISHED";
+    return settings.policyApproved && page !== null && page.publishedVersionId !== null;
   } catch {
     return false;
   }
-}
-
-export async function getReturnPolicyStatus(staff: StaffContext) {
-  assertPermission(staff, "return.policy.publish");
-  const [page, settings] = await Promise.all([findReturnPolicyPage(), getReturnsSettings()]);
-  return {
-    published: settings.policyApproved && page?.status === "PUBLISHED",
-    publishedAt: page?.publishedAt ?? null,
-    settings,
-  };
-}
-
-export async function setReturnPolicy(staff: StaffContext, publish: boolean, meta: RequestMeta) {
-  assertPermission(staff, "return.policy.publish");
-  const before = await findReturnPolicyPage();
-  const page = await setReturnPolicyPublished(publish, staff.userId);
-  await recordAudit({
-    actorUserId: staff.userId,
-    action: publish ? AUDIT_ACTIONS.returnPolicyPublished : AUDIT_ACTIONS.returnPolicyUnpublished,
-    entityType: "page",
-    entityId: page.id,
-    before: { status: before?.status ?? null },
-    after: { status: publish ? "PUBLISHED" : "DRAFT", approvedBy: staff.userId },
-    meta,
-  });
 }

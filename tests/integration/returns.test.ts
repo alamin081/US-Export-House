@@ -12,6 +12,11 @@ import {
   startPacking,
 } from "@/modules/orders/fulfilment.service";
 import { confirmOrder } from "@/modules/orders/orders.service";
+import {
+  ensureSystemDocuments,
+  publishContent,
+  unpublishPage,
+} from "@/modules/content/content.service";
 import { decideRefund, recordRefund } from "@/modules/returns/refund.service";
 import {
   approveReturn,
@@ -24,7 +29,6 @@ import {
   issueReturnToken,
   receiveReturn,
   rejectReturn,
-  setReturnPolicy,
 } from "@/modules/returns/returns.service";
 import {
   caught,
@@ -502,10 +506,26 @@ describe("invoices and the return policy", () => {
   });
 
   it("publishes the policy only with return.policy.publish, audited", async () => {
-    expect((await caught(setReturnPolicy(clerk, true, meta()))).code).toBe("FORBIDDEN");
-    await setReturnPolicy(manager, true, meta());
+    // Since Phase 12 the policy is a content page; publishing it is the approval.
+    await ensureSystemDocuments();
+    const key = "page.shipping-returns";
+    const revision = async () =>
+      (await db.contentDocument.findUniqueOrThrow({ where: { key } })).draftRevision;
+    const editor = { ...clerk, permissions: [...clerk.permissions, "content.publish" as const] };
+    expect(
+      (
+        await caught(
+          publishContent(editor, { key, revision: await revision() }, meta(), {
+            production: false,
+          }),
+        )
+      ).code,
+    ).toBe("FORBIDDEN");
+    await publishContent(manager, { key, revision: await revision() }, meta(), {
+      production: false,
+    });
     expect(await isReturnPolicyPublished()).toBe(true);
-    await setReturnPolicy(manager, false, meta());
+    await unpublishPage(manager, key, meta());
     expect(await isReturnPolicyPublished()).toBe(false);
     expect(
       await db.auditLog.count({

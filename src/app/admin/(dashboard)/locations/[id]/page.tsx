@@ -53,6 +53,7 @@ export default async function LocationPage({ params }: { params: Promise<{ id: s
               phone: location.phone ?? "",
               hoursEn: location.hoursEn ?? "",
               hoursBn: location.hoursBn ?? "",
+              mapUrl: location.mapUrl ?? "",
               sortOrder: String(location.sortOrder),
               isActive: location.isActive,
               isOnlineFulfillment: location.isOnlineFulfillment,

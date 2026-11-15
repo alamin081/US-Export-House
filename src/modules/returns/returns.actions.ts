@@ -16,7 +16,6 @@ import {
   inspectReturn,
   receiveReturn,
   rejectReturn,
-  setReturnPolicy,
   type CustomerReturnResult,
 } from "./returns.service";
 
@@ -147,21 +146,6 @@ export async function decideRefundAction(
     revalidatePath("/admin/refunds");
     refresh();
     return { status: "success", message: "Saved." };
-  } catch (error) {
-    return actionError(error);
-  }
-}
-
-export async function setReturnPolicyAction(publish: boolean): Promise<ActionResult> {
-  try {
-    const staff = await requireStaffAction("return.policy.publish");
-    await setReturnPolicy(staff, publish, await getRequestMeta());
-    revalidatePath("/admin/returns/policy");
-    revalidatePath("/[locale]/(storefront)/shipping-returns", "page");
-    return {
-      status: "success",
-      message: publish ? "Return policy published." : "Return policy taken down.",
-    };
   } catch (error) {
     return actionError(error);
   }

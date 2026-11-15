@@ -66,6 +66,21 @@ export const locationSaveSchema = z.object({
     .refine((value) => value === null || /^\+?[0-9 -]{6,20}$/.test(value), "Enter a phone number."),
   hoursEn: optionalText(120),
   hoursBn: optionalText(120),
+  /** Google Maps link for the contact page and footer (Phase 12). */
+  mapUrl: z
+    .string()
+    .trim()
+    .max(500)
+    .optional()
+    .transform((value) => (value === undefined || value === "" ? null : value))
+    .refine(
+      (value) =>
+        value === null ||
+        /^https:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps|maps\.google\.com|www\.google\.com\/maps)[/?]/.test(
+          value,
+        ),
+      "Paste a Google Maps link (https://maps.app.goo.gl/… or https://www.google.com/maps/…).",
+    ),
   sortOrder: z.coerce.number().int().min(0).max(9999).default(0),
   isActive: bool,
   isOnlineFulfillment: bool,

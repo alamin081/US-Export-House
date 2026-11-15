@@ -343,43 +343,11 @@ export async function findExchangeCreditPayment(orderId: string): Promise<number
   return row._sum.amountPoisha ?? 0;
 }
 
+/** The return policy page (Phase 12 content document "page.shipping-returns"). */
 export async function findReturnPolicyPage() {
-  return db.page.findUnique({
-    where: { slug: "shipping-returns" },
-    select: { id: true, status: true, publishedAt: true },
-  });
-}
-
-export async function setReturnPolicyPublished(published: boolean, userId: string) {
-  return db.$transaction(async (tx) => {
-    const page = await tx.page.upsert({
-      where: { slug: "shipping-returns" },
-      create: {
-        slug: "shipping-returns",
-        titleEn: "Shipping & returns",
-        status: published ? "PUBLISHED" : "DRAFT",
-        publishedAt: published ? new Date() : null,
-        lastUpdatedUserId: userId,
-      },
-      update: {
-        status: published ? "PUBLISHED" : "DRAFT",
-        publishedAt: published ? new Date() : null,
-        lastUpdatedUserId: userId,
-      },
-      select: { id: true },
-    });
-    await tx.setting.upsert({
-      where: { key: "returns.policyApproved" },
-      create: {
-        key: "returns.policyApproved",
-        valueType: "BOOLEAN",
-        value: String(published),
-        group: "returns",
-        updatedByUserId: userId,
-      },
-      update: { value: String(published), updatedByUserId: userId },
-    });
-    return page;
+  return db.contentDocument.findUnique({
+    where: { key: "page.shipping-returns" },
+    select: { id: true, publishedVersionId: true, publishedAt: true },
   });
 }
 

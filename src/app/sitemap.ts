@@ -2,9 +2,11 @@ import type { MetadataRoute } from "next";
 
 import { clientEnv } from "@/config/env";
 import { cachedSitemapEntries } from "@/modules/catalog/storefront-catalog.cached";
+import { cachedLivePages } from "@/modules/content/content.storefront";
 
 /**
- * sitemap.xml: home, shop, every active category and every published product,
+ * sitemap.xml: home, shop, every published content page, every active
+ * category and every published product,
  * each in Bengali (no prefix, the default) and English (/en), with hreflang
  * alternates. Refreshed with the catalogue cache tags.
  */
@@ -22,10 +24,14 @@ function entry(path: string, lastModified?: string): MetadataRoute.Sitemap[numbe
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const { products, categories } = await cachedSitemapEntries();
+  const [{ products, categories }, pages] = await Promise.all([
+    cachedSitemapEntries(),
+    cachedLivePages(),
+  ]);
   const paths = [
     entry("/"),
     entry("/shop"),
+    ...pages.map((page) => entry(page.path, page.publishedAt ?? undefined)),
     ...categories.map((category) => entry(`/category/${category.slug}`, category.updatedAt)),
     ...products.map((product) => entry(`/product/${product.slug}`, product.updatedAt)),
   ];

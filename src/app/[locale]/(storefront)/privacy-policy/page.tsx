@@ -1,14 +1,8 @@
-import { getTranslations } from "next-intl/server";
+import { contentPageMetadata, ContentPageView } from "@/components/content/content-page";
 
-import { PolicyPageView } from "@/components/shared/policy-page";
-import { MOCK_PRIVACY_POLICY } from "@/modules/content/content.mock";
+/** Written and published in the admin content editor (Phase 12). */
+export const generateMetadata = contentPageMetadata("privacy-policy");
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Metadata" });
-  return { title: t("privacyTitle") };
-}
-
-export default function PrivacyPolicyPage() {
-  return <PolicyPageView page={MOCK_PRIVACY_POLICY} />;
+export default function Page({ params }: { params: Promise<{ locale: string }> }) {
+  return <ContentPageView slug="privacy-policy" params={params} />;
 }

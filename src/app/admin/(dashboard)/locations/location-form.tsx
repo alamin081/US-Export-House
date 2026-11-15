@@ -25,6 +25,7 @@ export interface LocationFormValue {
   phone: string;
   hoursEn: string;
   hoursBn: string;
+  mapUrl: string;
   sortOrder: string;
   isActive: boolean;
   isOnlineFulfillment: boolean;
@@ -44,6 +45,7 @@ export const EMPTY_LOCATION: LocationFormValue = {
   phone: "",
   hoursEn: "",
   hoursBn: "",
+  mapUrl: "",
   sortOrder: "0",
   isActive: true,
   isOnlineFulfillment: false,
@@ -232,6 +234,13 @@ export function LocationForm({
           lang="bn"
           value={value.hoursBn}
           onChange={(next) => set("hoursBn", next)}
+        />
+        <TextField
+          label="Google Maps link"
+          className="sm:col-span-3"
+          hint="Shown as “Open in Google Maps” on the contact page. গুগল ম্যাপে দোকানের লিংক কপি করে এখানে দিন।"
+          value={value.mapUrl}
+          onChange={(next) => set("mapUrl", next)}
         />
       </fieldset>
 

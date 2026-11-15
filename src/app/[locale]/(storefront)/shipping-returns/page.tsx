@@ -1,19 +1,8 @@
-import { getTranslations } from "next-intl/server";
+import { contentPageMetadata, ContentPageView } from "@/components/content/content-page";
 
-import { PolicyPageView } from "@/components/shared/policy-page";
-import { MOCK_SHIPPING_RETURN_POLICY } from "@/modules/content/content.mock";
-import { isReturnPolicyPublished } from "@/modules/returns/returns.service";
+/** Written and published in the admin content editor (Phase 12). */
+export const generateMetadata = contentPageMetadata("shipping-returns");
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Metadata" });
-  return {
-    title: t("shippingReturnsTitle"),
-    // Out of search results until the policy is approved and published.
-    robots: { index: await isReturnPolicyPublished(), follow: true },
-  };
-}
-
-export default function ShippingReturnsPage() {
-  return <PolicyPageView page={MOCK_SHIPPING_RETURN_POLICY} />;
+export default function Page({ params }: { params: Promise<{ locale: string }> }) {
+  return <ContentPageView slug="shipping-returns" params={params} />;
 }

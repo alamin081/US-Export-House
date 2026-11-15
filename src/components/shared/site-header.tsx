@@ -1,45 +1,44 @@
-import { Search, UserRound } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { Search } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
 
+import { AnnouncementBar } from "@/components/content/announcement-bar";
 import { CartLink } from "@/components/shared/cart-link";
 import { LocaleSwitcher } from "@/components/shared/locale-switcher";
 import { MobileNav } from "@/components/shared/mobile-nav";
-import { MAIN_NAV } from "@/components/shared/navigation";
 import { getPathname, Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
+import { loadHeader } from "@/modules/content/content.views";
 
 /**
  * Storefront header: announcement bar, wordmark, primary navigation, search and
  * the cart. Sticky on scroll, collapsed to a drawer below `lg`.
  *
- * PLACEHOLDER: the wordmark is set in type until the logo arrives. The cart
- * count is fetched in the browser (CartLink), so the header stays cacheable.
+ * The announcements and the menu come from the content editor (Phase 12);
+ * a menu that has not been published yet shows only "Shop all". Customer
+ * accounts are hidden until Phase 12.5. The cart count is fetched in the
+ * browser (CartLink), so the header stays cacheable.
  */
-export function SiteHeader() {
-  const t = useTranslations("Nav");
-  const tCommon = useTranslations("Common");
-  const locale = useLocale() as Locale;
+export async function SiteHeader() {
+  const locale = (await getLocale()) as Locale;
+  const t = await getTranslations({ locale, namespace: "Nav" });
+  const tCommon = await getTranslations({ locale, namespace: "Common" });
+  const { messages, items, hasMenu } = await loadHeader(locale);
+  const nav = hasMenu ? items : [{ id: "shop", label: t("shop"), href: "/shop", children: [] }];
   // A plain GET form needs the locale-prefixed path, which `Link` would add.
   const searchAction = getPathname({ href: "/shop", locale });
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
-      {/* Announcement bar */}
-      <div className="bg-primary text-primary-foreground">
-        <div className="site-container flex h-9 items-center justify-between gap-4 text-xs">
-          <p className="truncate">{tCommon("announcement")}</p>
-          <div className="flex shrink-0 items-center gap-4">
-            <Link href="/track-order" className="hidden hover:underline sm:inline">
-              {t("trackOrder")}
-            </Link>
-            <LocaleSwitcher tone="dark" />
-          </div>
-        </div>
-      </div>
+      <AnnouncementBar messages={messages}>
+        <Link href="/track-order" className="hidden hover:underline sm:inline">
+          {t("trackOrder")}
+        </Link>
+        <LocaleSwitcher tone="dark" />
+      </AnnouncementBar>
 
       {/* Main row */}
       <div className="site-container flex h-16 items-center gap-3 lg:h-20">
-        <MobileNav />
+        <MobileNav items={nav} />
 
         <Link
           href="/"
@@ -56,14 +55,28 @@ export function SiteHeader() {
 
         <nav aria-label={tCommon("menu")} className="hidden flex-1 lg:block">
           <ul className="flex items-center gap-6">
-            {MAIN_NAV.map((item) => (
-              <li key={item.key}>
+            {nav.map((item) => (
+              <li key={item.id} className="group relative">
                 <Link
                   href={item.href}
                   className="text-sm text-foreground/80 transition-colors hover:text-foreground"
                 >
-                  {t(item.key)}
+                  {item.label}
                 </Link>
+                {item.children.length === 0 ? null : (
+                  <ul className="invisible absolute start-0 top-full z-50 min-w-48 rounded-md border border-border bg-background py-2 opacity-0 shadow-lg transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
+                    {item.children.map((child) => (
+                      <li key={child.id}>
+                        <Link
+                          href={child.href}
+                          className="block px-4 py-2 text-sm text-foreground/80 hover:bg-secondary hover:text-foreground"
+                        >
+                          {child.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </li>
             ))}
           </ul>
@@ -96,14 +109,6 @@ export function SiteHeader() {
             className="inline-flex size-10 items-center justify-center rounded-md hover:bg-secondary md:hidden"
           >
             <Search aria-hidden="true" className="size-5" />
-          </Link>
-
-          <Link
-            href="/account"
-            aria-label={t("account")}
-            className="inline-flex size-10 items-center justify-center rounded-md hover:bg-secondary"
-          >
-            <UserRound aria-hidden="true" className="size-5" />
           </Link>
 
           <CartLink />

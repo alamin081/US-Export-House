@@ -23,6 +23,7 @@ const locationSelect = {
   phone: true,
   hoursEn: true,
   hoursBn: true,
+  mapUrl: true,
   isActive: true,
   isOnlineFulfillment: true,
   isDefaultOnlineFulfillment: true,

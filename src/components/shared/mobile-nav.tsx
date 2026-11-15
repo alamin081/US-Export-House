@@ -5,8 +5,8 @@ import { Menu, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { LocaleSwitcher } from "@/components/shared/locale-switcher";
-import { ACCOUNT_NAV, MAIN_NAV } from "@/components/shared/navigation";
 import { Link } from "@/i18n/navigation";
+import type { NavItemView } from "@/modules/content/content.views";
 
 /**
  * Mobile navigation drawer.
@@ -15,7 +15,7 @@ import { Link } from "@/i18n/navigation";
  * no more complex than Escape-to-close plus a scroll lock, and this keeps the
  * bundle small on the phones most customers shop from.
  */
-export function MobileNav() {
+export function MobileNav({ items }: { items: readonly NavItemView[] }) {
   const t = useTranslations("Nav");
   const tCommon = useTranslations("Common");
   const [open, setOpen] = useState(false);
@@ -79,31 +79,65 @@ export function MobileNav() {
 
             <nav aria-label={tCommon("menu")} className="flex-1 overflow-y-auto px-5 py-4">
               <ul className="flex flex-col">
-                {MAIN_NAV.map((item) => (
-                  <li key={item.key}>
-                    <Link
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className="block border-b border-border py-3 text-sm"
-                    >
-                      {t(item.key)}
-                    </Link>
+                {items.map((item) => (
+                  <li key={item.id} className="border-b border-border">
+                    {item.children.length === 0 ? (
+                      <Link
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        className="block py-3 text-sm"
+                      >
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <details className="group py-1">
+                        <summary className="flex cursor-pointer list-none items-center justify-between py-2 text-sm">
+                          {item.label}
+                          <span
+                            aria-hidden="true"
+                            className="text-muted-foreground group-open:rotate-45"
+                          >
+                            +
+                          </span>
+                        </summary>
+                        <ul className="mb-2 flex flex-col gap-1 ps-3">
+                          <li>
+                            <Link
+                              href={item.href}
+                              onClick={() => setOpen(false)}
+                              className="block py-1.5 text-sm text-muted-foreground"
+                            >
+                              {item.label}
+                            </Link>
+                          </li>
+                          {item.children.map((child) => (
+                            <li key={child.id}>
+                              <Link
+                                href={child.href}
+                                onClick={() => setOpen(false)}
+                                className="block py-1.5 text-sm text-muted-foreground"
+                              >
+                                {child.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
+                    )}
                   </li>
                 ))}
               </ul>
 
               <ul className="mt-6 flex flex-col gap-3">
-                {ACCOUNT_NAV.map((item) => (
-                  <li key={item.key}>
-                    <Link
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className="text-sm text-muted-foreground hover:text-foreground"
-                    >
-                      {t(item.key)}
-                    </Link>
-                  </li>
-                ))}
+                <li>
+                  <Link
+                    href="/track-order"
+                    onClick={() => setOpen(false)}
+                    className="text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    {t("trackOrder")}
+                  </Link>
+                </li>
               </ul>
             </nav>
 
