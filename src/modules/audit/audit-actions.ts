@@ -111,6 +111,12 @@ export const AUDIT_ACTIONS = {
   contentCreated: "content.created",
   contentDeleted: "content.deleted",
   contentImported: "content.imported",
+  settingsChanged: "settings.changed",
+  roleCreated: "role.created",
+  roleUpdated: "role.updated",
+  roleDeleted: "role.deleted",
+  auditExported: "audit.exported",
+  labelsChanged: "ui_labels.changed",
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];

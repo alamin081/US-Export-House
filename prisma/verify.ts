@@ -285,6 +285,27 @@ async function main() {
     prisma.coupon.create({ data: { code: "welcome10", type: "PERCENTAGE", value: 5 } }),
   );
 
+  // Phase 12: the audit log is append-only. The test-database purge switch
+  // must not work here, because this database's name does not end in _test.
+  await expectRejected(
+    "an audit log row cannot be changed",
+    () =>
+      prisma.$executeRaw`UPDATE "AuditLog" SET "action" = "action" WHERE "id" IN (SELECT "id" FROM "AuditLog" LIMIT 1)`,
+  );
+  await expectRejected(
+    "an audit log row cannot be deleted, even with the test purge switch",
+    async () => {
+      await prisma.$transaction(async (tx) => {
+        await tx.$executeRaw`SET LOCAL app.audit_purge = 'on'`;
+        await tx.$executeRaw`DELETE FROM "AuditLog" WHERE "id" IN (SELECT "id" FROM "AuditLog" LIMIT 1)`;
+      });
+    },
+  );
+  await expectRejected(
+    "the audit log cannot be truncated",
+    () => prisma.$executeRaw`TRUNCATE "AuditLog"`,
+  );
+
   console.info("");
   if (failures > 0) {
     console.error(`${failures} check(s) failed.\n`);
