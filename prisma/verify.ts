@@ -15,7 +15,7 @@ loadEnvFiles({ path: [".env.local", ".env"], quiet: true });
 
 import { PrismaPg } from "@prisma/adapter-pg";
 
-import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaClient, type Prisma } from "../src/generated/prisma/client";
 
 const connectionString = process.env.DATABASE_URL;
 if (connectionString === undefined || connectionString === "") {
@@ -287,39 +287,63 @@ async function main() {
     prisma.coupon.create({ data: { code: "welcome10", type: "PERCENTAGE", value: 5 } }),
   );
 
-  // Phase 12: the audit log is append-only. The purge switch works only in a
-  // database whose name ends in _test (CI verifies one), so the check below
-  // expects whichever answer this database should give — and always rolls back.
-  await expectRejected(
-    "an audit log row cannot be changed",
-    () =>
-      prisma.$executeRaw`UPDATE "AuditLog" SET "action" = "action" WHERE "id" IN (SELECT "id" FROM "AuditLog" LIMIT 1)`,
-  );
+  // Phase 12: the audit log is append-only. Each check writes its own row
+  // inside a transaction that is always rolled back (a fresh database may
+  // have no rows, and a row trigger never fires on zero rows), so verifying
+  // leaves nothing behind. The purge switch works only in a database whose
+  // name ends in _test (CI verifies one), so that check expects whichever
+  // answer this database should give.
   const [database] = await prisma.$queryRaw<
     Array<{ name: string }>
   >`SELECT current_database() AS name`;
   const name = database?.name ?? "";
   const purgeAllowed = name.endsWith("_test");
-  let purgeWorked = false;
-  try {
-    await prisma.$transaction(async (tx) => {
-      await tx.$executeRaw`SET LOCAL app.audit_purge = 'on'`;
-      await tx.$executeRaw`DELETE FROM "AuditLog" WHERE "id" IN (SELECT "id" FROM "AuditLog" LIMIT 1)`;
-      purgeWorked = true;
-      throw new Error("__rollback__");
-    });
-  } catch {
-    // Rolled back either way: nothing is removed.
+
+  /** Runs `change` on a throwaway audit row; true if the database allowed it. */
+  async function auditChangeAllowed(
+    change: (tx: Prisma.TransactionClient, id: string) => Promise<unknown>,
+  ): Promise<boolean> {
+    let allowed = false;
+    try {
+      await prisma.$transaction(async (tx) => {
+        const row = await tx.auditLog.create({
+          data: { action: "verify.probe", entityType: "verify" },
+          select: { id: true },
+        });
+        await change(tx, row.id);
+        allowed = true;
+        throw new Error("__rollback__");
+      });
+    } catch {
+      // Rolled back either way.
+    }
+    return allowed;
   }
+
+  check(
+    "an audit log row cannot be changed",
+    !(await auditChangeAllowed(
+      (tx, id) => tx.$executeRaw`UPDATE "AuditLog" SET "action" = 'changed' WHERE "id" = ${id}`,
+    )),
+  );
+  check(
+    "an audit log row cannot be deleted without the purge switch",
+    !(await auditChangeAllowed(
+      (tx, id) => tx.$executeRaw`DELETE FROM "AuditLog" WHERE "id" = ${id}`,
+    )),
+  );
   check(
     purgeAllowed
       ? `the test purge switch works in ${name} (rolled back)`
       : `an audit log row cannot be deleted in ${name}, even with the test purge switch`,
-    purgeWorked === purgeAllowed,
+    (await auditChangeAllowed(async (tx, id) => {
+      await tx.$executeRaw`SET LOCAL app.audit_purge = 'on'`;
+      await tx.$executeRaw`DELETE FROM "AuditLog" WHERE "id" = ${id}`;
+    })) === purgeAllowed,
   );
-  await expectRejected(
+  check(
     "the audit log cannot be truncated",
-    () => prisma.$executeRaw`TRUNCATE "AuditLog"`,
+    !(await auditChangeAllowed((tx) => tx.$executeRaw`TRUNCATE "AuditLog"`)),
   );
 
   console.info("");
