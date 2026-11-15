@@ -296,6 +296,13 @@ export interface OrderListFilter {
   couponCode: string | null;
   reviewOnly: boolean;
   unreachableOnly: boolean;
+  /** Report drill-down: orders that counted as a sale in [soldFrom, soldTo). */
+  soldFrom: Date | null;
+  soldTo: Date | null;
+  /** Dashboard: shipped before this instant and still not delivered. */
+  shippedBefore: Date | null;
+  /** Dashboard: delivered COD not fully collected, delivered before this instant. */
+  codDeliveredBefore: Date | null;
   locationId: string | null;
   /** undefined = every location; otherwise only these. */
   locationIds: readonly string[] | undefined;
@@ -312,6 +319,19 @@ function listWhere(filter: OrderListFilter): Prisma.OrderWhereInput {
   if (filter.unreachableOnly) and.push({ unreachableAt: { not: null } });
   if (filter.zoneCode !== null) and.push({ zoneCode: filter.zoneCode });
   if (filter.couponCode !== null) and.push({ couponCode: filter.couponCode });
+  if (filter.soldFrom !== null) and.push({ soldAt: { gte: filter.soldFrom } });
+  if (filter.soldTo !== null) and.push({ soldAt: { lt: filter.soldTo } });
+  if (filter.shippedBefore !== null) {
+    and.push({ status: "SHIPPED", shippedAt: { lt: filter.shippedBefore } });
+  }
+  if (filter.codDeliveredBefore !== null) {
+    and.push({
+      paymentMethod: "COD",
+      status: "DELIVERED",
+      deliveredAt: { lt: filter.codDeliveredBefore },
+      paidPoisha: { lt: db.order.fields.totalPoisha },
+    });
+  }
   if (filter.from !== null) and.push({ placedAt: { gte: filter.from } });
   if (filter.to !== null) and.push({ placedAt: { lt: filter.to } });
   if (filter.search !== null) {

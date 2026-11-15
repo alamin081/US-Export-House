@@ -1,25 +1,43 @@
+import Link from "next/link";
+
 import { requireStaffPage } from "@/modules/access/access.service";
-import { AdminPlaceholder } from "../admin-placeholder";
+import { visibleReports } from "@/modules/reports/reports.service";
 
 export const metadata = { title: "Reports" };
 
 export default async function ReportsPage() {
-  await requireStaffPage("report.view");
+  const staff = await requireStaffPage("report.view");
+  const reports = visibleReports(staff);
 
   return (
-    <AdminPlaceholder
-      title="Reports"
-      phase={12}
-      description={"Sales, stock and operations reporting by date, channel and location."}
-      layout="cards"
-      features={[
-        "Sales by date, channel and location",
-        "Stock value and low stock per location",
-        "Transfers and adjustments",
-        "Top products and coupon usage",
-        "COD collection and settlement",
-        "CSV export for every report",
-      ]}
-    />
+    <div className="mx-auto max-w-6xl">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight">Reports</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Every figure is in Bangladesh time and limited to the locations you can see.
+        </p>
+      </header>
+      <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {reports.map((report) => (
+          <li key={report.key}>
+            <Link
+              href={`/admin/reports/${report.key}`}
+              className="block h-full rounded-lg border border-border bg-background p-5 hover:border-foreground/30"
+              data-testid={`report-${report.key}`}
+            >
+              <h2 className="text-sm font-semibold">{report.title}</h2>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                {report.description}
+              </p>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      {reports.length === 0 ? (
+        <p className="mt-8 text-sm text-muted-foreground">
+          Your role does not include any report yet.
+        </p>
+      ) : null}
+    </div>
   );
 }

@@ -185,9 +185,9 @@ export function AdminShell({
     .toUpperCase();
 
   return (
-    <div className="flex min-h-dvh bg-secondary/30">
+    <div className="flex min-h-dvh bg-secondary/30 print:bg-background">
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 border-e border-border bg-background lg:block">
+      <aside className="hidden w-64 shrink-0 border-e border-border bg-background lg:block print:hidden">
         <div className="flex h-16 items-center border-b border-border px-6">
           <Link href="/admin" className="flex flex-col leading-none">
             <span className="text-sm font-semibold tracking-[0.18em] uppercase">US Export</span>
@@ -232,7 +232,7 @@ export function AdminShell({
 
       {/* Main column */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 border-b border-border bg-background">
+        <header className="sticky top-0 z-30 border-b border-border bg-background print:hidden">
           <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
             <button
               type="button"

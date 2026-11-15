@@ -17,7 +17,7 @@ import { maskBdMobile } from "@/modules/checkout/phone";
 import { applyStockMovements, parse } from "@/modules/inventory/inventory.service";
 import type { InventoryUnitOfWork } from "@/modules/inventory/inventory.repository";
 import { notify } from "@/modules/notifications/notification.service";
-import { getOrderSettings } from "@/modules/settings/settings.service";
+import { getOrderSettings, getReportSettings } from "@/modules/settings/settings.service";
 import {
   assertAnyPermission,
   assertTransition,
@@ -77,6 +77,10 @@ const listQuerySchema = z.object({
   coupon: z.string().trim().max(40).optional(),
   review: z.literal("1").optional().catch(undefined),
   unreachable: z.literal("1").optional().catch(undefined),
+  soldFrom: z.iso.date().optional().catch(undefined),
+  soldTo: z.iso.date().optional().catch(undefined),
+  stale: z.literal("1").optional().catch(undefined),
+  codOverdue: z.literal("1").optional().catch(undefined),
   location: z.string().max(40).optional(),
   page: z.coerce.number().int().min(1).max(10_000).catch(1),
 });
@@ -97,6 +101,9 @@ export async function listOrdersForStaff(staff: StaffContext, raw: Record<string
     canAccessLocation(staff, query.location)
       ? query.location
       : null;
+  const reportSettings =
+    query.stale === "1" || query.codOverdue === "1" ? await getReportSettings() : null;
+  const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 1000);
   const [result, counts] = await Promise.all([
     listOrders({
       statuses: tabStatuses(query.tab),
@@ -112,6 +119,19 @@ export async function listOrdersForStaff(staff: StaffContext, raw: Record<string
         query.coupon === undefined || query.coupon === "" ? null : query.coupon.toUpperCase(),
       reviewOnly: query.review === "1",
       unreachableOnly: query.unreachable === "1",
+      soldFrom: query.soldFrom === undefined ? null : dhakaDayStart(query.soldFrom),
+      soldTo:
+        query.soldTo === undefined
+          ? null
+          : new Date(dhakaDayStart(query.soldTo).getTime() + 24 * 60 * 60 * 1000),
+      shippedBefore:
+        query.stale === "1" && reportSettings !== null
+          ? daysAgo(reportSettings.staleShipmentDays)
+          : null,
+      codDeliveredBefore:
+        query.codOverdue === "1" && reportSettings !== null
+          ? daysAgo(reportSettings.codOverdueDays)
+          : null,
       locationId: filterLocation,
       locationIds: scope,
       page: query.page,

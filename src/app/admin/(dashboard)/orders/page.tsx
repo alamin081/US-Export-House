@@ -29,6 +29,14 @@ export default async function OrdersPage({
     getOrderSettings(),
   ]);
   const pages = Math.max(1, Math.ceil(result.total / result.pageSize));
+  // Filters that arrive from report and dashboard links.
+  const drillDown = [
+    query.soldFrom === undefined && query.soldTo === undefined
+      ? null
+      : `sold ${query.soldFrom ?? "…"} to ${query.soldTo ?? "…"} (online orders)`,
+    query.stale === "1" ? "shipped and not delivered for too long" : null,
+    query.codOverdue === "1" ? "delivered COD not collected for too long" : null,
+  ].filter((entry): entry is string => entry !== null);
   const link = (changes: Record<string, string | undefined>) => {
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries({ ...query, ...changes })) {
@@ -86,8 +94,35 @@ export default async function OrdersPage({
         ))}
       </nav>
 
+      {drillDown.length === 0 ? null : (
+        <p
+          className="mt-4 flex flex-wrap items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs"
+          data-testid="drill-down-filter"
+        >
+          <span className="font-medium">Filtered:</span>
+          <span className="text-muted-foreground">{drillDown.join(" · ")}</span>
+          <Link
+            href={link({
+              soldFrom: undefined,
+              soldTo: undefined,
+              stale: undefined,
+              codOverdue: undefined,
+              page: undefined,
+            })}
+            className="ms-auto underline underline-offset-4"
+          >
+            Clear
+          </Link>
+        </p>
+      )}
+
       <form className="mt-4 flex flex-wrap items-end gap-3" action="/admin/orders">
         <input type="hidden" name="tab" value={result.tab} />
+        {(["soldFrom", "soldTo", "stale", "codOverdue"] as const).map((key) =>
+          query[key] === undefined ? null : (
+            <input key={key} type="hidden" name={key} value={query[key]} />
+          ),
+        )}
         <label className="flex flex-col gap-1 text-xs text-muted-foreground">
           Search
           <input

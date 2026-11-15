@@ -51,9 +51,16 @@
   --ring: oklch(0.22 0 0);
 
   --radius: 0.625rem; /* 10px */
+
+  /* Report charts (Phase 12): categorical slots 1-2 of the validated data-viz
+   * palette, light steps; checked with validate_palette.js on both surfaces. */
+  --viz-1: #2a78d6;
+  --viz-2: #eb6834;
 }
 
 :root.dark {
+  --viz-1: #3987e5;
+  --viz-2: #d95926;
   --background: oklch(0.17 0 0);
   --foreground: oklch(0.97 0 0);
 
