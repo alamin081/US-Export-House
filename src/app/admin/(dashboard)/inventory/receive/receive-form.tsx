@@ -73,7 +73,7 @@ export function ReceiveForm({
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[20rem_1fr]">
+    <div className="grid gap-6 lg:grid-cols-[20rem_1fr]" data-cost-entry="inventory.receive">
       <div className="flex flex-col gap-4 rounded-lg border border-border bg-background p-5">
         <div>
           <Label htmlFor="receive-location" required>

@@ -38,6 +38,7 @@
     "inventory:verify": "tsx scripts/inventory-verify.ts",
     "db:mark-sample": "tsx scripts/mark-sample-locations.ts",
     "catalog:generate-barcodes": "tsx scripts/generate-barcodes.ts",
+    "check:bundle": "tsx scripts/check-client-bundle.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {

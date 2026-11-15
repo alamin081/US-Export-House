@@ -58,6 +58,8 @@ jobs:
       - run: npm test
       - run: npm run db:migrate:deploy
       - run: npm run build
+      # No server secret and no purchase-cost field in browser JavaScript.
+      - run: npm run check:bundle
 
   database:
     name: Migrate, seed and integration-test a clean database

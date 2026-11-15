@@ -79,7 +79,9 @@ export function ImportWizard() {
         };
 
   return (
-    <div className="flex flex-col gap-6">
+    // Marks a page where staff with inventory.receive type purchase costs
+    // (allowed by scripts/check-client-bundle.ts).
+    <div className="flex flex-col gap-6" data-cost-entry="inventory.receive">
       <div className="grid gap-4 rounded-lg border border-border bg-background p-5 sm:grid-cols-[1fr_2fr_auto] sm:items-end">
         <div>
           <Label htmlFor="import-mode" required>
