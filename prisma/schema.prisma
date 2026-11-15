@@ -2319,3 +2319,89 @@ model AuditLog {
   @@index([userId, createdAt])
   @@index([action, createdAt])
 }
+
+// ---------------------------------------------------------------------------
+// Phase 12: product import (CSV / Excel). A file is checked first (dry run)
+// and the result stored here; applying it reads this plan, never the file.
+// ---------------------------------------------------------------------------
+
+enum ProductImportMode {
+  ALL_OR_NOTHING
+  GOOD_ONLY
+}
+
+enum ProductImportStatus {
+  VALIDATED
+  APPLYING
+  DONE
+  FAILED
+  CANCELLED
+}
+
+enum ProductImportAction {
+  CREATE
+  UPDATE
+  UNCHANGED
+  ERROR
+}
+
+model ProductImport {
+  id             String              @id @default(cuid())
+  fileName       String
+  fileSha256     String
+  /// "csv" or "xlsx".
+  fileKind       String
+  /// Column headings as the file had them, for the error CSV.
+  headers        String[]
+  mode           ProductImportMode   @default(ALL_OR_NOTHING)
+  status         ProductImportStatus @default(VALIDATED)
+  rowCount       Int
+  createCount    Int
+  updateCount    Int
+  unchangedCount Int
+  errorCount     Int
+  warningCount   Int
+  /// File-level warnings (unknown columns, ignored cost column …).
+  warnings       Json?
+  appliedCount   Int                 @default(0)
+  skippedCount   Int                 @default(0)
+  includeCost    Boolean
+  createdById    String
+  createdAt      DateTime            @default(now())
+  finishedAt     DateTime?
+  /// Why applying stopped, when it did.
+  failureReason  String?
+  rows           ProductImportRow[]
+
+  @@index([fileSha256])
+  @@index([createdAt])
+}
+
+model ProductImportRow {
+  id                String              @id @default(cuid())
+  importId          String
+  import            ProductImport       @relation(fields: [importId], references: [id], onDelete: Cascade)
+  /// Order in the file (first row of the product).
+  position          Int
+  productCode       String?
+  productName       String
+  productId         String?
+  rowNumbers        Int[]
+  action            ProductImportAction
+  /// The resolved plan (ids, poisha) applied later.
+  payload           Json
+  /// Field-by-field before → after, for the preview.
+  diff              Json?
+  /// [{ row, column, message }]
+  errors            Json?
+  warnings          Json?
+  /// The file's cells of these rows, for the error CSV.
+  sourceRows        Json
+  requestedPublish  Boolean             @default(false)
+  expectedVersion   Int?
+  /// APPLIED, SKIPPED (with reason) or null while waiting.
+  outcome           String?
+  outcomeReason     String?
+
+  @@index([importId, position])
+}
