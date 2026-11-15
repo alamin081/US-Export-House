@@ -43,6 +43,8 @@ function check(label: string, condition: boolean, detail = "") {
 async function expectRejected(label: string, run: () => Promise<unknown>) {
   try {
     await prisma.$transaction(async () => {
+      // Note: `run` uses the plain client, so this does not undo it; checks
+      // here must be statements the database refuses outright.
       await run();
       // Force a rollback if the statement unexpectedly succeeded.
       throw new Error("__accepted__");
@@ -285,21 +287,35 @@ async function main() {
     prisma.coupon.create({ data: { code: "welcome10", type: "PERCENTAGE", value: 5 } }),
   );
 
-  // Phase 12: the audit log is append-only. The test-database purge switch
-  // must not work here, because this database's name does not end in _test.
+  // Phase 12: the audit log is append-only. The purge switch works only in a
+  // database whose name ends in _test (CI verifies one), so the check below
+  // expects whichever answer this database should give — and always rolls back.
   await expectRejected(
     "an audit log row cannot be changed",
     () =>
       prisma.$executeRaw`UPDATE "AuditLog" SET "action" = "action" WHERE "id" IN (SELECT "id" FROM "AuditLog" LIMIT 1)`,
   );
-  await expectRejected(
-    "an audit log row cannot be deleted, even with the test purge switch",
-    async () => {
-      await prisma.$transaction(async (tx) => {
-        await tx.$executeRaw`SET LOCAL app.audit_purge = 'on'`;
-        await tx.$executeRaw`DELETE FROM "AuditLog" WHERE "id" IN (SELECT "id" FROM "AuditLog" LIMIT 1)`;
-      });
-    },
+  const [database] = await prisma.$queryRaw<
+    Array<{ name: string }>
+  >`SELECT current_database() AS name`;
+  const name = database?.name ?? "";
+  const purgeAllowed = name.endsWith("_test");
+  let purgeWorked = false;
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SET LOCAL app.audit_purge = 'on'`;
+      await tx.$executeRaw`DELETE FROM "AuditLog" WHERE "id" IN (SELECT "id" FROM "AuditLog" LIMIT 1)`;
+      purgeWorked = true;
+      throw new Error("__rollback__");
+    });
+  } catch {
+    // Rolled back either way: nothing is removed.
+  }
+  check(
+    purgeAllowed
+      ? `the test purge switch works in ${name} (rolled back)`
+      : `an audit log row cannot be deleted in ${name}, even with the test purge switch`,
+    purgeWorked === purgeAllowed,
   );
   await expectRejected(
     "the audit log cannot be truncated",
