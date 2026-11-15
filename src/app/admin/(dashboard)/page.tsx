@@ -1,248 +1,339 @@
-import { AlertTriangle, ArrowUpRight, Banknote, Package, Receipt, TrendingUp } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { formatDate } from "@/lib/datetime";
-import { formatMoney } from "@/lib/money";
-import { MOCK_ORDERS } from "@/modules/orders/orders.mock";
+import { cn } from "@/lib/utils";
 import { requireStaffPage } from "@/modules/access/access.service";
 import { hasPermission } from "@/modules/access/authorization";
 import { getLowStock } from "@/modules/inventory/inventory.service";
+import { getDashboard } from "@/modules/reports/dashboard.service";
+import type { SalesTotals } from "@/modules/reports/report-math";
+import { ageInDays, dhakaDateKey } from "@/modules/reports/report-time";
+import { ordersDrillDown } from "@/modules/reports/reports.service";
 import { LowStockWidget } from "./low-stock-widget";
+import { count, money, percent } from "./reports/_components/format";
+import { ReportChartView } from "./reports/_components/report-chart";
 
 /**
- * Admin dashboard — visual shell.
- *
- * PHASE 3: every figure below is derived from the sample orders in
- * `orders.mock.ts`, which is why the page says so at the top. Phase 12 replaces
- * these with real, location-scoped report queries.
- *
- * Every signed-in staff member may open the dashboard, but sales and stock
- * figures are only shown to roles holding `report.view`.
+ * Admin dashboard (Phase 12): real figures, inside the staff member's
+ * locations. Sales use the same definitions as the sales report — an online
+ * order counts when it is first shipped, a till sale when it is rung up,
+ * and refunds, exchange credit and delivery returns come off the net.
  */
 export const metadata = { title: "Dashboard" };
+export const dynamic = "force-dynamic";
 
-const ADMIN_LOCALE = "en" as const;
+function change(current: number, previous: number): string | null {
+  if (previous === 0) return null;
+  const value = ((current - previous) / Math.abs(previous)) * 100;
+  return `${value >= 0 ? "+" : "−"}${Math.abs(value).toFixed(0)}%`;
+}
+
+function SalesTile({
+  label,
+  totals,
+  previous,
+  previousLabel,
+  href,
+}: {
+  label: string;
+  totals: SalesTotals;
+  previous: SalesTotals;
+  previousLabel: string;
+  href: string;
+}) {
+  const delta = change(totals.netSalesPoisha, previous.netSalesPoisha);
+  return (
+    <Link
+      href={href}
+      className="rounded-lg border border-border bg-background p-5 hover:border-foreground/30"
+      data-testid={`sales-${label.toLowerCase().replace(/\s+/g, "-")}`}
+    >
+      <p className="text-xs text-muted-foreground">{label} · net sales</p>
+      <p className="mt-2 text-3xl font-semibold tabular-nums" data-testid="net-sales">
+        {money(totals.netSalesPoisha)}
+      </p>
+      <dl className="mt-3 grid grid-cols-3 gap-2 text-xs">
+        <div>
+          <dt className="text-muted-foreground">Orders</dt>
+          <dd className="mt-0.5 font-medium tabular-nums">{count(totals.orders)}</dd>
+        </div>
+        <div>
+          <dt className="text-muted-foreground">Average</dt>
+          <dd className="mt-0.5 font-medium tabular-nums">{money(totals.averageOrderPoisha)}</dd>
+        </div>
+        <div>
+          <dt className="text-muted-foreground">vs {previousLabel}</dt>
+          <dd className="mt-0.5 font-medium tabular-nums">{delta ?? "—"}</dd>
+        </div>
+      </dl>
+    </Link>
+  );
+}
+
+function ChannelSplit({
+  title,
+  online,
+  store,
+}: {
+  title: string;
+  online: SalesTotals;
+  store: SalesTotals;
+}) {
+  const rows = [
+    { label: "Online", totals: online, color: "var(--viz-1)" },
+    { label: "In store", totals: store, color: "var(--viz-2)" },
+  ];
+  const total = Math.max(1, online.netSalesPoisha + store.netSalesPoisha);
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground">{title}</p>
+      <ul className="mt-2 flex flex-col gap-2">
+        {rows.map((row) => (
+          <li key={row.label} className="flex items-center gap-3 text-sm">
+            <span
+              aria-hidden="true"
+              className="inline-block size-2.5 shrink-0 rounded-sm"
+              style={{ background: row.color }}
+            />
+            <span className="w-20">{row.label}</span>
+            <span className="flex-1 tabular-nums">{money(row.totals.netSalesPoisha)}</span>
+            <span className="w-16 text-right text-xs text-muted-foreground tabular-nums">
+              {count(row.totals.orders)} orders
+            </span>
+            <span className="w-12 text-right text-xs text-muted-foreground tabular-nums">
+              {percent((Math.max(0, row.totals.netSalesPoisha) / total) * 100)}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 export default async function AdminDashboardPage() {
   const staff = await requireStaffPage();
-  const lowStock = hasPermission(staff, "inventory.read") ? await getLowStock(staff, 6) : null;
-
-  if (!hasPermission(staff, "report.view")) {
-    return (
-      <div className="mx-auto max-w-3xl">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Welcome{staff.name === null ? "" : `, ${staff.name}`}
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          You are signed in as <span className="font-medium text-foreground">{staff.roleName}</span>
-          . Use the menu to open the sections your role covers.
-        </p>
-        {lowStock === null ? null : (
-          <div className="mt-6">
-            <LowStockWidget data={lowStock} />
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  const orders = MOCK_ORDERS;
-  const revenuePoisha = orders.reduce((total, order) => total + order.totalPoisha, 0);
-  const codPendingPoisha = orders
-    .filter((order) => order.paymentMethod === "COD" && order.paymentStatus === "UNPAID")
-    .reduce((total, order) => total + order.totalPoisha, 0);
-
-  const kpis = [
-    {
-      label: "Revenue (sample)",
-      value: formatMoney(revenuePoisha, ADMIN_LOCALE),
-      hint: "All channels",
-      icon: TrendingUp,
-    },
-    {
-      label: "Orders",
-      value: String(orders.length),
-      hint: "Online and in store",
-      icon: Receipt,
-    },
-    {
-      label: "COD to collect",
-      value: formatMoney(codPendingPoisha, ADMIN_LOCALE),
-      hint: "Unpaid COD orders",
-      icon: Banknote,
-    },
-    {
-      label: "Low or no stock",
-      value: String(lowStock?.total ?? 0),
-      hint: "Variants needing attention",
-      icon: AlertTriangle,
-    },
-  ];
-
-  const channelSplit = [
-    {
-      channel: "Online",
-      orders: orders.filter((order) => order.channel === "ONLINE").length,
-      revenue: orders
-        .filter((order) => order.channel === "ONLINE")
-        .reduce((total, order) => total + order.totalPoisha, 0),
-    },
-    {
-      channel: "In store",
-      orders: orders.filter((order) => order.channel === "STORE").length,
-      revenue: orders
-        .filter((order) => order.channel === "STORE")
-        .reduce((total, order) => total + order.totalPoisha, 0),
-    },
-  ];
+  const [dashboard, lowStock] = await Promise.all([
+    getDashboard(staff),
+    hasPermission(staff, "inventory.read") ? getLowStock(staff, 6) : Promise.resolve(null),
+  ]);
+  const { sales, profit, tasks, inTransit, openTills } = dashboard;
+  const now = new Date();
 
   return (
     <div className="mx-auto max-w-6xl">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {sales === null
+              ? `Welcome${staff.name === null ? "" : `, ${staff.name}`}`
+              : "Dashboard"}
+          </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Sales, orders and stock across every branch and warehouse.
+            Signed in as <span className="font-medium text-foreground">{staff.roleName}</span>.{" "}
+            {staff.allLocations ? "Every location." : "Your locations only."} Bangladesh time.
           </p>
         </div>
-        <span className="rounded-md border border-dashed border-border bg-background px-3 py-1.5 text-xs text-muted-foreground">
-          Sample figures · real reports in Phase 12
-        </span>
+        {sales === null ? null : (
+          <Link
+            href="/admin/reports"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          >
+            All reports
+            <ArrowUpRight aria-hidden="true" className="size-3.5" />
+          </Link>
+        )}
       </header>
 
-      {/* KPI row */}
-      <section aria-label="Key figures" className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {kpis.map((kpi) => (
-          <div key={kpi.label} className="rounded-lg border border-border bg-background p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs tracking-wide text-muted-foreground uppercase">{kpi.label}</p>
-              <kpi.icon aria-hidden="true" className="size-4 text-muted-foreground" />
-            </div>
-            <p className="mt-3 text-2xl font-semibold tabular-nums">{kpi.value}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{kpi.hint}</p>
-          </div>
-        ))}
-      </section>
+      {sales === null ? null : (
+        <>
+          <section aria-label="Sales" className="mt-8 grid gap-4 lg:grid-cols-2">
+            <SalesTile
+              label="Today"
+              totals={sales.today}
+              previous={sales.yesterday}
+              previousLabel="yesterday"
+              href={`/admin/reports/sales?range=today`}
+            />
+            <SalesTile
+              label="This month"
+              totals={sales.month}
+              previous={sales.lastMonthSameDays}
+              previousLabel="last month"
+              href={`/admin/reports/sales?range=this_month`}
+            />
+          </section>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[1.6fr_1fr]">
-        {/* Recent orders */}
-        <section className="rounded-lg border border-border bg-background">
-          <header className="flex items-center justify-between border-b border-border px-5 py-4">
-            <h2 className="text-sm font-semibold">Recent orders</h2>
-            <Link
-              href="/admin/orders"
-              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          <section className="mt-4 grid gap-4 rounded-lg border border-border bg-background p-5 sm:grid-cols-2">
+            <ChannelSplit
+              title="Today by channel"
+              online={sales.todayByChannel.online}
+              store={sales.todayByChannel.store}
+            />
+            <ChannelSplit
+              title="This month by channel"
+              online={sales.monthByChannel.online}
+              store={sales.monthByChannel.store}
+            />
+          </section>
+
+          {profit === null ? null : (
+            <section
+              className="mt-4 grid gap-4 rounded-lg border border-border bg-background p-5 sm:grid-cols-3"
+              aria-label="Profit"
+              data-testid="profit-widget"
             >
-              All orders
-              <ArrowUpRight aria-hidden="true" className="size-3.5" />
-            </Link>
-          </header>
+              <div>
+                <p className="text-xs text-muted-foreground">This month · profit</p>
+                <p className="mt-2 text-2xl font-semibold tabular-nums">
+                  {money(profit.profitPoisha)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Margin</p>
+                <p className="mt-2 text-2xl font-semibold tabular-nums">
+                  {percent(profit.marginPercent)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Sales with unknown cost</p>
+                <p className="mt-2 text-2xl font-semibold tabular-nums">
+                  {money(profit.unknownCostNetPoisha)}
+                </p>
+                <Link
+                  href="/admin/reports/profit"
+                  className="mt-1 inline-block text-xs underline underline-offset-4"
+                >
+                  Profit report
+                </Link>
+              </div>
+            </section>
+          )}
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs tracking-wide text-muted-foreground uppercase">
-                  <th scope="col" className="px-5 py-3 font-medium">
-                    Order
-                  </th>
-                  <th scope="col" className="px-5 py-3 font-medium">
-                    Date
-                  </th>
-                  <th scope="col" className="px-5 py-3 font-medium">
-                    Channel
-                  </th>
-                  <th scope="col" className="px-5 py-3 font-medium">
-                    Status
-                  </th>
-                  <th scope="col" className="px-5 py-3 text-right font-medium">
-                    Total
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order) => (
-                  <tr key={order.orderNumber} className="border-t border-border">
-                    <th scope="row" className="px-5 py-3 text-left font-medium tabular-nums">
-                      {order.orderNumber}
-                    </th>
-                    <td className="px-5 py-3 text-muted-foreground">
-                      {formatDate(order.placedAt, ADMIN_LOCALE)}
-                    </td>
-                    <td className="px-5 py-3 text-muted-foreground">
-                      {order.channel === "ONLINE" ? "Online" : "In store"}
-                    </td>
-                    <td className="px-5 py-3">
-                      <Badge
-                        variant={
-                          order.status === "DELIVERED"
-                            ? "success"
-                            : order.status === "SHIPPED"
-                              ? "solid"
-                              : "muted"
-                        }
-                      >
-                        {order.status}
-                      </Badge>
-                    </td>
-                    <td className="px-5 py-3 text-right tabular-nums">
-                      {formatMoney(order.totalPoisha, ADMIN_LOCALE)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="mt-4">
+            <ReportChartView chart={sales.chart} />
           </div>
-        </section>
 
-        <div className="flex flex-col gap-8">
-          {/* Channel split */}
-          <section className="rounded-lg border border-border bg-background p-5">
-            <h2 className="text-sm font-semibold">Online vs in store</h2>
-            <ul className="mt-4 flex flex-col gap-4">
-              {channelSplit.map((row) => (
-                <li key={row.channel}>
-                  <div className="flex items-baseline justify-between text-sm">
-                    <span>{row.channel}</span>
-                    <span className="tabular-nums">{formatMoney(row.revenue, ADMIN_LOCALE)}</span>
-                  </div>
-                  <div className="mt-2 h-1.5 w-full rounded-full bg-secondary">
-                    <div
-                      className="h-1.5 rounded-full bg-primary"
-                      style={{
-                        width: `${revenuePoisha === 0 ? 0 : Math.round((row.revenue / revenuePoisha) * 100)}%`,
-                      }}
-                    />
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {row.orders} {row.orders === 1 ? "order" : "orders"}
-                  </p>
+          {sales.locations.length > 1 ? (
+            <section className="mt-4 rounded-lg border border-border bg-background p-5">
+              <h2 className="text-sm font-semibold">This month by location</h2>
+              <ul className="mt-3 flex flex-col gap-2">
+                {sales.locations.map((location) => {
+                  const max = Math.max(1, ...sales.locations.map((entry) => entry.net));
+                  return (
+                    <li
+                      key={location.id}
+                      className="grid grid-cols-[12rem_1fr_7rem] items-center gap-3 text-sm"
+                    >
+                      <span className="truncate">{location.label}</span>
+                      <span
+                        className="h-3 rounded-e-[4px] bg-[var(--viz-1)]"
+                        style={{ width: `${(Math.max(0, location.net) / max) * 100}%` }}
+                      />
+                      <span className="text-right tabular-nums">{money(location.net)}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ) : null}
+        </>
+      )}
+
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        {tasks.length === 0 ? null : (
+          <section
+            className="rounded-lg border border-border bg-background p-5"
+            data-testid="work-queue"
+          >
+            <h2 className="text-sm font-semibold">To do</h2>
+            <ul className="mt-3 flex flex-col">
+              {tasks.map((task) => (
+                <li key={task.key} className="border-t border-border first:border-0">
+                  <Link
+                    href={task.href}
+                    className="flex items-center justify-between gap-3 py-2.5 text-sm hover:underline hover:underline-offset-4"
+                    data-testid={`task-${task.key}`}
+                  >
+                    <span>{task.label}</span>
+                    <span
+                      className={cn(
+                        "min-w-8 rounded-full px-2 py-0.5 text-center text-xs font-medium tabular-nums",
+                        task.count > 0 && task.tone === "warning"
+                          ? "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200"
+                          : "bg-secondary text-secondary-foreground",
+                      )}
+                    >
+                      {count(task.count)}
+                    </span>
+                  </Link>
                 </li>
               ))}
             </ul>
           </section>
+        )}
 
-          {/* Low stock (real data, location-scoped) */}
-          {lowStock === null ? null : <LowStockWidget data={lowStock} />}
+        {lowStock === null ? null : <LowStockWidget data={lowStock} />}
 
-          {/* Pending work sketch */}
+        {inTransit === null && openTills === null ? null : (
           <section className="rounded-lg border border-border bg-background p-5">
-            <h2 className="flex items-center gap-2 text-sm font-semibold">
-              <Package aria-hidden="true" className="size-4" />
-              To do today
-            </h2>
-            <div aria-hidden="true" className="mt-4 flex flex-col gap-2.5">
-              <Skeleton className="h-9 w-full" />
-              <Skeleton className="h-9 w-full" />
-              <Skeleton className="h-9 w-4/5" />
-            </div>
-            <p className="mt-3 text-xs text-muted-foreground">
-              Packing queue, courier handover and return approvals appear here from Phase 9.
-            </p>
+            <h2 className="text-sm font-semibold">Stock and tills</h2>
+            <ul className="mt-3 flex flex-col gap-2 text-sm">
+              {inTransit === null ? null : (
+                <li className="flex justify-between">
+                  <Link
+                    href="/admin/transfers"
+                    className="hover:underline hover:underline-offset-4"
+                  >
+                    Transfers on the way
+                  </Link>
+                  <span className="tabular-nums">{count(inTransit)}</span>
+                </li>
+              )}
+              {openTills === null ? null : openTills.length === 0 ? (
+                <li className="text-muted-foreground">No till day is open.</li>
+              ) : (
+                openTills.map((till) => {
+                  const hours = Math.floor((now.getTime() - till.openedAt.getTime()) / 3_600_000);
+                  return (
+                    <li key={till.id} className="flex justify-between gap-3">
+                      <Link
+                        href={`/admin/pos/day/${till.id}`}
+                        className="hover:underline hover:underline-offset-4"
+                      >
+                        Till open · {till.location.code} ({till.counterCode})
+                      </Link>
+                      <span
+                        className={cn(
+                          "text-xs tabular-nums",
+                          hours >= 18 ? "text-red-700 dark:text-red-400" : "text-muted-foreground",
+                        )}
+                      >
+                        {ageInDays(till.openedAt, now) > 0
+                          ? `since ${dhakaDateKey(till.openedAt)} · `
+                          : ""}
+                        {hours} h
+                      </span>
+                    </li>
+                  );
+                })
+              )}
+            </ul>
           </section>
-        </div>
+        )}
       </div>
+
+      {sales === null ? null : (
+        <p className="mt-6 text-xs text-muted-foreground">
+          Online orders count when first shipped; till sales when rung up. Refunds, exchange credit
+          and failed deliveries come off net sales.{" "}
+          <Link
+            href={ordersDrillDown(sales.monthFromKey, sales.todayKey)}
+            className="underline underline-offset-4"
+          >
+            This month&rsquo;s online orders
+          </Link>
+        </p>
+      )}
     </div>
   );
 }
