@@ -44,6 +44,7 @@ import {
   type ReturnStep,
 } from "./return-rules";
 import {
+  findDefaultOnlineLocationId,
   findExchangeCreditPayment,
   findOrderForReturn,
   findProductVariants,
@@ -130,6 +131,28 @@ async function auditReturn(
     ip: meta.ip,
     userAgent: meta.userAgent,
   });
+}
+
+/**
+ * Where an exchange's replacement ships from: the location that fulfilled the
+ * order (the shop for an in-store sale), or — when that is no longer an
+ * active online location — the default online location.
+ */
+export function exchangeLocationFor(
+  order: {
+    channel: string;
+    locationId: string;
+    location: { isActive: boolean; deletedAt: Date | null; isOnlineFulfillment: boolean } | null;
+  },
+  defaultOnlineLocationId: string | null,
+): string {
+  if (order.channel !== "ONLINE") return order.locationId;
+  const usable =
+    order.location !== null &&
+    order.location.isActive &&
+    order.location.deletedAt === null &&
+    order.location.isOnlineFulfillment;
+  return usable ? order.locationId : (defaultOnlineLocationId ?? order.locationId);
 }
 
 // ---------------------------------------------------------------------------
@@ -365,7 +388,7 @@ export async function getCustomerReturnOptions(
   ];
   const variants = await findProductVariants(productIds);
   const available = await getAvailability(
-    { online: true },
+    { locationId: exchangeLocationFor(order, await findDefaultOnlineLocationId()) },
     variants.map((variant) => variant.id),
   );
   const items = order.items
@@ -499,50 +522,55 @@ export async function createCustomerReturn(
 export async function approveReturn(staff: StaffContext, returnId: string, meta: RequestMeta) {
   assertPermission(staff, "return.manage");
   const settings = await getReturnsSettings();
-  const result = await withLockedReturn(staff, returnId, async ({ uow, tx, order, request }) => {
-    assertStep(request, "APPROVE");
-    const credited = await tx.creditedUnits(order.id, request.id);
-    const credits = new Map<string, number>();
-    for (const item of request.items) {
-      const line = item.orderItem;
-      const before = credited.get(line.id) ?? 0;
-      const credit = unitsCredit(line, before, item.quantity);
-      credited.set(line.id, before + item.quantity);
-      credits.set(item.id, credit);
-      await tx.updateItem(item.id, { creditPoisha: credit });
-    }
-    let exchange: { id: string; orderNumber: string; toPayPoisha: number } | null = null;
-    if (request.type === "EXCHANGE") {
-      exchange = await createExchangeOrder({
-        uow,
-        tx,
-        staff,
-        order,
-        request,
-        credits,
-        settings,
-        meta,
-      });
-    }
-    const at = new Date();
-    await tx.updateRequest(request.id, {
-      status: "APPROVED",
-      approvedAt: at,
-      ...(exchange === null ? {} : { exchangeOrderId: exchange.id }),
-    });
-    await auditReturn(uow, staff.userId, meta, {
-      action: AUDIT_ACTIONS.returnApproved,
-      returnId: request.id,
-      locationId: order.locationId,
-      before: { status: request.status },
-      after: {
+  const result = await withLockedReturn(
+    staff,
+    returnId,
+    async ({ uow, orderTx, tx, order, request }) => {
+      assertStep(request, "APPROVE");
+      const credited = await tx.creditedUnits(order.id, request.id);
+      const credits = new Map<string, number>();
+      for (const item of request.items) {
+        const line = item.orderItem;
+        const before = credited.get(line.id) ?? 0;
+        const credit = unitsCredit(line, before, item.quantity);
+        credited.set(line.id, before + item.quantity);
+        credits.set(item.id, credit);
+        await tx.updateItem(item.id, { creditPoisha: credit });
+      }
+      let exchange: { id: string; orderNumber: string; toPayPoisha: number } | null = null;
+      if (request.type === "EXCHANGE") {
+        exchange = await createExchangeOrder({
+          uow,
+          orderTx,
+          tx,
+          staff,
+          order,
+          request,
+          credits,
+          settings,
+          meta,
+        });
+      }
+      const at = new Date();
+      await tx.updateRequest(request.id, {
         status: "APPROVED",
-        creditPoisha: [...credits.values()].reduce((sum, value) => sum + value, 0),
-        exchangeOrder: exchange?.orderNumber ?? null,
-      },
-    });
-    return { reference: request.reference, orderNumber: order.orderNumber, exchange };
-  });
+        approvedAt: at,
+        ...(exchange === null ? {} : { exchangeOrderId: exchange.id }),
+      });
+      await auditReturn(uow, staff.userId, meta, {
+        action: AUDIT_ACTIONS.returnApproved,
+        returnId: request.id,
+        locationId: order.locationId,
+        before: { status: request.status },
+        after: {
+          status: "APPROVED",
+          creditPoisha: [...credits.values()].reduce((sum, value) => sum + value, 0),
+          exchangeOrder: exchange?.orderNumber ?? null,
+        },
+      });
+      return { reference: request.reference, orderNumber: order.orderNumber, exchange };
+    },
+  );
   await notify({
     type: "return.approved",
     orderNumber: result.orderNumber,
@@ -553,6 +581,7 @@ export async function approveReturn(staff: StaffContext, returnId: string, meta:
 
 async function createExchangeOrder(input: {
   uow: InventoryUnitOfWork;
+  orderTx: OrderTx;
   tx: ReturnTx;
   staff: StaffContext;
   order: LockedOrder;
@@ -609,10 +638,18 @@ async function createExchangeOrder(input: {
       };
     }),
   });
-  const locationId =
-    order.channel === "ONLINE"
-      ? ((await tx.defaultOnlineLocationId()) ?? order.locationId)
-      : order.locationId;
+  const fulfilled = await input.orderTx.findActiveLocation(order.locationId);
+  const locationId = exchangeLocationFor(
+    {
+      channel: order.channel,
+      locationId: order.locationId,
+      location:
+        fulfilled === null
+          ? null
+          : { isActive: true, deletedAt: null, isOnlineFulfillment: fulfilled.isOnlineFulfillment },
+    },
+    await tx.defaultOnlineLocationId(),
+  );
   const now = new Date();
   const orderNumber = formatOrderNumber("UEH", now, await tx.nextOrderSequence());
   const option = (
@@ -1014,16 +1051,10 @@ export async function getReturnStart(staff: StaffContext, orderId: string) {
     ),
   ];
   const variants = await findProductVariants(productIds);
-  const stockAt =
-    order.channel === "ONLINE"
-      ? await getAvailability(
-          { online: true },
-          variants.map((variant) => variant.id),
-        )
-      : await getAvailability(
-          { locationId: order.locationId },
-          variants.map((variant) => variant.id),
-        );
+  const stockAt = await getAvailability(
+    { locationId: exchangeLocationFor(order, await findDefaultOnlineLocationId()) },
+    variants.map((variant) => variant.id),
+  );
   return {
     order: { id: order.id, orderNumber: order.orderNumber, channel: order.channel },
     insideWindow: isWithinWindow(order.deliveredAt, new Date(), settings.windowDays),

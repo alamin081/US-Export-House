@@ -290,8 +290,19 @@ export async function findOrderForReturn(orderId: string) {
         where: { status: HOLDING },
         include: { items: { select: { orderItemId: true, quantity: true } } },
       },
+      location: {
+        select: { id: true, isActive: true, deletedAt: true, isOnlineFulfillment: true },
+      },
     },
   });
+}
+
+export async function findDefaultOnlineLocationId(): Promise<string | null> {
+  const row = await db.location.findFirst({
+    where: { isDefaultOnlineFulfillment: true, isActive: true, deletedAt: null },
+    select: { id: true },
+  });
+  return row?.id ?? null;
 }
 
 /** Live variants of the given products (exchange choices). */

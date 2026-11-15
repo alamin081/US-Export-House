@@ -54,7 +54,8 @@ pant: ৳1,800 + ৳70 delivery = ৳1,870.
 ## Exchanges
 
 The replacement is a new order linked to the original (`exchangeOfOrderId`),
-CONFIRMED with its stock reserved, at the default online location (in-store
+CONFIRMED with its stock reserved, at the location that fulfilled the order if it is
+still an active online location, else the default online location (in-store
 orders: the same branch).
 
 - The same product in another size or colour costs what the customer already
