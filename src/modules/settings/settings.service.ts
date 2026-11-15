@@ -29,12 +29,19 @@ import {
   parseStoreSettings,
   type StoreSettings,
 } from "./store-settings";
+import {
+  DEFAULT_RETURNS_SETTINGS,
+  parseReturnsSettings,
+  RETURNS_SETTING_KEYS,
+  type ReturnsSettings,
+} from "./returns-settings";
 
 export { DEFAULT_CATALOG_SETTINGS, type CatalogSettings };
 export { DEFAULT_INVENTORY_SETTINGS, type InventorySettings };
 export { DEFAULT_CHECKOUT_SETTINGS, type CheckoutSettings };
 export { DEFAULT_ORDER_SETTINGS, type OrderSettings };
 export { DEFAULT_STORE_SETTINGS, type StoreSettings };
+export { DEFAULT_RETURNS_SETTINGS, type ReturnsSettings };
 
 /**
  * Catalogue settings from the database. A database error falls back to the
@@ -91,5 +98,16 @@ export async function getStoreSettings(): Promise<StoreSettings> {
   } catch (error) {
     console.error("[settings] could not load settings", error instanceof Error ? error.name : "");
     return DEFAULT_STORE_SETTINGS;
+  }
+}
+
+/** Return, exchange and refund settings, falling back to the defaults. */
+export async function getReturnsSettings(): Promise<ReturnsSettings> {
+  try {
+    const raw = await findSettingValues(Object.values(RETURNS_SETTING_KEYS));
+    return parseReturnsSettings(raw, (message) => console.warn(`[settings] ${message}`));
+  } catch (error) {
+    console.error("[settings] could not load settings", error instanceof Error ? error.name : "");
+    return DEFAULT_RETURNS_SETTINGS;
   }
 }

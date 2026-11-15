@@ -16,6 +16,10 @@ import {
   INVENTORY_SETTING_KEYS,
 } from "../src/modules/settings/inventory-settings";
 import { DEFAULT_ORDER_SETTINGS, ORDER_SETTING_KEYS } from "../src/modules/settings/order-settings";
+import {
+  DEFAULT_RETURNS_SETTINGS,
+  RETURNS_SETTING_KEYS,
+} from "../src/modules/settings/returns-settings";
 
 export const CATALOG_SETTINGS = [
   {
@@ -258,5 +262,33 @@ export const ORDER_SETTINGS = (
     ? (DEFAULT_ORDER_SETTINGS[field] as readonly string[]).join(",")
     : String(DEFAULT_ORDER_SETTINGS[field]),
   group: "orders",
+  description,
+}));
+
+/**
+ * Phase 9 return and refund settings (new keys only; windowDays, policyApproved
+ * and the conditions already exist from Phase 4).
+ */
+export const RETURNS_SETTINGS = (
+  [
+    [
+      "refundShippingOnFault",
+      "BOOLEAN",
+      "Refund the delivery charge when the item was defective or wrong.",
+    ],
+    ["exchangeShippingPaidBy", "STRING", "Who pays exchange delivery: CUSTOMER or SHOP."],
+    ["requestsPer15Min", "INT", "Customer return requests per IP per 15 minutes."],
+    ["maxPhotos", "INT", "Photos a customer may attach to a return request."],
+    [
+      "refundApprovalAbovePoisha",
+      "INT",
+      "Refunds above this (poisha) need a Store Manager's approval. Owner: ৳5,000.",
+    ],
+  ] as const
+).map(([field, valueType, description]) => ({
+  key: RETURNS_SETTING_KEYS[field],
+  valueType,
+  value: String(DEFAULT_RETURNS_SETTINGS[field]),
+  group: field === "refundApprovalAbovePoisha" ? "refunds" : "returns",
   description,
 }));

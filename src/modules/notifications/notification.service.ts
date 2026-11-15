@@ -13,7 +13,11 @@ export type NotificationEvent =
   | { type: "order.cancelled"; orderNumber: string; reason: string }
   | { type: "order.shipped"; orderNumber: string; courier: string; codAmountPoisha: number }
   | { type: "order.delivered"; orderNumber: string }
-  | { type: "order.delivery_failed"; orderNumber: string };
+  | { type: "order.delivery_failed"; orderNumber: string }
+  | { type: "return.requested"; orderNumber: string; reference: string }
+  | { type: "return.approved"; orderNumber: string; reference: string }
+  | { type: "return.rejected"; orderNumber: string; reference: string }
+  | { type: "refund.recorded"; orderNumber: string; amountPoisha: number };
 
 /** One log line per event: the type, the order number and amounts only. */
 function describe(event: NotificationEvent): string {

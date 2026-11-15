@@ -200,6 +200,8 @@ enum PaymentProvider {
   NAGAD
   CASH
   CARD
+  /// Value of items returned for an exchange, carried to the new order (Phase 9).
+  EXCHANGE_CREDIT
 }
 
 enum PaymentAttemptStatus {
@@ -212,13 +214,21 @@ enum PaymentAttemptStatus {
 enum RefundMethod {
   ORIGINAL
   BANK_TRANSFER
+  /// Deprecated (Phase 9): use BKASH or NAGAD. Kept; no row uses it.
   MFS
+  BKASH
+  NAGAD
+  /// Cash at the counter (no reference needed).
+  CASH
 }
 
+/// PENDING = waiting for approval (above refund.approvalAbovePoisha).
 enum RefundStatus {
   PENDING
   COMPLETED
   FAILED
+  /// Approval refused.
+  REJECTED
 }
 
 enum ReturnStatus {
@@ -238,10 +248,31 @@ enum ReturnItemCondition {
   WRONG_ITEM
 }
 
+/// ACCEPTED = back in stock; DAMAGED = came back unsellable (written off);
+/// REJECTED = not accepted as a return (goes back to the customer).
 enum InspectionResult {
   PENDING
   ACCEPTED
   REJECTED
+  DAMAGED
+}
+
+enum ReturnType {
+  RETURN
+  EXCHANGE
+}
+
+enum ReturnReason {
+  SIZE_MISMATCH
+  DEFECTIVE
+  WRONG_ITEM
+  CHANGED_MIND
+  OTHER
+}
+
+enum ReturnSource {
+  CUSTOMER
+  STAFF
 }
 
 enum CouponType {
@@ -1423,6 +1454,8 @@ model Order {
   deliveryFailedAt      DateTime?
   deliveryFailedReason  String?
   returnedToWarehouseAt DateTime?
+  /// The order an exchange replaces items of (this order is the replacement).
+  exchangeOfOrderId     String?
 
   placedAt             DateTime  @default(now())
   confirmedAt          DateTime?
@@ -1448,6 +1481,7 @@ model Order {
   refunds        Refund[]
   shipments      Shipment[]
   returnRequests ReturnRequest[]
+  exchangeFor    ReturnRequest?       @relation("ReturnExchangeOrder")
   redemption     CouponRedemption?
   callLogs       OrderCallLog[]
   notes          OrderNote[]
@@ -1463,6 +1497,7 @@ model Order {
   @@index([customerPhone, status, placedAt])
   @@index([placedIpHash, placedAt])
   @@index([channel, status, placedAt])
+  @@index([exchangeOfOrderId])
 }
 
 /// A line on an order. Product name, SKU and price are snapshots: editing the
@@ -1584,9 +1619,19 @@ model Refund {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  payment     Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
-  processedBy User?    @relation(fields: [processedByUserId], references: [id], onDelete: SetNull)
+  // --- Phase 9 ------------------------------------------------------------
+  returnRequestId      String?
+  /// Part of amountPoisha that refunds the delivery charge.
+  shippingRefundPoisha Int       @default(0)
+  requiresApproval     Boolean   @default(false)
+  approvedByUserId     String?
+  approvedAt           DateTime?
+  rejectedReason       String?
+
+  order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  payment       Payment?       @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  processedBy   User?          @relation(fields: [processedByUserId], references: [id], onDelete: SetNull)
+  returnRequest ReturnRequest? @relation(fields: [returnRequestId], references: [id], onDelete: SetNull)
 
   @@index([orderId])
   @@index([status, createdAt])
@@ -1615,13 +1660,42 @@ model ReturnRequest {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  user  User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  // --- Phase 9 ------------------------------------------------------------
+  type              ReturnType    @default(RETURN)
+  reasonCode        ReturnReason?
+  source            ReturnSource  @default(STAFF)
+  /// Set when the request was accepted outside the return window (staff only).
+  outsideWindowNote String?
+  rejectionReason   String?
+  createdByUserId   String?
+  /// The replacement order of an exchange.
+  exchangeOrderId   String?       @unique
+  closedByUserId    String?
 
-  items ReturnItem[]
+  order         Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user          User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  exchangeOrder Order? @relation("ReturnExchangeOrder", fields: [exchangeOrderId], references: [id], onDelete: SetNull)
+
+  items   ReturnItem[]
+  photos  ReturnPhoto[]
+  refunds Refund[]
 
   @@index([orderId])
   @@index([status, requestedAt])
+}
+
+/// Photo a customer or staff member attached to a return request.
+model ReturnPhoto {
+  id              String   @id @default(cuid())
+  returnRequestId String
+  provider        String
+  key             String
+  url             String
+  createdAt       DateTime @default(now())
+
+  returnRequest ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)
+
+  @@index([returnRequestId])
 }
 
 model ReturnItem {
@@ -1637,6 +1711,12 @@ model ReturnItem {
   /// Where accepted stock goes back in. Null for a written-off item.
   restockLocationId String?
   restockedAt       DateTime?
+
+  /// Exchange: the variant the customer wants instead.
+  exchangeVariantId String?
+  /// Refund (or exchange credit) value of these units: unit price minus this
+  /// line's share of the order discount, rounded so a full return adds up.
+  creditPoisha      Int     @default(0)
 
   returnRequest   ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)
   orderItem       OrderItem     @relation(fields: [orderItemId], references: [id], onDelete: Restrict)

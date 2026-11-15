@@ -49,6 +49,7 @@ import {
   INVENTORY_SETTINGS,
   OPTION_PRESETS,
   ORDER_SETTINGS,
+  RETURNS_SETTINGS,
 } from "./seed-catalog";
 import { seedReference } from "./reference/seed-reference";
 
@@ -301,6 +302,7 @@ async function seedSettings() {
     ...INVENTORY_SETTINGS,
     ...CHECKOUT_SETTINGS,
     ...ORDER_SETTINGS,
+    ...RETURNS_SETTINGS,
   ];
   for (const setting of all) {
     await prisma.setting.upsert({
