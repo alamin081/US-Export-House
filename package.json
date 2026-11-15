@@ -39,6 +39,7 @@
     "db:mark-sample": "tsx scripts/mark-sample-locations.ts",
     "catalog:generate-barcodes": "tsx scripts/generate-barcodes.ts",
     "check:bundle": "tsx scripts/check-client-bundle.ts",
+    "content:import-legacy": "tsx scripts/content-import-legacy.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {

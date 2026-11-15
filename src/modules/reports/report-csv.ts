@@ -9,7 +9,7 @@
  */
 import { formatDhakaDateTime } from "./report-time";
 
-export const CSV_BOM = "﻿";
+export const CSV_BOM = String.fromCharCode(0xfeff);
 
 export type CsvValue = string | number | boolean | Date | null | undefined;
 

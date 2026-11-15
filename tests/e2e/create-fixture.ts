@@ -41,6 +41,17 @@ async function main() {
         roleId: await role("Store Manager"),
       },
     });
+    // Phase 12: edits content but may not publish it.
+    const editorEmail = `e2e-${run}-editor@test.local`;
+    await prisma.user.create({
+      data: {
+        kind: "STAFF",
+        email: editorEmail,
+        name: "E2E Content Editor",
+        passwordHash,
+        roleId: await role("Content Editor"),
+      },
+    });
     const location = await prisma.location.findFirstOrThrow({ where: { isActive: true } });
     await prisma.user.create({
       data: {
@@ -257,6 +268,7 @@ async function main() {
       password,
       managerEmail,
       inventoryEmail,
+      editorEmail,
       categoryLabel: `${categoryName} [${code}]`,
       salesEmail,
       branchCode,

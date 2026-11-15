@@ -21,6 +21,7 @@ function readFixture(): E2EFixture {
       password: "",
       managerEmail: "",
       inventoryEmail: "",
+      editorEmail: "",
       categoryLabel: "",
       salesEmail: "",
       branchCode: "",

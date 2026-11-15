@@ -8,6 +8,8 @@ export interface E2EFixture {
   password: string;
   managerEmail: string;
   inventoryEmail: string;
+  /** Phase 12: a Content Editor (edits, cannot publish). */
+  editorEmail: string;
   categoryLabel: string;
   /** Phase 7: a branch, its sales staff, and a published product with sizes M and L. */
   salesEmail: string;
