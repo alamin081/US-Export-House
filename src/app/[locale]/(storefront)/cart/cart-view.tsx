@@ -1,76 +1,64 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { AlertTriangle, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { useState, useTransition } from "react";
 
+import { announceCartUnits } from "@/components/shared/cart-events";
 import { EmptyState } from "@/components/shared/empty-state";
 import { MediaImage } from "@/components/shared/media-image";
 import { Price } from "@/components/shared/price";
 import { QuantityStepper } from "@/components/shared/quantity-stepper";
-import { SampleContentNote } from "@/components/shared/sample-content-note";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { FieldHint, Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
-import { Link } from "@/i18n/navigation";
+import { FieldHint } from "@/components/ui/label";
+import { Link, useRouter } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { localize } from "@/lib/content";
 import { formatMoney } from "@/lib/money";
 import { countArgs } from "@/lib/number";
 import { cn } from "@/lib/utils";
 import {
-  calculateTotals,
-  MOCK_COUPONS,
-  type MockCartLine,
-  type ShippingZoneId,
-} from "@/modules/cart/cart.mock";
+  acknowledgeCartPricesAction,
+  removeFromCartAction,
+  setCartQuantityAction,
+  type CartActionResult,
+} from "@/modules/cart/cart.actions";
+import type { CartView as CartViewData, CartViewLine } from "@/modules/cart/cart.service";
+
+interface ZoneRate {
+  code: string;
+  nameEn: string;
+  nameBn: string | null;
+  ratePoisha: number;
+}
 
 /**
- * Cart screen.
- *
- * PHASE 3: lines live in React state only. Quantities, the delivery zone and
- * the coupon all recalculate the totals locally so the layout can be reviewed;
- * in Phase 8 every one of those numbers is recomputed on the server from the
- * database before an order is created.
+ * Cart screen. Every number comes from the server, which re-read prices and
+ * the default online location's stock for this request; each change goes
+ * through a Server Action and the page is refreshed from the server.
  */
-export function CartView({ initialLines }: { initialLines: readonly MockCartLine[] }) {
+export function CartView({ cart, zones }: { cart: CartViewData; zones: readonly ZoneRate[] }) {
   const locale = useLocale() as Locale;
   const t = useTranslations("Cart");
-  const [lines, setLines] = useState<MockCartLine[]>([...initialLines]);
-  const [zone, setZone] = useState<ShippingZoneId>("inside_dhaka");
-  const [couponInput, setCouponInput] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<string | undefined>(undefined);
-  const [couponError, setCouponError] = useState(false);
+  const tErrors = useTranslations("CartErrors");
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<{
+    variantId: string;
+    result: Extract<CartActionResult, { ok: false }>;
+  } | null>(null);
 
-  const totals = useMemo(
-    () => calculateTotals(lines, zone, appliedCoupon),
-    [lines, zone, appliedCoupon],
-  );
-
-  function setQuantity(lineId: string, quantity: number) {
-    setLines((current) =>
-      current.map((line) => (line.lineId === lineId ? { ...line, quantity } : line)),
-    );
+  function change(variantId: string, action: () => Promise<CartActionResult>) {
+    setError(null);
+    startTransition(async () => {
+      const result = await action();
+      if (result.ok) announceCartUnits(result.units);
+      else setError({ variantId, result });
+      router.refresh();
+    });
   }
 
-  function removeLine(lineId: string) {
-    setLines((current) => current.filter((line) => line.lineId !== lineId));
-  }
-
-  function applyCoupon(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const code = couponInput.trim().toUpperCase();
-    if (code in MOCK_COUPONS) {
-      setAppliedCoupon(code);
-      setCouponError(false);
-    } else {
-      setAppliedCoupon(undefined);
-      setCouponError(true);
-    }
-  }
-
-  if (lines.length === 0) {
+  if (cart.lines.length === 0) {
     return (
       <EmptyState
         title={t("emptyTitle")}
@@ -80,29 +68,91 @@ export function CartView({ initialLines }: { initialLines: readonly MockCartLine
     );
   }
 
-  const coupon = appliedCoupon === undefined ? undefined : MOCK_COUPONS[appliedCoupon];
+  const priceChanged = cart.lines.some((line) => line.priceChange !== null);
+  const progress = Math.min(
+    100,
+    Math.round(
+      ((cart.freeShippingThresholdPoisha - cart.toFreeShippingPoisha) /
+        Math.max(1, cart.freeShippingThresholdPoisha)) *
+        100,
+    ),
+  );
+
+  function problemText(line: CartViewLine): string | null {
+    switch (line.problem) {
+      case "UNAVAILABLE":
+        return t("lineUnavailable");
+      case "OUT_OF_STOCK":
+        return t("lineOutOfStock");
+      case "LOW_STOCK":
+        return t("lineLowStock", { count: line.suggestedQuantity ?? 0 });
+      case "OVER_LIMIT":
+        return t("lineOverLimit", { max: line.suggestedQuantity ?? 0 });
+      default:
+        return null;
+    }
+  }
 
   return (
-    <div className="grid gap-12 lg:grid-cols-[1fr_22rem] lg:gap-16">
-      {/* Lines */}
-      <section aria-label={t("itemsHeading", countArgs(totals.itemCount))}>
+    <div
+      className="grid gap-12 lg:grid-cols-[1fr_22rem] lg:gap-16"
+      aria-busy={pending}
+      data-testid="cart"
+    >
+      <section aria-label={t("itemsHeading", countArgs(cart.units))}>
         <h2 className="text-sm text-muted-foreground">
-          {t("itemsHeading", countArgs(totals.itemCount))}
+          {t("itemsHeading", countArgs(cart.units))}
         </h2>
 
+        {priceChanged ? (
+          <div
+            className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-accent bg-accent/30 px-4 py-3 text-sm"
+            role="status"
+            data-testid="price-changed"
+          >
+            <span>{t("pricesChanged")}</span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                startTransition(async () => {
+                  await acknowledgeCartPricesAction();
+                  router.refresh();
+                })
+              }
+            >
+              {t("pricesChangedOk")}
+            </Button>
+          </div>
+        ) : null}
+
         <ul className="mt-5 divide-y divide-border border-y border-border">
-          {lines.map((line) => {
+          {cart.lines.map((line) => {
             const name = localize(line.name, locale);
+            const options = [line.size, line.colour]
+              .filter((option) => option !== null)
+              .map((option) => localize(option, locale));
+            const problem = problemText(line);
             return (
-              <li key={line.lineId} className="flex gap-4 py-6 sm:gap-6">
-                <Link href={`/product/${line.productSlug}`} className="w-24 shrink-0 sm:w-28">
-                  <MediaImage
-                    src={line.image}
-                    alt={name}
-                    ratio="product"
-                    className="rounded-md"
-                    sizes="112px"
-                  />
+              <li
+                key={line.variantId}
+                className="flex gap-4 py-6 sm:gap-6"
+                data-testid="cart-line"
+                data-sku={line.sku}
+                data-problem={line.problem ?? undefined}
+              >
+                <Link href={`/product/${line.productSlug}`} className="w-20 shrink-0 sm:w-28">
+                  {line.imageUrl === null ? (
+                    <div className="aspect-[4/5] rounded-md bg-secondary" />
+                  ) : (
+                    <MediaImage
+                      src={line.imageUrl}
+                      alt={name}
+                      ratio="product"
+                      className="rounded-md"
+                      sizes="112px"
+                    />
+                  )}
                 </Link>
 
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -114,29 +164,71 @@ export function CartView({ initialLines }: { initialLines: readonly MockCartLine
                         </Link>
                       </h3>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {line.size} · {localize(line.colour, locale)} · {line.sku}
+                        {[...options, line.sku].join(" · ")}
                       </p>
                     </div>
                     <Price
-                      pricePoisha={line.unitPricePoisha * line.quantity}
-                      {...(line.comparePricePoisha === undefined
+                      pricePoisha={line.lineTotalPoisha}
+                      {...(line.compareAtPoisha === null
                         ? {}
-                        : { comparePricePoisha: line.comparePricePoisha * line.quantity })}
+                        : { comparePricePoisha: line.compareAtPoisha * line.quantity })}
                       size="sm"
                     />
                   </div>
 
+                  {line.priceChange === null ? null : (
+                    <p className="text-xs text-accent-foreground">
+                      {t("linePriceChanged", {
+                        from: formatMoney(line.priceChange.fromPoisha, locale),
+                        to: formatMoney(line.priceChange.toPoisha, locale),
+                      })}
+                    </p>
+                  )}
+
+                  {problem === null ? null : (
+                    <p className="flex items-center gap-1.5 text-xs text-destructive" role="alert">
+                      <AlertTriangle aria-hidden="true" className="size-3.5" />
+                      {problem}
+                      {line.problem === "LOW_STOCK" || line.problem === "OVER_LIMIT" ? (
+                        <button
+                          type="button"
+                          className="ms-1 underline underline-offset-2"
+                          onClick={() =>
+                            change(line.variantId, () =>
+                              setCartQuantityAction({
+                                variantId: line.variantId,
+                                quantity: line.suggestedQuantity ?? 0,
+                              }),
+                            )
+                          }
+                        >
+                          {t("useSuggested", { count: line.suggestedQuantity ?? 0 })}
+                        </button>
+                      ) : null}
+                    </p>
+                  )}
+
                   <div className="mt-auto flex flex-wrap items-center gap-4">
-                    <QuantityStepper
-                      value={line.quantity}
-                      onChange={(next) => setQuantity(line.lineId, next)}
-                      max={line.maxQuantity}
-                      itemLabel={name}
-                      size="sm"
-                    />
+                    {line.problem === "UNAVAILABLE" || line.problem === "OUT_OF_STOCK" ? null : (
+                      <QuantityStepper
+                        value={line.quantity}
+                        onChange={(next) =>
+                          change(line.variantId, () =>
+                            setCartQuantityAction({ variantId: line.variantId, quantity: next }),
+                          )
+                        }
+                        max={Math.max(line.maxQuantity, 1)}
+                        itemLabel={name}
+                        size="sm"
+                      />
+                    )}
                     <button
                       type="button"
-                      onClick={() => removeLine(line.lineId)}
+                      onClick={() =>
+                        change(line.variantId, () =>
+                          removeFromCartAction({ variantId: line.variantId, quantity: 0 }),
+                        )
+                      }
                       aria-label={t("removeItem", { item: name })}
                       className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive"
                     >
@@ -144,6 +236,15 @@ export function CartView({ initialLines }: { initialLines: readonly MockCartLine
                       {t("remove")}
                     </button>
                   </div>
+
+                  {error?.variantId === line.variantId ? (
+                    <FieldHint tone="error">
+                      {tErrors(error.result.refusal, {
+                        count: error.result.available ?? 0,
+                        max: error.result.max ?? 0,
+                      })}
+                    </FieldHint>
+                  ) : null}
                 </div>
               </li>
             );
@@ -157,104 +258,82 @@ export function CartView({ initialLines }: { initialLines: readonly MockCartLine
         </div>
       </section>
 
-      {/* Summary */}
       <aside className="lg:sticky lg:top-28 lg:self-start">
         <div className="rounded-lg border border-border bg-card p-6">
           <h2 className="text-sm font-semibold tracking-[0.18em] uppercase">{t("orderSummary")}</h2>
 
-          {/* Delivery zone */}
-          <div className="mt-5">
-            <Label htmlFor="cart-zone">{t("zoneLabel")}</Label>
-            <Select
-              id="cart-zone"
-              value={zone}
-              onChange={(event) => setZone(event.target.value as ShippingZoneId)}
-            >
-              <option value="inside_dhaka">{t("insideDhaka")}</option>
-              <option value="outside_dhaka">{t("outsideDhaka")}</option>
-            </Select>
-          </div>
-
-          {/* Coupon */}
-          <form onSubmit={applyCoupon} className="mt-5">
-            <Label htmlFor="cart-coupon">{t("couponLabel")}</Label>
-            <div className="flex gap-2">
-              <Input
-                id="cart-coupon"
-                value={couponInput}
-                placeholder={t("couponPlaceholder")}
-                aria-invalid={couponError}
-                aria-describedby={couponError ? "cart-coupon-error" : "cart-coupon-hint"}
-                onChange={(event) => {
-                  setCouponInput(event.target.value);
-                  setCouponError(false);
-                }}
-              />
-              <Button type="submit" variant="outline">
-                {t("couponApply")}
-              </Button>
-            </div>
-            {couponError ? (
-              <FieldHint id="cart-coupon-error" tone="error">
-                {t("couponInvalid")}
-              </FieldHint>
-            ) : coupon === undefined ? (
-              <FieldHint id="cart-coupon-hint">{t("sampleCouponHint")}</FieldHint>
-            ) : (
-              <FieldHint id="cart-coupon-hint">
-                {t("couponApplied", { label: localize(coupon.label, locale) })}
-              </FieldHint>
-            )}
-          </form>
-
-          {/* Totals */}
-          <dl className="mt-6 flex flex-col gap-2.5 border-t border-border pt-5 text-sm">
+          <dl className="mt-5 flex flex-col gap-2.5 text-sm">
             <div className="flex items-center justify-between">
               <dt className="text-muted-foreground">{t("subtotal")}</dt>
-              <dd className="tabular-nums">{formatMoney(totals.subtotalPoisha, locale)}</dd>
-            </div>
-
-            {totals.discountPoisha > 0 ? (
-              <div className="flex items-center justify-between">
-                <dt className="text-muted-foreground">{t("discount")}</dt>
-                <dd className="text-destructive tabular-nums">
-                  −{formatMoney(totals.discountPoisha, locale)}
-                </dd>
-              </div>
-            ) : null}
-
-            <div className="flex items-center justify-between">
-              <dt className="text-muted-foreground">{t("shipping")}</dt>
-              <dd className="tabular-nums">
-                {totals.shippingPoisha === 0
-                  ? t("shippingFree")
-                  : formatMoney(totals.shippingPoisha, locale)}
+              <dd className="tabular-nums" data-testid="cart-subtotal">
+                {formatMoney(cart.subtotalPoisha, locale)}
               </dd>
-            </div>
-
-            <div className="mt-2 flex items-center justify-between border-t border-border pt-4 text-base font-semibold">
-              <dt>{t("total")}</dt>
-              <dd className="tabular-nums">{formatMoney(totals.totalPoisha, locale)}</dd>
             </div>
           </dl>
 
-          {/* Free shipping progress */}
-          <p className="mt-4 text-xs text-muted-foreground">
-            {totals.freeShippingApplied
-              ? t("freeShippingReached")
-              : t("freeShippingProgress", {
-                  amount: formatMoney(totals.remainingForFreeShippingPoisha, locale),
-                })}
-          </p>
+          {/* Free delivery progress (before any coupon). */}
+          <div className="mt-5">
+            <div
+              className="h-1.5 overflow-hidden rounded-full bg-secondary"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progress}
+              aria-label={t("freeShippingBar")}
+            >
+              <div className="h-full bg-success" style={{ width: `${progress}%` }} />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground" data-testid="free-shipping-note">
+              {cart.toFreeShippingPoisha === 0
+                ? t("freeShippingReached")
+                : t("freeShippingProgress", {
+                    amount: formatMoney(cart.toFreeShippingPoisha, locale),
+                  })}
+            </p>
+          </div>
 
-          <Link href="/checkout" className={cn(buttonVariants({ size: "lg", full: true }), "mt-6")}>
-            {t("proceedToCheckout")}
-          </Link>
+          {/* Estimated delivery: the zone follows from the address at checkout. */}
+          <div className="mt-5 border-t border-border pt-4">
+            <p className="text-xs font-medium">{t("estimatedDelivery")}</p>
+            <ul className="mt-2 flex flex-col gap-1 text-xs text-muted-foreground">
+              {zones.map((zone) => (
+                <li key={zone.code} className="flex justify-between gap-4">
+                  <span>{locale === "bn" ? (zone.nameBn ?? zone.nameEn) : zone.nameEn}</span>
+                  <span className="tabular-nums">
+                    {cart.toFreeShippingPoisha === 0
+                      ? t("shippingFree")
+                      : formatMoney(zone.ratePoisha, locale)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-          <p className="mt-3 text-xs text-muted-foreground">{t("serverCalcNote")}</p>
+          {cart.overItemLimit ? (
+            <FieldHint tone="error" className="mt-4">
+              {tErrors("PER_ORDER", { max: cart.maxItemsPerOrder, count: 0 })}
+            </FieldHint>
+          ) : null}
+
+          {cart.canCheckout ? (
+            <Link
+              href="/checkout"
+              className={cn(buttonVariants({ size: "lg", full: true }), "mt-6")}
+              data-testid="proceed-to-checkout"
+            >
+              {t("proceedToCheckout")}
+            </Link>
+          ) : (
+            <Button size="lg" full disabled className="mt-6" data-testid="proceed-to-checkout">
+              {t("proceedToCheckout")}
+            </Button>
+          )}
+          {cart.canCheckout ? null : (
+            <p className="mt-2 text-xs text-destructive">{t("fixLinesFirst")}</p>
+          )}
+
+          <p className="mt-3 text-xs text-muted-foreground">{t("vatIncluded")}</p>
         </div>
-
-        <SampleContentNote className="mt-4" />
       </aside>
     </div>
   );

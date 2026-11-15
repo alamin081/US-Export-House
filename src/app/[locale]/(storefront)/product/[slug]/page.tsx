@@ -189,6 +189,7 @@ export default async function ProductPage({ params }: { params: RouteParams }) {
                 }))}
                 variants={product.variants}
                 slug={product.slug}
+                productName={name}
               />
             </div>
 

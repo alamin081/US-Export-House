@@ -1,13 +1,16 @@
 "use client";
 
-import { ShoppingBag } from "lucide-react";
+import { Check, ShoppingBag, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 
+import { announceCartUnits } from "@/components/shared/cart-events";
 import { Price } from "@/components/shared/price";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 import { FieldHint } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { addToCartAction, type CartActionResult } from "@/modules/cart/cart.actions";
 import { useProductSelection } from "./product-selection";
 
 export interface PanelOption {
@@ -55,21 +58,28 @@ function useStockStates(slug: string): Record<string, StockState> | null {
 /**
  * Colour and size selection. The price, compare-at price, SKU and stock state
  * follow the chosen combination; sold-out sizes and colours stay visible but
- * are struck through and cannot be picked. "Add to cart" stays disabled until
- * the cart exists (Phase 8).
+ * are struck through and cannot be picked. "Add to cart" asks the server,
+ * which re-checks the price, stock and limits, then opens a small confirmation
+ * panel and updates the header count.
  */
 export function ProductPurchasePanel({
   sizes,
   colours,
   variants,
   slug,
+  productName,
 }: {
   sizes: readonly PanelOption[];
   colours: readonly PanelOption[];
   variants: readonly PanelVariant[];
   slug: string;
+  productName: string;
 }) {
   const t = useTranslations("Product");
+  const tErrors = useTranslations("CartErrors");
+  const [pending, startTransition] = useTransition();
+  const [added, setAdded] = useState<PanelVariant | null>(null);
+  const [refusal, setRefusal] = useState<Extract<CartActionResult, { ok: false }> | null>(null);
   const { colourId, sizeId, setColourId, setSizeId } = useProductSelection();
   const stock = useStockStates(slug);
   const inStock = (variant: PanelVariant) => stock === null || stock[variant.id] !== "out";
@@ -256,19 +266,69 @@ export function ProductPurchasePanel({
       </div>
 
       <div className="flex flex-col gap-3">
-        {/* Placeholder: the cart arrives in Phase 8. */}
         <Button
           size="lg"
-          disabled
-          aria-disabled="true"
+          disabled={selected === null || selectedState === "out" || pending}
           className="sm:self-start"
           data-testid="add-to-cart"
+          onClick={() => {
+            if (selected === null) return;
+            setRefusal(null);
+            startTransition(async () => {
+              const result = await addToCartAction({ variantId: selected.id, quantity: 1 });
+              if (result.ok) {
+                announceCartUnits(result.units);
+                setAdded(selected);
+              } else {
+                setRefusal(result);
+              }
+            });
+          }}
         >
           <ShoppingBag aria-hidden="true" />
-          {t("addToCart")}
+          {pending ? t("adding") : t("addToCart")}
         </Button>
-        <p className="text-xs text-muted-foreground">{t("orderingSoon")}</p>
+        {refusal === null ? null : (
+          <FieldHint tone="error" data-testid="add-to-cart-error">
+            {tErrors(refusal.refusal, { count: refusal.available ?? 0, max: refusal.max ?? 0 })}
+          </FieldHint>
+        )}
       </div>
+
+      {added === null ? null : (
+        <div
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby="added-title"
+          data-testid="added-to-cart"
+          className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-card p-5 shadow-lg sm:inset-x-auto sm:end-6 sm:bottom-6 sm:w-96 sm:rounded-lg sm:border"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <p id="added-title" className="flex items-center gap-2 text-sm font-semibold">
+              <Check aria-hidden="true" className="size-4 text-success" />
+              {t("addedToCart")}
+            </p>
+            <button
+              type="button"
+              onClick={() => setAdded(null)}
+              aria-label={t("closePanel")}
+              className="rounded-md p-1 text-muted-foreground hover:bg-secondary"
+            >
+              <X aria-hidden="true" className="size-4" />
+            </button>
+          </div>
+          <p className="mt-2 text-sm">{productName}</p>
+          <p className="text-xs text-muted-foreground">{added.sku}</p>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <Button variant="outline" onClick={() => setAdded(null)}>
+              {t("keepShopping")}
+            </Button>
+            <Link href="/cart" className={buttonVariants()} data-testid="view-cart">
+              {t("viewCart")}
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

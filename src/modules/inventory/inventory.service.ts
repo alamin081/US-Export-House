@@ -893,8 +893,8 @@ export async function commitSale(actor: InventoryActor, input: unknown) {
 // ---------------------------------------------------------------------------
 
 /**
- * Available units per variant, either at one location or across every
- * online-fulfilment location. Not permission-checked: it returns no cost and
+ * Available units per variant, either at one location or online (the
+ * default online-fulfilment location). Not permission-checked: it returns no cost and
  * is only called from server code.
  */
 export async function getAvailability(

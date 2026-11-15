@@ -148,7 +148,11 @@
     "sizeGuideUnitInch": "Measurements in inches",
     "sizeGuideUnitCm": "Measurements in centimetres",
     "orderingSoon": "Online ordering opens soon. Visit a showroom or call us to order today.",
-    "unavailableCombination": "This combination is not available"
+    "unavailableCombination": "This combination is not available",
+    "adding": "Adding…",
+    "viewCart": "View cart",
+    "keepShopping": "Keep shopping",
+    "closePanel": "Close"
   },
   "Shop": {
     "title": "Shop all",
@@ -220,7 +224,19 @@
     "couponApplied": "{label} applied.",
     "proceedToCheckout": "Proceed to checkout",
     "serverCalcNote": "Delivery and totals are recalculated on our server at checkout.",
-    "sampleCouponHint": "Sample codes for review: WELCOME10, EID15"
+    "sampleCouponHint": "Sample codes for review: WELCOME10, EID15",
+    "lineUnavailable": "No longer available. Remove it to continue.",
+    "lineOutOfStock": "Out of stock. Remove it to continue.",
+    "lineLowStock": "Only {count} left.",
+    "lineOverLimit": "Up to {max} per item.",
+    "useSuggested": "Change to {count}",
+    "pricesChanged": "Some prices have changed since you added these items.",
+    "pricesChangedOk": "OK",
+    "linePriceChanged": "Price changed from {from} to {to}.",
+    "freeShippingBar": "Progress to free delivery",
+    "estimatedDelivery": "Estimated delivery charge (set by your address at checkout)",
+    "fixLinesFirst": "Fix the items marked above to continue.",
+    "vatIncluded": "All prices include VAT."
   },
   "Checkout": {
     "title": "Checkout",
@@ -386,5 +402,14 @@
   },
   "Settings": {
     "numerals": "latin"
+  },
+  "CartErrors": {
+    "UNAVAILABLE": "This item is no longer available.",
+    "OUT_OF_STOCK": "This item is out of stock.",
+    "STOCK_LIMIT": "Only {count} available right now.",
+    "PER_VARIANT": "You can order up to {max} of one item.",
+    "PER_ORDER": "One order can have up to {max} items.",
+    "NOT_FOUND": "This item could not be found.",
+    "FAILED": "Something went wrong. Please try again."
   }
 }

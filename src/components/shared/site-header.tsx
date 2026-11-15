@@ -1,26 +1,24 @@
-import { Search, ShoppingBag, UserRound } from "lucide-react";
+import { Search, UserRound } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
+import { CartLink } from "@/components/shared/cart-link";
 import { LocaleSwitcher } from "@/components/shared/locale-switcher";
 import { MobileNav } from "@/components/shared/mobile-nav";
 import { MAIN_NAV } from "@/components/shared/navigation";
 import { getPathname, Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { formatCount } from "@/lib/number";
-import { MOCK_CART_LINES } from "@/modules/cart/cart.mock";
 
 /**
  * Storefront header: announcement bar, wordmark, primary navigation, search and
  * the cart. Sticky on scroll, collapsed to a drawer below `lg`.
  *
- * PLACEHOLDER: the wordmark is set in type until the logo arrives, and the cart
- * count comes from the Phase 3 mock cart.
+ * PLACEHOLDER: the wordmark is set in type until the logo arrives. The cart
+ * count is fetched in the browser (CartLink), so the header stays cacheable.
  */
 export function SiteHeader() {
   const t = useTranslations("Nav");
   const tCommon = useTranslations("Common");
   const locale = useLocale() as Locale;
-  const itemCount = MOCK_CART_LINES.reduce((total, line) => total + line.quantity, 0);
   // A plain GET form needs the locale-prefixed path, which `Link` would add.
   const searchAction = getPathname({ href: "/shop", locale });
 
@@ -108,18 +106,7 @@ export function SiteHeader() {
             <UserRound aria-hidden="true" className="size-5" />
           </Link>
 
-          <Link
-            href="/cart"
-            aria-label={tCommon("cartWithCount", { countText: formatCount(itemCount) })}
-            className="relative inline-flex size-10 items-center justify-center rounded-md hover:bg-secondary"
-          >
-            <ShoppingBag aria-hidden="true" className="size-5" />
-            {itemCount > 0 ? (
-              <span className="absolute -end-0.5 -top-0.5 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[0.625rem] font-semibold text-primary-foreground tabular-nums">
-                {itemCount}
-              </span>
-            ) : null}
-          </Link>
+          <CartLink />
         </div>
       </div>
     </header>

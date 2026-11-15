@@ -1288,10 +1288,13 @@ model Cart {
 }
 
 model CartItem {
-  id        String @id @default(cuid())
-  cartId    String
-  variantId String
-  quantity  Int    @default(1)
+  id              String @id @default(cuid())
+  cartId          String
+  variantId       String
+  quantity        Int    @default(1)
+  /// The price the customer last saw, only to tell them it changed.
+  /// Never used for totals: prices are always read fresh.
+  seenPricePoisha Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

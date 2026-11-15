@@ -365,7 +365,7 @@ export async function findLowStock(input: {
  */
 const ONLINE_LOCATION = Prisma.sql`l."isDefaultOnlineFulfillment" = true AND l."isActive" = true AND l."deletedAt" IS NULL`;
 
-/** Available units per variant across the online-fulfilment locations. */
+/** Available units per variant at the default online location. */
 export async function findOnlineAvailable(variantIds: readonly string[]) {
   if (variantIds.length === 0) return new Map<string, number>();
   const rows = await db.$queryRaw<Array<{ variantId: string; available: bigint }>>`

@@ -1,7 +1,9 @@
 import { getTranslations } from "next-intl/server";
 
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
-import { MOCK_CART_LINES } from "@/modules/cart/cart.mock";
+import { readCartToken } from "@/modules/cart/cart-session";
+import { getCartView } from "@/modules/cart/cart.service";
+import { listZoneRates } from "@/modules/shipping/shipping.service";
 import { CartView } from "./cart-view";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -10,9 +12,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return { title: t("cartTitle"), robots: { index: false, follow: false } };
 }
 
+/** Rendered per request: the cart is re-checked against prices and stock every time. */
 export default async function CartPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Cart" });
+  const [cart, zones] = await Promise.all([getCartView(await readCartToken()), listZoneRates()]);
 
   return (
     <div className="site-container py-10 lg:py-14">
@@ -20,7 +24,7 @@ export default async function CartPage({ params }: { params: Promise<{ locale: s
       <h1 className="mt-6 text-3xl font-semibold tracking-tight">{t("title")}</h1>
 
       <div className="mt-10">
-        <CartView initialLines={MOCK_CART_LINES} />
+        <CartView cart={cart} zones={zones} />
       </div>
     </div>
   );

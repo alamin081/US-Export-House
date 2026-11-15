@@ -121,6 +121,7 @@ test("a store manager creates, uploads, publishes; both storefronts show it", as
   await page.getByTestId("purchase-panel").locator("label", { hasText: "L" }).first().click();
   await expect(page.getByTestId("selected-sku")).toHaveText(/^UEH-[A-Z]{4}\d{4}-NVY-L$/);
   await expect(page.getByTestId("compare-price")).toHaveText("৳2,990");
+  // No stock reported for the variant: it cannot be added to the cart.
   await expect(page.getByTestId("add-to-cart")).toBeDisabled();
 
   // --- English storefront, with Open Graph -------------------------------------------

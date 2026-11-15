@@ -148,7 +148,11 @@
     "sizeGuideUnitInch": "মাপ ইঞ্চিতে",
     "sizeGuideUnitCm": "মাপ সেন্টিমিটারে",
     "orderingSoon": "অনলাইন অর্ডার শিগগিরই চালু হবে। আজই অর্ডার করতে শোরুমে আসুন বা ফোন করুন।",
-    "unavailableCombination": "এই সমন্বয়টি পাওয়া যাচ্ছে না"
+    "unavailableCombination": "এই সমন্বয়টি পাওয়া যাচ্ছে না",
+    "adding": "যোগ হচ্ছে…",
+    "viewCart": "কার্ট দেখুন",
+    "keepShopping": "কেনাকাটা চালিয়ে যান",
+    "closePanel": "বন্ধ করুন"
   },
   "Shop": {
     "title": "সব পণ্য",
@@ -220,7 +224,19 @@
     "couponApplied": "{label} প্রয়োগ হয়েছে।",
     "proceedToCheckout": "চেকআউটে যান",
     "serverCalcNote": "ডেলিভারি চার্জ ও মোট হিসাব চেকআউটে আমাদের সার্ভারে পুনরায় করা হয়।",
-    "sampleCouponHint": "রিভিউয়ের জন্য নমুনা কোড: WELCOME10, EID15"
+    "sampleCouponHint": "রিভিউয়ের জন্য নমুনা কোড: WELCOME10, EID15",
+    "lineUnavailable": "পণ্যটি আর পাওয়া যাচ্ছে না। এগোতে এটি সরিয়ে দিন।",
+    "lineOutOfStock": "স্টকে নেই। এগোতে এটি সরিয়ে দিন।",
+    "lineLowStock": "মাত্র {count}টি বাকি আছে।",
+    "lineOverLimit": "একটি পণ্য সর্বোচ্চ {max}টি।",
+    "useSuggested": "{count}টি করুন",
+    "pricesChanged": "কার্টে যোগ করার পর কিছু পণ্যের দাম বদলেছে।",
+    "pricesChangedOk": "ঠিক আছে",
+    "linePriceChanged": "দাম {from} থেকে {to} হয়েছে।",
+    "freeShippingBar": "ফ্রি ডেলিভারির অগ্রগতি",
+    "estimatedDelivery": "আনুমানিক ডেলিভারি চার্জ (চেকআউটে আপনার ঠিকানা অনুযায়ী ঠিক হবে)",
+    "fixLinesFirst": "এগোতে উপরের চিহ্নিত পণ্যগুলো ঠিক করুন।",
+    "vatIncluded": "সব দাম VAT-সহ।"
   },
   "Checkout": {
     "title": "চেকআউট",
@@ -386,5 +402,14 @@
   },
   "Settings": {
     "numerals": "latin"
+  },
+  "CartErrors": {
+    "UNAVAILABLE": "পণ্যটি এখন আর পাওয়া যাচ্ছে না।",
+    "OUT_OF_STOCK": "পণ্যটি স্টকে নেই।",
+    "STOCK_LIMIT": "এই মুহূর্তে মাত্র {count}টি আছে।",
+    "PER_VARIANT": "একটি পণ্য সর্বোচ্চ {max}টি অর্ডার করা যায়।",
+    "PER_ORDER": "একটি অর্ডারে সর্বোচ্চ {max}টি পণ্য নেওয়া যায়।",
+    "NOT_FOUND": "পণ্যটি খুঁজে পাওয়া যায়নি।",
+    "FAILED": "কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।"
   }
 }
