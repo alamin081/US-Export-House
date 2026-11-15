@@ -356,7 +356,14 @@ export async function findLowStock(input: {
 // availability
 // ---------------------------------------------------------------------------
 
-const ONLINE_LOCATION = Prisma.sql`l."isOnlineFulfillment" = true AND l."isActive" = true AND l."deletedAt" IS NULL`;
+/**
+ * Online stock = the DEFAULT online-fulfilment location only (Phase 8 owner
+ * decision): the storefront badges, the "in stock" filter, the cart check and
+ * the order reservation all count the same stock, so the site never shows
+ * "in stock" for an order that would then fail. Fulfilment from several
+ * locations comes in Phase 9.
+ */
+const ONLINE_LOCATION = Prisma.sql`l."isDefaultOnlineFulfillment" = true AND l."isActive" = true AND l."deletedAt" IS NULL`;
 
 /** Available units per variant across the online-fulfilment locations. */
 export async function findOnlineAvailable(variantIds: readonly string[]) {

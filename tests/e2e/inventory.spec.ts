@@ -69,7 +69,7 @@ test.describe.configure({ mode: "serial" });
 
 let variantPath = "";
 
-test("a manager creates an online location and imports its opening stock from CSV", async ({
+test("a manager creates the default online location and imports its opening stock from CSV", async ({
   page,
 }) => {
   await signIn(page, fixture.managerEmail);
@@ -79,6 +79,8 @@ test("a manager creates an online location and imports its opening stock from CS
   await page.fill('input[name="nameEn"]', `E2E Warehouse ${fixture.run}`);
   await page.selectOption("#location-type", "WAREHOUSE");
   await page.check('input[name="isOnlineFulfillment"]');
+  // Storefront stock counts the default online location only (Phase 8).
+  await page.check('input[name="isDefaultOnlineFulfillment"]');
   await page.getByTestId("save-location").click();
   await page.waitForURL(/\/admin\/locations\/(?!new)[^/]+$/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(warehouseCode);

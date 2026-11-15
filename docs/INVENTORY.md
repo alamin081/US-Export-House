@@ -85,9 +85,11 @@ Every function checks permission and location access itself.
 
 ## Rules agreed with the owner (2026-11-14)
 
-- **Online stock** = available at every active location with
-  `isOnlineFulfillment`. Online orders ship from the default online location
-  (choosing another location per order is Phase 9).
+- **Online stock** = available at the one active location with
+  `isDefaultOnlineFulfillment` (changed 2026-11-15, Phase 8: the storefront's
+  in / few / out labels, the "in stock only" filter, cart checks and checkout
+  reservations all use this single location, so a shopper is never shown stock
+  that checkout cannot reserve). Choosing another location per order is Phase 9.
 - **Opening stock** only for a variant with no ledger history at that
   location; otherwise use Stock receive.
 - **Transfers**: the source's staff dispatch, the destination's staff receive.

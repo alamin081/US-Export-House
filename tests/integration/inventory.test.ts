@@ -102,6 +102,8 @@ const loc: Record<"A" | "B" | "C", string> = { A: "", B: "", C: "" };
 const sku = (label: string) => `IT-${RUN}-${label}`;
 const variant: Record<string, string> = {};
 let productSlug = "";
+/** The shared test database's default online location before this file ran. */
+let previousDefault: Awaited<ReturnType<typeof db.location.findFirst>> = null;
 
 async function location(suffix: "A" | "B" | "C", online: boolean) {
   const saved = await saveLocationForStaff(
@@ -112,7 +114,9 @@ async function location(suffix: "A" | "B" | "C", online: boolean) {
       nameEn: `Integration ${suffix} ${RUN}`,
       isActive: true,
       isOnlineFulfillment: online,
-      isDefaultOnlineFulfillment: false,
+      // Online stock is the default online location only (Phase 8), so the
+      // online warehouse A takes the default for this file.
+      isDefaultOnlineFulfillment: online,
     },
     META,
   );
@@ -121,6 +125,7 @@ async function location(suffix: "A" | "B" | "C", online: boolean) {
 
 beforeAll(async () => {
   manager = await actor("Store Manager");
+  previousDefault = await db.location.findFirst({ where: { isDefaultOnlineFulfillment: true } });
   const category = await db.category.create({
     data: { slug: `it-inv-${RUN.toLowerCase()}`, nameEn: `Inventory ${RUN}` },
   });
@@ -151,6 +156,22 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  // Hand the default back so later test files see the database as it was.
+  if (previousDefault !== null) {
+    await saveLocationForStaff(
+      manager,
+      {
+        id: previousDefault.id,
+        code: previousDefault.code,
+        type: previousDefault.type,
+        nameEn: previousDefault.nameEn,
+        isActive: true,
+        isOnlineFulfillment: true,
+        isDefaultOnlineFulfillment: true,
+      },
+      META,
+    );
+  }
   await db.$disconnect();
 });
 
@@ -783,7 +804,7 @@ describe("stock counts", () => {
 describe("storefront status and the ledger", () => {
   it("reports in / few / out for online stock only", async () => {
     const status = await getProductStockStatus(productSlug);
-    expect(status[variant.S!]).toBe("in"); // 15 at the online warehouse A
+    expect(status[variant.S!]).toBe("in"); // 15 at the default online warehouse A
     expect(status[variant.L!]).toBe("out"); // only at branch B, which is not online
     expect(status[variant.CNT!]).toBe("few"); // 2 <= 3
   });

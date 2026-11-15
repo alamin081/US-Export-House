@@ -21,7 +21,7 @@ export interface StorefrontListingFilter {
   /** Already normalised and LIKE-escaped search terms. */
   terms?: readonly string[];
   flag?: "new" | "featured" | "bestseller";
-  /** At least one live variant with stock available at an online location. */
+  /** At least one live variant with stock available at the default online location. */
   inStockOnly?: boolean;
   excludeProductId?: string;
   sort: "newest" | "price-asc" | "price-desc" | "featured";
@@ -98,7 +98,7 @@ export async function findListingIds(filter: StorefrontListingFilter) {
       JOIN "InventoryLevel" il ON il."variantId" = sv."id"
       JOIN "Location" l ON l."id" = il."locationId"
       WHERE sv."productId" = p."id" AND sv."deletedAt" IS NULL AND sv."isActive" = true
-        AND l."isOnlineFulfillment" = true AND l."isActive" = true AND l."deletedAt" IS NULL
+        AND l."isDefaultOnlineFulfillment" = true AND l."isActive" = true AND l."deletedAt" IS NULL
         AND il."onHand" - il."reserved" > 0
     )`);
   }
