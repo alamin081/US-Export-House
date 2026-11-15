@@ -346,6 +346,8 @@ export interface PlannedVariant {
   isActive: boolean;
   labelEn: string | null;
   labelBn: string | null;
+  /** Import only: the opening cost (new variants, or ones without stock movements). */
+  costPoisha?: number;
 }
 
 export interface PlannedImage {
@@ -378,7 +380,11 @@ export interface ProductGraphPlan {
   archiveVariantIds: string[];
   images: PlannedImage[];
   removeImageIds: string[];
+  /** Import only: move the product to this status in the same transaction. */
+  status?: "DRAFT" | "PUBLISHED";
 }
+
+export type CatalogTx = Prisma.TransactionClient;
 
 function jsonOrNull(value: string[] | null) {
   return value === null ? Prisma.DbNull : value;
@@ -400,158 +406,181 @@ function scalarData(scalars: ProductScalars) {
  * combination caught by the partial unique index — rolls everything back.
  */
 export async function saveProductGraph(plan: ProductGraphPlan) {
-  return db.$transaction(async (tx) => {
-    // 1. the product row (with the optimistic lock on updates)
-    let productId: string;
-    let productCode: string | null;
-    if (plan.productId === undefined) {
-      if (plan.newProductCode === undefined) throw new Error("newProductCode is required");
-      const [row] = await tx.$queryRaw<
-        Array<{ value: bigint }>
-      >`SELECT nextval('product_code_seq') AS value`;
-      productCode = buildProductCode(
-        plan.newProductCode.prefix,
-        plan.newProductCode.categoryCode,
-        Number(row?.value ?? 0),
-      );
-      const created = await tx.product.create({
-        data: { ...scalarData(plan.scalars), code: productCode, status: "DRAFT" },
-        select: { id: true },
-      });
-      productId = created.id;
-    } else {
-      const updated = await tx.product.updateMany({
-        where: { id: plan.productId, version: plan.expectedVersion ?? -1, deletedAt: null },
-        data: { ...scalarData(plan.scalars), version: { increment: 1 } },
-      });
-      if (updated.count === 0) throw new ProductVersionConflict();
-      productId = plan.productId;
-      productCode =
-        (await tx.product.findUnique({ where: { id: productId }, select: { code: true } }))?.code ??
-        null;
-    }
+  return db.$transaction((tx) => writeProductGraph(tx, plan));
+}
 
-    // 2. extra categories and tags: replace the sets
-    await tx.productCategory.deleteMany({ where: { productId } });
-    if (plan.extraCategoryIds.length > 0) {
-      await tx.productCategory.createMany({
-        data: plan.extraCategoryIds.map((categoryId) => ({ productId, categoryId })),
-      });
-    }
-    await tx.productTag.deleteMany({ where: { productId } });
-    if (plan.tagIds.length > 0) {
-      await tx.productTag.createMany({ data: plan.tagIds.map((tagId) => ({ productId, tagId })) });
-    }
+/** The body of `saveProductGraph`, for callers that hold a transaction (import). */
+export async function writeProductGraph(tx: CatalogTx, plan: ProductGraphPlan) {
+  // 1. the product row (with the optimistic lock on updates)
+  let productId: string;
+  let productCode: string | null;
+  if (plan.productId === undefined) {
+    if (plan.newProductCode === undefined) throw new Error("newProductCode is required");
+    const [row] = await tx.$queryRaw<
+      Array<{ value: bigint }>
+    >`SELECT nextval('product_code_seq') AS value`;
+    productCode = buildProductCode(
+      plan.newProductCode.prefix,
+      plan.newProductCode.categoryCode,
+      Number(row?.value ?? 0),
+    );
+    const created = await tx.product.create({
+      data: { ...scalarData(plan.scalars), code: productCode, status: "DRAFT" },
+      select: { id: true },
+    });
+    productId = created.id;
+  } else {
+    const updated = await tx.product.updateMany({
+      where: { id: plan.productId, version: plan.expectedVersion ?? -1, deletedAt: null },
+      data: { ...scalarData(plan.scalars), version: { increment: 1 } },
+    });
+    if (updated.count === 0) throw new ProductVersionConflict();
+    productId = plan.productId;
+    productCode =
+      (await tx.product.findUnique({ where: { id: productId }, select: { code: true } }))?.code ??
+      null;
+  }
 
-    // 3. option values: reuse existing ones, copy new ones from presets
-    const valueIdByRef = new Map<string, string>();
-    for (const type of ["SIZE", "COLOUR"] as const) {
-      const planned = plan.optionValues.filter((value) => value.type === type);
-      if (planned.length === 0) continue;
-      const option = await tx.productOption.upsert({
-        where: { productId_type: { productId, type } },
-        update: {},
-        create: {
-          productId,
-          type,
-          nameEn: type === "SIZE" ? "Size" : "Colour",
-          nameBn: type === "SIZE" ? "সাইজ" : "রঙ",
-          sortOrder: type === "SIZE" ? 0 : 1,
-        },
-        select: { id: true },
-      });
-      for (const value of planned) {
-        if (value.existingId !== undefined) {
-          valueIdByRef.set(value.ref, value.existingId);
-        } else if (value.create !== undefined) {
-          const created = await tx.optionValue.create({
-            data: { optionId: option.id, ...value.create },
-            select: { id: true },
-          });
-          valueIdByRef.set(value.ref, created.id);
-        }
+  // 2. extra categories and tags: replace the sets
+  await tx.productCategory.deleteMany({ where: { productId } });
+  if (plan.extraCategoryIds.length > 0) {
+    await tx.productCategory.createMany({
+      data: plan.extraCategoryIds.map((categoryId) => ({ productId, categoryId })),
+    });
+  }
+  await tx.productTag.deleteMany({ where: { productId } });
+  if (plan.tagIds.length > 0) {
+    await tx.productTag.createMany({ data: plan.tagIds.map((tagId) => ({ productId, tagId })) });
+  }
+
+  // 3. option values: reuse existing ones, copy new ones from presets
+  const valueIdByRef = new Map<string, string>();
+  for (const type of ["SIZE", "COLOUR"] as const) {
+    const planned = plan.optionValues.filter((value) => value.type === type);
+    if (planned.length === 0) continue;
+    const option = await tx.productOption.upsert({
+      where: { productId_type: { productId, type } },
+      update: {},
+      create: {
+        productId,
+        type,
+        nameEn: type === "SIZE" ? "Size" : "Colour",
+        nameBn: type === "SIZE" ? "সাইজ" : "রঙ",
+        sortOrder: type === "SIZE" ? 0 : 1,
+      },
+      select: { id: true },
+    });
+    for (const value of planned) {
+      if (value.existingId !== undefined) {
+        valueIdByRef.set(value.ref, value.existingId);
+      } else if (value.create !== undefined) {
+        const created = await tx.optionValue.create({
+          data: { optionId: option.id, ...value.create },
+          select: { id: true },
+        });
+        valueIdByRef.set(value.ref, created.id);
       }
     }
+  }
 
-    const resolve = (ref: string | null) => {
-      if (ref === null) return null;
-      const valueId = valueIdByRef.get(ref);
-      if (valueId === undefined) throw new Error(`Unresolved option ref ${ref}`);
-      return valueId;
+  const resolve = (ref: string | null) => {
+    if (ref === null) return null;
+    const valueId = valueIdByRef.get(ref);
+    if (valueId === undefined) throw new Error(`Unresolved option ref ${ref}`);
+    return valueId;
+  };
+
+  // 4. variants: archive removed ones first, so a re-added combination is free
+  if (plan.archiveVariantIds.length > 0) {
+    await tx.productVariant.updateMany({
+      where: { id: { in: plan.archiveVariantIds }, productId },
+      data: { deletedAt: new Date(), isActive: false },
+    });
+  }
+
+  for (const variant of plan.variants) {
+    const sku =
+      variant.sku !== ""
+        ? variant.sku
+        : renderSku(plan.skuPattern, {
+            productCode: productCode ?? "",
+            colour: variant.skuParts.colour,
+            size: variant.skuParts.size,
+          });
+    const common = {
+      sku,
+      barcode: variant.barcode,
+      pricePoisha: variant.pricePoisha,
+      comparePricePoisha: variant.comparePricePoisha,
+      weightGrams: variant.weightGrams,
+      isActive: variant.isActive,
+      labelEn: variant.labelEn,
+      labelBn: variant.labelBn,
+      ...(variant.costPoisha === undefined ? {} : { costPoisha: variant.costPoisha }),
     };
 
-    // 4. variants: archive removed ones first, so a re-added combination is free
-    if (plan.archiveVariantIds.length > 0) {
-      await tx.productVariant.updateMany({
-        where: { id: { in: plan.archiveVariantIds }, productId },
-        data: { deletedAt: new Date(), isActive: false },
-      });
+    if (variant.id !== undefined) {
+      await tx.productVariant.update({ where: { id: variant.id, productId }, data: common });
+      continue;
     }
 
-    for (const variant of plan.variants) {
-      const sku =
-        variant.sku !== ""
-          ? variant.sku
-          : renderSku(plan.skuPattern, {
-              productCode: productCode ?? "",
-              colour: variant.skuParts.colour,
-              size: variant.skuParts.size,
-            });
-      const common = {
-        sku,
-        barcode: variant.barcode,
-        pricePoisha: variant.pricePoisha,
-        comparePricePoisha: variant.comparePricePoisha,
-        weightGrams: variant.weightGrams,
-        isActive: variant.isActive,
-        labelEn: variant.labelEn,
-        labelBn: variant.labelBn,
-      };
+    const valueIds = [resolve(variant.sizeRef), resolve(variant.colourRef)].filter(
+      (value): value is string => value !== null,
+    );
+    await tx.productVariant.create({
+      data: {
+        productId,
+        ...common,
+        // New variants get the shop's own EAN-13 unless one was typed in (Phase 9).
+        barcode: common.barcode ?? (await nextFreeBarcode(tx)),
+        optionKey: optionKeyOf(valueIds),
+        optionValues: { create: valueIds.map((optionValueId) => ({ optionValueId })) },
+      },
+    });
+  }
 
-      if (variant.id !== undefined) {
-        await tx.productVariant.update({ where: { id: variant.id, productId }, data: common });
-        continue;
-      }
+  // 5. images: delete removed rows, then rewrite order, alt text and colour
+  if (plan.removeImageIds.length > 0) {
+    await tx.productImage.deleteMany({ where: { id: { in: plan.removeImageIds }, productId } });
+  }
+  for (const [sortOrder, image] of plan.images.entries()) {
+    const data = {
+      altEn: image.altEn,
+      altBn: image.altBn,
+      sortOrder,
+      optionValueId: resolve(image.colourRef),
+    };
+    if (image.id !== undefined) {
+      await tx.productImage.update({ where: { id: image.id, productId }, data });
+    } else if (image.create !== undefined) {
+      await tx.productImage.create({ data: { productId, ...image.create, ...data } });
+    }
+  }
 
-      const valueIds = [resolve(variant.sizeRef), resolve(variant.colourRef)].filter(
-        (value): value is string => value !== null,
-      );
-      await tx.productVariant.create({
+  // 6. status (import only), with the first publication date
+  if (plan.status !== undefined) {
+    const current = await tx.product.findUniqueOrThrow({
+      where: { id: productId },
+      select: { status: true, publishedAt: true },
+    });
+    if (current.status !== plan.status) {
+      await tx.product.update({
+        where: { id: productId },
         data: {
-          productId,
-          ...common,
-          // New variants get the shop's own EAN-13 unless one was typed in (Phase 9).
-          barcode: common.barcode ?? (await nextFreeBarcode(tx)),
-          optionKey: optionKeyOf(valueIds),
-          optionValues: { create: valueIds.map((optionValueId) => ({ optionValueId })) },
+          status: plan.status,
+          ...(plan.status === "PUBLISHED" && current.publishedAt === null
+            ? { publishedAt: new Date() }
+            : {}),
         },
       });
     }
+  }
 
-    // 5. images: delete removed rows, then rewrite order, alt text and colour
-    if (plan.removeImageIds.length > 0) {
-      await tx.productImage.deleteMany({ where: { id: { in: plan.removeImageIds }, productId } });
-    }
-    for (const [sortOrder, image] of plan.images.entries()) {
-      const data = {
-        altEn: image.altEn,
-        altBn: image.altBn,
-        sortOrder,
-        optionValueId: resolve(image.colourRef),
-      };
-      if (image.id !== undefined) {
-        await tx.productImage.update({ where: { id: image.id, productId }, data });
-      } else if (image.create !== undefined) {
-        await tx.productImage.create({ data: { productId, ...image.create, ...data } });
-      }
-    }
-
-    const saved = await tx.product.findUniqueOrThrow({
-      where: { id: productId },
-      select: { id: true, slug: true, code: true, version: true },
-    });
-    return saved;
+  const saved = await tx.product.findUniqueOrThrow({
+    where: { id: productId },
+    select: { id: true, slug: true, code: true, version: true },
   });
+  return saved;
 }
 
 /** Copy-only update for Content Editors, with the same optimistic lock. */
