@@ -97,6 +97,13 @@ export const AUDIT_ACTIONS = {
   returnPolicyUnpublished: "return_policy.unpublished",
   storeSettingsChanged: "store.settings_changed",
   barcodesGenerated: "catalog.barcodes_generated",
+  // Phase 12: product import, export and bulk images
+  importChecked: "catalog.import.checked",
+  importApplied: "catalog.import.apply",
+  productImported: "catalog.product.import",
+  priceImported: "catalog.price.import",
+  catalogExported: "catalog.export",
+  imagesBulk: "catalog.images.bulk",
   posDayOpened: "pos.day_opened",
   posDayClosed: "pos.day_closed",
   posSale: "pos.sale",
