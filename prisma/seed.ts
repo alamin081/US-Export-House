@@ -43,7 +43,13 @@ import {
 } from "../src/modules/content/content.mock";
 import { SYSTEM_ROLES } from "../src/modules/access/permissions";
 import { MOCK_ORDERS } from "../src/modules/orders/orders.mock";
-import { CATALOG_SETTINGS, INVENTORY_SETTINGS, OPTION_PRESETS } from "./seed-catalog";
+import {
+  CATALOG_SETTINGS,
+  CHECKOUT_SETTINGS,
+  INVENTORY_SETTINGS,
+  OPTION_PRESETS,
+} from "./seed-catalog";
+import { seedReference } from "./reference/seed-reference";
 
 if (process.env.APP_ENV === "production") {
   throw new Error("[seed] Refusing to seed a production database.");
@@ -288,7 +294,12 @@ const SETTINGS: readonly SeedSetting[] = [
 ];
 
 async function seedSettings() {
-  const all: readonly SeedSetting[] = [...SETTINGS, ...CATALOG_SETTINGS, ...INVENTORY_SETTINGS];
+  const all: readonly SeedSetting[] = [
+    ...SETTINGS,
+    ...CATALOG_SETTINGS,
+    ...INVENTORY_SETTINGS,
+    ...CHECKOUT_SETTINGS,
+  ];
   for (const setting of all) {
     await prisma.setting.upsert({
       where: { key: setting.key },
@@ -341,33 +352,13 @@ async function seedOptionPresets() {
 // ---------------------------------------------------------------------------
 
 async function seedShippingZones() {
-  const zones = [
-    {
-      code: "inside_dhaka",
-      nameEn: "Inside Dhaka",
-      nameBn: "ঢাকার ভেতরে",
-      ratePoisha: SEED_DEFAULTS.shipping.insideDhakaPoisha,
-      isDefault: true,
-      sortOrder: 0,
-    },
-    {
-      code: "outside_dhaka",
-      nameEn: "Outside Dhaka",
-      nameBn: "ঢাকার বাইরে",
-      ratePoisha: SEED_DEFAULTS.shipping.outsideDhakaPoisha,
-      isDefault: false,
-      sortOrder: 1,
-    },
-  ];
-
-  for (const zone of zones) {
-    await prisma.shippingZone.upsert({
-      where: { code: zone.code },
-      update: {},
-      create: zone,
-    });
-  }
-  log("shipping zones", zones.map((zone) => zone.code).join(", "));
+  // Phase 8: zones, addresses and the area mapping are reference data shared
+  // with staging/production (npm run db:seed-reference), created only once.
+  const result = await seedReference(prisma);
+  log(
+    "reference data",
+    `${result.upazilas} areas, ${result.zones} zones, ${result.mappings} zone mappings added`,
+  );
 }
 
 // ---------------------------------------------------------------------------

@@ -41,6 +41,14 @@ export const PERMISSIONS = [
   "transfer.dispatch",
   "transfer.receive",
   "order.read",
+  /** Online coupons. */
+  "coupon.manage",
+  /** Delivery zones, charges and the area-to-zone mapping. */
+  "shipping.manage",
+  /** Checkout limits and the store contact phone. */
+  "checkout.settings",
+  /** Block / unblock phone numbers from ordering. */
+  "customer.block",
   "order.process",
   "order.cancel",
   "order.refund",
@@ -106,8 +114,10 @@ export const PERMISSION_GROUPS: ReadonlyArray<{
       "return.manage",
       "shipment.book",
       "customer.read",
+      "customer.block",
     ],
   },
+  { label: "Checkout", keys: ["coupon.manage", "shipping.manage", "checkout.settings"] },
   { label: "Insight", keys: ["report.view", "audit.view"] },
   { label: "Administration", keys: ["content.write", "settings.write", "staff.manage"] },
 ];
@@ -180,6 +190,7 @@ export const SYSTEM_ROLES: readonly SystemRoleDefinition[] = [
       "shipment.book",
       "return.manage",
       "customer.read",
+      "customer.block",
     ],
     allLocations: false,
   },

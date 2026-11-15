@@ -6,6 +6,12 @@ import {
   type CatalogSettings,
 } from "./catalog-settings";
 import {
+  CHECKOUT_SETTING_KEYS,
+  DEFAULT_CHECKOUT_SETTINGS,
+  parseCheckoutSettings,
+  type CheckoutSettings,
+} from "./checkout-settings";
+import {
   DEFAULT_INVENTORY_SETTINGS,
   INVENTORY_SETTING_KEYS,
   parseInventorySettings,
@@ -14,6 +20,7 @@ import {
 
 export { DEFAULT_CATALOG_SETTINGS, type CatalogSettings };
 export { DEFAULT_INVENTORY_SETTINGS, type InventorySettings };
+export { DEFAULT_CHECKOUT_SETTINGS, type CheckoutSettings };
 
 /**
  * Catalogue settings from the database. A database error falls back to the
@@ -37,5 +44,16 @@ export async function getInventorySettings(): Promise<InventorySettings> {
   } catch (error) {
     console.error("[settings] could not load settings", error instanceof Error ? error.name : "");
     return DEFAULT_INVENTORY_SETTINGS;
+  }
+}
+
+/** Checkout settings from the database, falling back to the defaults. */
+export async function getCheckoutSettings(): Promise<CheckoutSettings> {
+  try {
+    const raw = await findSettingValues(Object.values(CHECKOUT_SETTING_KEYS));
+    return parseCheckoutSettings(raw, (message) => console.warn(`[settings] ${message}`));
+  } catch (error) {
+    console.error("[settings] could not load settings", error instanceof Error ? error.name : "");
+    return DEFAULT_CHECKOUT_SETTINGS;
   }
 }

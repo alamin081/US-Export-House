@@ -222,6 +222,21 @@ enum InspectionResult {
 enum CouponType {
   PERCENTAGE
   FIXED
+  /// Delivery charge waived; `value` is 0.
+  FREE_SHIPPING
+}
+
+/// Whether a coupon scope row includes or excludes its category/product.
+enum CouponScopeMode {
+  INCLUDE
+  EXCLUDE
+}
+
+/// An administrative area below a district. Upazilas come from the dataset;
+/// Dhaka Metropolitan thanas were added by us (docs/ADDRESS_DATA.md).
+enum GeoAreaKind {
+  UPAZILA
+  METRO_THANA
 }
 
 enum CouponChannel {
@@ -342,6 +357,8 @@ model User {
   stockCountsSubmitted StockCount[]          @relation("StockCountSubmittedBy")
   stockCountsApplied   StockCount[]          @relation("StockCountAppliedBy")
   stockReceipts        StockReceipt[]
+  phonesBlocked        BlockedPhone[]        @relation("PhoneBlockedBy")
+  phonesUnblocked      BlockedPhone[]        @relation("PhoneUnblockedBy")
   refunds              Refund[]
   settingsUpdated      Setting[]
   pagesUpdated         Page[]
@@ -759,6 +776,119 @@ model StockReceipt {
   @@index([createdAt])
 }
 
+/// Limits a coupon to (INCLUDE) or away from (EXCLUDE) categories/products.
+/// No INCLUDE rows means "every product".
+model CouponScope {
+  id         String          @id @default(cuid())
+  couponId   String
+  mode       CouponScopeMode
+  categoryId String?
+  productId  String?
+
+  coupon   Coupon    @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  product  Product?  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([couponId])
+}
+
+// =============================================================================
+// ADDRESSES (Bangladesh administrative areas, reference data)
+// =============================================================================
+
+/// Ids are stable strings ("div-06", "dist-47", "upz-365", "dhk-metro-01")
+/// so courier area mappings (Phase 11) never break.
+model GeoDivision {
+  id      String  @id
+  nameEn  String
+  nameBn  String
+  bbsCode String?
+
+  districts GeoDistrict[]
+}
+
+model GeoDistrict {
+  id         String  @id
+  divisionId String
+  nameEn     String
+  nameBn     String
+  bbsCode    String?
+
+  division GeoDivision       @relation(fields: [divisionId], references: [id], onDelete: Restrict)
+  upazilas GeoUpazila[]
+  zoneArea ShippingZoneArea?
+
+  @@index([divisionId])
+}
+
+model GeoUpazila {
+  id         String      @id
+  districtId String
+  kind       GeoAreaKind @default(UPAZILA)
+  nameEn     String
+  nameBn     String
+  bbsCode    String?
+  isActive   Boolean     @default(true)
+
+  district GeoDistrict       @relation(fields: [districtId], references: [id], onDelete: Restrict)
+  zoneArea ShippingZoneArea?
+
+  @@index([districtId])
+}
+
+/// Which delivery zone an upazila (or, as a fallback, a district) belongs to.
+/// Lookup order: upazila -> district -> the default (fallback) zone.
+model ShippingZoneArea {
+  id         String  @id @default(cuid())
+  zoneId     String
+  districtId String? @unique
+  upazilaId  String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  zone     ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  district GeoDistrict? @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  upazila  GeoUpazila?  @relation(fields: [upazilaId], references: [id], onDelete: Cascade)
+
+  @@index([zoneId])
+}
+
+// =============================================================================
+// CHECKOUT PROTECTION
+// =============================================================================
+
+/// Phone numbers that may not place orders. Unblocking keeps the row.
+model BlockedPhone {
+  id     String @id @default(cuid())
+  /// Normalised +8801XXXXXXXXX.
+  phone  String @unique
+  reason String
+
+  blockedByUserId   String?
+  unblockedAt       DateTime?
+  unblockedByUserId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  blockedBy   User? @relation("PhoneBlockedBy", fields: [blockedByUserId], references: [id], onDelete: SetNull)
+  unblockedBy User? @relation("PhoneUnblockedBy", fields: [unblockedByUserId], references: [id], onDelete: SetNull)
+}
+
+/// Refused checkout attempts, for spotting patterns. Phone and IP are stored
+/// only as keyed hashes.
+model CheckoutRejection {
+  id        String   @id @default(cuid())
+  reason    String
+  phoneHash String?
+  ipHash    String?
+  createdAt DateTime @default(now())
+
+  @@index([reason, createdAt])
+  @@index([phoneHash, createdAt])
+}
+
 // =============================================================================
 // CATALOGUE
 // =============================================================================
@@ -802,6 +932,7 @@ model Category {
   products      Product[]
   extraProducts ProductCategory[]
   stockCounts   StockCount[]
+  couponScopes  CouponScope[]
 
   @@index([parentId])
   @@index([isActive, sortOrder])
@@ -904,6 +1035,7 @@ model Product {
   reviews         Review[]
   extraCategories ProductCategory[]
   tags            ProductTag[]
+  couponScopes    CouponScope[]
 
   @@index([categoryId, status])
   @@index([status, publishedAt])
@@ -1213,6 +1345,32 @@ model Order {
   shipPostcode String?
   deliveryNote String?
 
+  // --- Phase 8: guest checkout ----------------------------------------------
+  /// Unguessable token for the confirmation page URL.
+  publicToken      String?          @unique
+  /// From the checkout form: a retried submit returns this order.
+  idempotencyKey   String?          @unique
+  paymentMethod    PaymentProvider?
+  /// Address snapshot: ids AND names, so a later dataset change never
+  /// rewrites a past order. Phase 11 maps upazila ids to courier areas.
+  shipDivisionId   String?
+  shipDivisionName String?
+  shipDistrictId   String?
+  shipDistrictName String?
+  shipUpazilaId    String?
+  shipUpazilaName  String?
+  shipLandmark     String?
+  /// Delivery zone snapshot.
+  zoneCode         String?
+  zoneName         String?
+  couponCode       String?
+  /// HMAC of the client IP (never the IP itself), for the per-IP limit.
+  placedIpHash     String?
+  /// Hash of the sorted variant:quantity list, for the duplicate check.
+  itemsFingerprint String?
+  /// Why staff should look before confirming (Phase 9), e.g. LARGE_QUANTITY.
+  reviewReasons    String[]         @default([])
+
   /// Staff member who rang up an in-store sale.
   soldByUserId String?
 
@@ -1248,6 +1406,8 @@ model Order {
   @@index([customerPhone])
   @@index([userId])
   @@index([reservationExpiresAt])
+  @@index([customerPhone, status, placedAt])
+  @@index([placedIpHash, placedAt])
 }
 
 /// A line on an order. Product name, SKU and price are snapshots: editing the
@@ -1267,6 +1427,14 @@ model OrderItem {
   unitPricePoisha Int
   quantity        Int
   lineTotalPoisha Int
+  /// Compare-at price when the line was on sale (snapshot).
+  compareAtPoisha Int?
+  /// This line's share of the order discount (sums to Order.discountPoisha).
+  discountPoisha  Int     @default(0)
+  sizeLabelEn     String?
+  sizeLabelBn     String?
+  colourLabelEn   String?
+  colourLabelBn   String?
 
   order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Restrict)
@@ -1442,6 +1610,8 @@ model Coupon {
   usageLimitPerCustomer Int?
   usedCount             Int       @default(0)
 
+  createdByUserId String?
+
   isActive  Boolean   @default(true)
   deletedAt DateTime?
   createdAt DateTime  @default(now())
@@ -1450,6 +1620,7 @@ model Coupon {
   redemptions CouponRedemption[]
   orders      Order[]
   carts       Cart[]
+  scopes      CouponScope[]
 
   @@index([isActive, startsAt, endsAt])
 }
@@ -1500,6 +1671,7 @@ model ShippingZone {
 
   orders    Order[]
   addresses Address[]
+  areas     ShippingZoneArea[]
 }
 
 model Shipment {

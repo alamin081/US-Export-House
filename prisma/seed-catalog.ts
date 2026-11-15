@@ -8,6 +8,10 @@ import {
   DEFAULT_CATALOG_SETTINGS,
 } from "../src/modules/settings/catalog-settings";
 import {
+  CHECKOUT_SETTING_KEYS,
+  DEFAULT_CHECKOUT_SETTINGS,
+} from "../src/modules/settings/checkout-settings";
+import {
   DEFAULT_INVENTORY_SETTINGS,
   INVENTORY_SETTING_KEYS,
 } from "../src/modules/settings/inventory-settings";
@@ -200,3 +204,36 @@ export const INVENTORY_SETTINGS = [
     description: "Stock adjustments larger than this many units need a confirmation.",
   },
 ];
+
+/** Phase 8 checkout settings (new keys only; all provisional, editable in the admin). */
+export const CHECKOUT_SETTINGS = (
+  [
+    ["couponOnSaleItems", "BOOLEAN", "Coupons also discount items that are already on sale."],
+    ["maxQtyPerVariant", "INT", "Most units of one size/colour in one order."],
+    ["maxItemsPerOrder", "INT", "Most items in one order."],
+    ["codMaxTotalPoisha", "INT", "Largest cash-on-delivery order total, in poisha."],
+    ["cartTtlDays", "INT", "Days an untouched cart is kept."],
+    ["maxOpenOrdersPerPhone", "INT", "Pending orders one phone may have in 24 hours."],
+    ["maxOrdersPerIpPerHour", "INT", "Orders one IP address may place per hour."],
+    [
+      "duplicateWindowMinutes",
+      "INT",
+      "Same phone + same items within this many minutes = duplicate.",
+    ],
+    ["minFillSeconds", "INT", "Checkout forms submitted faster than this are refused (bots)."],
+    ["reviewItemsAtLeast", "INT", "Orders with at least this many items get a Review badge."],
+    [
+      "reviewFirstOrderAtLeastPoisha",
+      "INT",
+      "A first order from a phone at or above this total gets a Review badge.",
+    ],
+    ["couponAttemptsPer15Min", "INT", "Coupon attempts per IP per 15 minutes."],
+    ["trackAttemptsPer15Min", "INT", "Order-tracking lookups per IP per 15 minutes."],
+  ] as const
+).map(([field, valueType, description]) => ({
+  key: CHECKOUT_SETTING_KEYS[field],
+  valueType,
+  value: String(DEFAULT_CHECKOUT_SETTINGS[field]),
+  group: "checkout",
+  description,
+}));

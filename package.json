@@ -28,6 +28,7 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:migrate:status": "prisma migrate status",
     "db:seed": "prisma db seed",
+    "db:seed-reference": "tsx scripts/seed-reference.ts",
     "db:verify": "tsx prisma/verify.ts",
     "db:studio": "prisma studio",
     "db:nuke": "docker compose down -v",

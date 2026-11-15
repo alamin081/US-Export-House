@@ -1,0 +1,4871 @@
+{
+  "source": {
+    "name": "nuhil/bangladesh-geocode",
+    "url": "https://github.com/nuhil/bangladesh-geocode",
+    "license": "MIT",
+    "commit": "c4b950b5cd2a",
+    "metroThanas": "Dhaka Metropolitan thanas added by US Export House (owner-approved list, 2026-11-15)"
+  },
+  "divisions": [
+    {
+      "id": "div-01",
+      "nameEn": "Chattogram",
+      "nameBn": "চট্টগ্রাম",
+      "bbsCode": "BD20"
+    },
+    {
+      "id": "div-02",
+      "nameEn": "Rajshahi",
+      "nameBn": "রাজশাহী",
+      "bbsCode": "BD50"
+    },
+    {
+      "id": "div-03",
+      "nameEn": "Khulna",
+      "nameBn": "খুলনা",
+      "bbsCode": "BD40"
+    },
+    {
+      "id": "div-04",
+      "nameEn": "Barishal",
+      "nameBn": "বরিশাল",
+      "bbsCode": "BD10"
+    },
+    {
+      "id": "div-05",
+      "nameEn": "Sylhet",
+      "nameBn": "সিলেট",
+      "bbsCode": "BD60"
+    },
+    {
+      "id": "div-06",
+      "nameEn": "Dhaka",
+      "nameBn": "ঢাকা",
+      "bbsCode": "BD30"
+    },
+    {
+      "id": "div-07",
+      "nameEn": "Rangpur",
+      "nameBn": "রংপুর",
+      "bbsCode": "BD55"
+    },
+    {
+      "id": "div-08",
+      "nameEn": "Mymensingh",
+      "nameBn": "ময়মনসিংহ",
+      "bbsCode": "BD45"
+    }
+  ],
+  "districts": [
+    {
+      "id": "dist-01",
+      "divisionId": "div-01",
+      "nameEn": "Cumilla",
+      "nameBn": "কুমিল্লা",
+      "bbsCode": "BD2019"
+    },
+    {
+      "id": "dist-02",
+      "divisionId": "div-01",
+      "nameEn": "Feni",
+      "nameBn": "ফেনী",
+      "bbsCode": "BD2030"
+    },
+    {
+      "id": "dist-03",
+      "divisionId": "div-01",
+      "nameEn": "Brahmanbaria",
+      "nameBn": "ব্রাহ্মণবাড়িয়া",
+      "bbsCode": "BD2012"
+    },
+    {
+      "id": "dist-04",
+      "divisionId": "div-01",
+      "nameEn": "Rangamati",
+      "nameBn": "রাঙ্গামাটি",
+      "bbsCode": "BD2084"
+    },
+    {
+      "id": "dist-05",
+      "divisionId": "div-01",
+      "nameEn": "Noakhali",
+      "nameBn": "নোয়াখালী",
+      "bbsCode": "BD2075"
+    },
+    {
+      "id": "dist-06",
+      "divisionId": "div-01",
+      "nameEn": "Chandpur",
+      "nameBn": "চাঁদপুর",
+      "bbsCode": "BD2013"
+    },
+    {
+      "id": "dist-07",
+      "divisionId": "div-01",
+      "nameEn": "Lakshmipur",
+      "nameBn": "লক্ষ্মীপুর",
+      "bbsCode": "BD2051"
+    },
+    {
+      "id": "dist-08",
+      "divisionId": "div-01",
+      "nameEn": "Chattogram",
+      "nameBn": "চট্টগ্রাম",
+      "bbsCode": "BD2015"
+    },
+    {
+      "id": "dist-09",
+      "divisionId": "div-01",
+      "nameEn": "Cox's Bazar",
+      "nameBn": "কক্সবাজার",
+      "bbsCode": "BD2022"
+    },
+    {
+      "id": "dist-10",
+      "divisionId": "div-01",
+      "nameEn": "Khagrachhari",
+      "nameBn": "খাগড়াছড়ি",
+      "bbsCode": "BD2046"
+    },
+    {
+      "id": "dist-11",
+      "divisionId": "div-01",
+      "nameEn": "Bandarban",
+      "nameBn": "বান্দরবান",
+      "bbsCode": "BD2003"
+    },
+    {
+      "id": "dist-12",
+      "divisionId": "div-02",
+      "nameEn": "Sirajganj",
+      "nameBn": "সিরাজগঞ্জ",
+      "bbsCode": "BD5088"
+    },
+    {
+      "id": "dist-13",
+      "divisionId": "div-02",
+      "nameEn": "Pabna",
+      "nameBn": "পাবনা",
+      "bbsCode": "BD5076"
+    },
+    {
+      "id": "dist-14",
+      "divisionId": "div-02",
+      "nameEn": "Bogura",
+      "nameBn": "বগুড়া",
+      "bbsCode": "BD5010"
+    },
+    {
+      "id": "dist-15",
+      "divisionId": "div-02",
+      "nameEn": "Rajshahi",
+      "nameBn": "রাজশাহী",
+      "bbsCode": "BD5081"
+    },
+    {
+      "id": "dist-16",
+      "divisionId": "div-02",
+      "nameEn": "Natore",
+      "nameBn": "নাটোর",
+      "bbsCode": "BD5069"
+    },
+    {
+      "id": "dist-17",
+      "divisionId": "div-02",
+      "nameEn": "Joypurhat",
+      "nameBn": "জয়পুরহাট",
+      "bbsCode": "BD5038"
+    },
+    {
+      "id": "dist-18",
+      "divisionId": "div-02",
+      "nameEn": "Chapainababganj",
+      "nameBn": "চাঁপাইনবাবগঞ্জ",
+      "bbsCode": "BD5070"
+    },
+    {
+      "id": "dist-19",
+      "divisionId": "div-02",
+      "nameEn": "Naogaon",
+      "nameBn": "নওগাঁ",
+      "bbsCode": "BD5064"
+    },
+    {
+      "id": "dist-20",
+      "divisionId": "div-03",
+      "nameEn": "Jashore",
+      "nameBn": "যশোর",
+      "bbsCode": "BD4041"
+    },
+    {
+      "id": "dist-21",
+      "divisionId": "div-03",
+      "nameEn": "Satkhira",
+      "nameBn": "সাতক্ষীরা",
+      "bbsCode": "BD4087"
+    },
+    {
+      "id": "dist-22",
+      "divisionId": "div-03",
+      "nameEn": "Meherpur",
+      "nameBn": "মেহেরপুর",
+      "bbsCode": "BD4057"
+    },
+    {
+      "id": "dist-23",
+      "divisionId": "div-03",
+      "nameEn": "Narail",
+      "nameBn": "নড়াইল",
+      "bbsCode": "BD4065"
+    },
+    {
+      "id": "dist-24",
+      "divisionId": "div-03",
+      "nameEn": "Chuadanga",
+      "nameBn": "চুয়াডাঙ্গা",
+      "bbsCode": "BD4018"
+    },
+    {
+      "id": "dist-25",
+      "divisionId": "div-03",
+      "nameEn": "Kushtia",
+      "nameBn": "কুষ্টিয়া",
+      "bbsCode": "BD4050"
+    },
+    {
+      "id": "dist-26",
+      "divisionId": "div-03",
+      "nameEn": "Magura",
+      "nameBn": "মাগুরা",
+      "bbsCode": "BD4055"
+    },
+    {
+      "id": "dist-27",
+      "divisionId": "div-03",
+      "nameEn": "Khulna",
+      "nameBn": "খুলনা",
+      "bbsCode": "BD4047"
+    },
+    {
+      "id": "dist-28",
+      "divisionId": "div-03",
+      "nameEn": "Bagerhat",
+      "nameBn": "বাগেরহাট",
+      "bbsCode": "BD4001"
+    },
+    {
+      "id": "dist-29",
+      "divisionId": "div-03",
+      "nameEn": "Jhenaidah",
+      "nameBn": "ঝিনাইদহ",
+      "bbsCode": "BD4044"
+    },
+    {
+      "id": "dist-30",
+      "divisionId": "div-04",
+      "nameEn": "Jhalokati",
+      "nameBn": "ঝালকাঠি",
+      "bbsCode": "BD1042"
+    },
+    {
+      "id": "dist-31",
+      "divisionId": "div-04",
+      "nameEn": "Patuakhali",
+      "nameBn": "পটুয়াখালী",
+      "bbsCode": "BD1078"
+    },
+    {
+      "id": "dist-32",
+      "divisionId": "div-04",
+      "nameEn": "Pirojpur",
+      "nameBn": "পিরোজপুর",
+      "bbsCode": "BD1079"
+    },
+    {
+      "id": "dist-33",
+      "divisionId": "div-04",
+      "nameEn": "Barishal",
+      "nameBn": "বরিশাল",
+      "bbsCode": "BD1006"
+    },
+    {
+      "id": "dist-34",
+      "divisionId": "div-04",
+      "nameEn": "Bhola",
+      "nameBn": "ভোলা",
+      "bbsCode": "BD1009"
+    },
+    {
+      "id": "dist-35",
+      "divisionId": "div-04",
+      "nameEn": "Barguna",
+      "nameBn": "বরগুনা",
+      "bbsCode": "BD1004"
+    },
+    {
+      "id": "dist-36",
+      "divisionId": "div-05",
+      "nameEn": "Sylhet",
+      "nameBn": "সিলেট",
+      "bbsCode": "BD6091"
+    },
+    {
+      "id": "dist-37",
+      "divisionId": "div-05",
+      "nameEn": "Moulvibazar",
+      "nameBn": "মৌলভীবাজার",
+      "bbsCode": "BD6058"
+    },
+    {
+      "id": "dist-38",
+      "divisionId": "div-05",
+      "nameEn": "Habiganj",
+      "nameBn": "হবিগঞ্জ",
+      "bbsCode": "BD6036"
+    },
+    {
+      "id": "dist-39",
+      "divisionId": "div-05",
+      "nameEn": "Sunamganj",
+      "nameBn": "সুনামগঞ্জ",
+      "bbsCode": "BD6090"
+    },
+    {
+      "id": "dist-40",
+      "divisionId": "div-06",
+      "nameEn": "Narsingdi",
+      "nameBn": "নরসিংদী",
+      "bbsCode": "BD3068"
+    },
+    {
+      "id": "dist-41",
+      "divisionId": "div-06",
+      "nameEn": "Gazipur",
+      "nameBn": "গাজীপুর",
+      "bbsCode": "BD3033"
+    },
+    {
+      "id": "dist-42",
+      "divisionId": "div-06",
+      "nameEn": "Shariatpur",
+      "nameBn": "শরীয়তপুর",
+      "bbsCode": "BD3086"
+    },
+    {
+      "id": "dist-43",
+      "divisionId": "div-06",
+      "nameEn": "Narayanganj",
+      "nameBn": "নারায়ণগঞ্জ",
+      "bbsCode": "BD3067"
+    },
+    {
+      "id": "dist-44",
+      "divisionId": "div-06",
+      "nameEn": "Tangail",
+      "nameBn": "টাঙ্গাইল",
+      "bbsCode": "BD3093"
+    },
+    {
+      "id": "dist-45",
+      "divisionId": "div-06",
+      "nameEn": "Kishoreganj",
+      "nameBn": "কিশোরগঞ্জ",
+      "bbsCode": "BD3048"
+    },
+    {
+      "id": "dist-46",
+      "divisionId": "div-06",
+      "nameEn": "Manikganj",
+      "nameBn": "মানিকগঞ্জ",
+      "bbsCode": "BD3056"
+    },
+    {
+      "id": "dist-47",
+      "divisionId": "div-06",
+      "nameEn": "Dhaka",
+      "nameBn": "ঢাকা",
+      "bbsCode": "BD3026"
+    },
+    {
+      "id": "dist-48",
+      "divisionId": "div-06",
+      "nameEn": "Munshiganj",
+      "nameBn": "মুন্সিগঞ্জ",
+      "bbsCode": "BD3059"
+    },
+    {
+      "id": "dist-49",
+      "divisionId": "div-06",
+      "nameEn": "Rajbari",
+      "nameBn": "রাজবাড়ী",
+      "bbsCode": "BD3082"
+    },
+    {
+      "id": "dist-50",
+      "divisionId": "div-06",
+      "nameEn": "Madaripur",
+      "nameBn": "মাদারীপুর",
+      "bbsCode": "BD3054"
+    },
+    {
+      "id": "dist-51",
+      "divisionId": "div-06",
+      "nameEn": "Gopalganj",
+      "nameBn": "গোপালগঞ্জ",
+      "bbsCode": "BD3035"
+    },
+    {
+      "id": "dist-52",
+      "divisionId": "div-06",
+      "nameEn": "Faridpur",
+      "nameBn": "ফরিদপুর",
+      "bbsCode": "BD3029"
+    },
+    {
+      "id": "dist-53",
+      "divisionId": "div-07",
+      "nameEn": "Panchagarh",
+      "nameBn": "পঞ্চগড়",
+      "bbsCode": "BD5577"
+    },
+    {
+      "id": "dist-54",
+      "divisionId": "div-07",
+      "nameEn": "Dinajpur",
+      "nameBn": "দিনাজপুর",
+      "bbsCode": "BD5527"
+    },
+    {
+      "id": "dist-55",
+      "divisionId": "div-07",
+      "nameEn": "Lalmonirhat",
+      "nameBn": "লালমনিরহাট",
+      "bbsCode": "BD5552"
+    },
+    {
+      "id": "dist-56",
+      "divisionId": "div-07",
+      "nameEn": "Nilphamari",
+      "nameBn": "নীলফামারী",
+      "bbsCode": "BD5573"
+    },
+    {
+      "id": "dist-57",
+      "divisionId": "div-07",
+      "nameEn": "Gaibandha",
+      "nameBn": "গাইবান্ধা",
+      "bbsCode": "BD5532"
+    },
+    {
+      "id": "dist-58",
+      "divisionId": "div-07",
+      "nameEn": "Thakurgaon",
+      "nameBn": "ঠাকুরগাঁও",
+      "bbsCode": "BD5594"
+    },
+    {
+      "id": "dist-59",
+      "divisionId": "div-07",
+      "nameEn": "Rangpur",
+      "nameBn": "রংপুর",
+      "bbsCode": "BD5585"
+    },
+    {
+      "id": "dist-60",
+      "divisionId": "div-07",
+      "nameEn": "Kurigram",
+      "nameBn": "কুড়িগ্রাম",
+      "bbsCode": "BD5549"
+    },
+    {
+      "id": "dist-61",
+      "divisionId": "div-08",
+      "nameEn": "Sherpur",
+      "nameBn": "শেরপুর",
+      "bbsCode": "BD4589"
+    },
+    {
+      "id": "dist-62",
+      "divisionId": "div-08",
+      "nameEn": "Mymensingh",
+      "nameBn": "ময়মনসিংহ",
+      "bbsCode": "BD4561"
+    },
+    {
+      "id": "dist-63",
+      "divisionId": "div-08",
+      "nameEn": "Jamalpur",
+      "nameBn": "জামালপুর",
+      "bbsCode": "BD4539"
+    },
+    {
+      "id": "dist-64",
+      "divisionId": "div-08",
+      "nameEn": "Netrakona",
+      "nameBn": "নেত্রকোণা",
+      "bbsCode": "BD4572"
+    }
+  ],
+  "upazilas": [
+    {
+      "id": "upz-001",
+      "districtId": "dist-01",
+      "kind": "UPAZILA",
+      "nameEn": "Debidwar",
+      "nameBn": "দেবিদ্বার",
+      "bbsCode": "BD20190040"
+    },
+    {
+      "id": "upz-002",
+      "districtId": "dist-01",
+      "kind": "UPAZILA",
+      "nameEn": "Barura",
+      "nameBn": "বরুড়া",
+      "bbsCode": "BD20190009"
+    },
+    {
+      "id": "upz-003",
+      "districtId": "dist-01",
+      "kind": "UPAZILA",
+      "nameEn": "Brahmanpara",
+      "nameBn": "ব্রাহ্মণপাড়া",
+      "bbsCode": "BD20190015"
+    },
+    {
+      "id": "upz-004",
+      "districtId": "dist-01",
+      "kind": "UPAZILA",
+      "nameEn": "Chandina",
+      "nameBn": "চান্দিনা",
+      "bbsCode": "BD20190027"
+    },
+    {
+      "id": "upz-005",
+      "districtId": "dist-01",
+      "kind": "UPAZILA",
+      "nameEn": "Chauddagram",
+      "nameBn": "চৌদ্দগ্রাম",
+      "bbsCode": "BD20190031"
+    },
+    {
+      "id": "upz-006",
+      "districtId": "dist-01",
+      "kind": "UPAZILA",
+      "nameEn": "Daudkandi",
+      "nameBn": "দাউদকান্দি",
+      "bbsCode": "BD20190036"
+    },
+    {
+      "id": "upz-007",
+      "districtId": "dist-01",
+      "kind": "UPAZILA",
+      "nameEn": "Homna",
+      "nameBn": "হোমনা",
+      "bbsCode": "BD20190054"
+    },
+    {
+      "id": "upz-008",
+      "districtId": "dist-01",
+      "kind": "UPAZILA",
+      "nameEn": "Laksam",
+      "nameBn": "লাকসাম",
+      "bbsCode": "BD20190072"
+    },
+    {
+      "id": "upz-009",
+      "districtId": "dist-01",
+      "kind": "UPAZILA",
+      "nameEn": "Muradnagar",
+      "nameBn": "মুরাদনগর",
+      "bbsCode": "BD20190081"
+    },
+    {
+      "id": "upz-010",
+      "districtId": "dist-01",
+      "kind": "UPAZILA",
+      "nameEn": "Nangalkot",
+      "nameBn": "নাঙ্গলকোট",
+      "bbsCode": "BD20190087"
+    },
+    {
+      "id": "upz-011",
+      "districtId": "dist-01",
+      "kind": "UPAZILA",
+      "nameEn": "Adarsha Sadar",
+      "nameBn": "কুমিল্লা আদর্শ সদর",
+      "bbsCode": "BD20190067"
+    },
+    {
+      "id": "upz-012",
+      "districtId": "dist-01",
+      "kind": "UPAZILA",
+      "nameEn": "Meghna",
+      "nameBn": "মেঘনা",
+      "bbsCode": "BD20190075"
+    },
+    {
+      "id": "upz-013",
+      "districtId": "dist-01",
+      "kind": "UPAZILA",
+      "nameEn": "Manoharganj",
+      "nameBn": "মনোহরগঞ্জ",
+      "bbsCode": "BD20190074"
+    },
+    {
+      "id": "upz-014",
+      "districtId": "dist-01",
+      "kind": "UPAZILA",
+      "nameEn": "Sadar Dakkhin",
+      "nameBn": "সদর দক্ষিণ",
+      "bbsCode": "BD20190033"
+    },
+    {
+      "id": "upz-015",
+      "districtId": "dist-01",
+      "kind": "UPAZILA",
+      "nameEn": "Titas",
+      "nameBn": "তিতাস",
+      "bbsCode": "BD20190094"
+    },
+    {
+      "id": "upz-016",
+      "districtId": "dist-01",
+      "kind": "UPAZILA",
+      "nameEn": "Burichang",
+      "nameBn": "বুড়িচং",
+      "bbsCode": "BD20190018"
+    },
+    {
+      "id": "upz-017",
+      "districtId": "dist-01",
+      "kind": "UPAZILA",
+      "nameEn": "Lalmai",
+      "nameBn": "লালমাই",
+      "bbsCode": "BD20190073"
+    },
+    {
+      "id": "upz-018",
+      "districtId": "dist-02",
+      "kind": "UPAZILA",
+      "nameEn": "Chhagalnaiya",
+      "nameBn": "ছাগলনাইয়া",
+      "bbsCode": "BD20300014"
+    },
+    {
+      "id": "upz-019",
+      "districtId": "dist-02",
+      "kind": "UPAZILA",
+      "nameEn": "Feni Sadar",
+      "nameBn": "ফেনী সদর",
+      "bbsCode": "BD20300029"
+    },
+    {
+      "id": "upz-020",
+      "districtId": "dist-02",
+      "kind": "UPAZILA",
+      "nameEn": "Sonagazi",
+      "nameBn": "সোনাগাজী",
+      "bbsCode": "BD20300094"
+    },
+    {
+      "id": "upz-021",
+      "districtId": "dist-02",
+      "kind": "UPAZILA",
+      "nameEn": "Fulgazi",
+      "nameBn": "ফুলগাজী",
+      "bbsCode": "BD20300041"
+    },
+    {
+      "id": "upz-022",
+      "districtId": "dist-02",
+      "kind": "UPAZILA",
+      "nameEn": "Parashuram",
+      "nameBn": "পরশুরাম",
+      "bbsCode": "BD20300051"
+    },
+    {
+      "id": "upz-023",
+      "districtId": "dist-02",
+      "kind": "UPAZILA",
+      "nameEn": "Daganbhuiyan",
+      "nameBn": "দাগনভূঞা",
+      "bbsCode": "BD20300025"
+    },
+    {
+      "id": "upz-024",
+      "districtId": "dist-03",
+      "kind": "UPAZILA",
+      "nameEn": "Brahmanbaria Sadar",
+      "nameBn": "ব্রাহ্মণবাড়িয়া সদর",
+      "bbsCode": "BD20120013"
+    },
+    {
+      "id": "upz-025",
+      "districtId": "dist-03",
+      "kind": "UPAZILA",
+      "nameEn": "Kasba",
+      "nameBn": "কসবা",
+      "bbsCode": "BD20120063"
+    },
+    {
+      "id": "upz-026",
+      "districtId": "dist-03",
+      "kind": "UPAZILA",
+      "nameEn": "Nasirnagar",
+      "nameBn": "নাসিরনগর",
+      "bbsCode": "BD20120090"
+    },
+    {
+      "id": "upz-027",
+      "districtId": "dist-03",
+      "kind": "UPAZILA",
+      "nameEn": "Sarail",
+      "nameBn": "সরাইল",
+      "bbsCode": "BD20120094"
+    },
+    {
+      "id": "upz-028",
+      "districtId": "dist-03",
+      "kind": "UPAZILA",
+      "nameEn": "Ashuganj",
+      "nameBn": "আশুগঞ্জ",
+      "bbsCode": "BD20120033"
+    },
+    {
+      "id": "upz-029",
+      "districtId": "dist-03",
+      "kind": "UPAZILA",
+      "nameEn": "Akhaura",
+      "nameBn": "আখাউড়া",
+      "bbsCode": "BD20120002"
+    },
+    {
+      "id": "upz-030",
+      "districtId": "dist-03",
+      "kind": "UPAZILA",
+      "nameEn": "Nabinagar",
+      "nameBn": "নবীনগর",
+      "bbsCode": "BD20120085"
+    },
+    {
+      "id": "upz-031",
+      "districtId": "dist-03",
+      "kind": "UPAZILA",
+      "nameEn": "Banchharampur",
+      "nameBn": "বাঞ্ছারামপুর",
+      "bbsCode": "BD20120004"
+    },
+    {
+      "id": "upz-032",
+      "districtId": "dist-03",
+      "kind": "UPAZILA",
+      "nameEn": "Bijoynagar",
+      "nameBn": "বিজয়নগর",
+      "bbsCode": "BD20120007"
+    },
+    {
+      "id": "upz-033",
+      "districtId": "dist-04",
+      "kind": "UPAZILA",
+      "nameEn": "Rangamati Sadar",
+      "nameBn": "রাঙ্গামাটি সদর",
+      "bbsCode": "BD20840087"
+    },
+    {
+      "id": "upz-034",
+      "districtId": "dist-04",
+      "kind": "UPAZILA",
+      "nameEn": "Kaptai",
+      "nameBn": "কাপ্তাই",
+      "bbsCode": "BD20840036"
+    },
+    {
+      "id": "upz-035",
+      "districtId": "dist-04",
+      "kind": "UPAZILA",
+      "nameEn": "Kawkhali",
+      "nameBn": "কাউখালী",
+      "bbsCode": "BD20840025"
+    },
+    {
+      "id": "upz-036",
+      "districtId": "dist-04",
+      "kind": "UPAZILA",
+      "nameEn": "Baghaichhari",
+      "nameBn": "বাঘাইছড়ি",
+      "bbsCode": "BD20840007"
+    },
+    {
+      "id": "upz-037",
+      "districtId": "dist-04",
+      "kind": "UPAZILA",
+      "nameEn": "Barkal",
+      "nameBn": "বরকল",
+      "bbsCode": "BD20840021"
+    },
+    {
+      "id": "upz-038",
+      "districtId": "dist-04",
+      "kind": "UPAZILA",
+      "nameEn": "Langadu",
+      "nameBn": "লংগদু",
+      "bbsCode": "BD20840058"
+    },
+    {
+      "id": "upz-039",
+      "districtId": "dist-04",
+      "kind": "UPAZILA",
+      "nameEn": "Rajasthali",
+      "nameBn": "রাজস্থলী",
+      "bbsCode": "BD20840078"
+    },
+    {
+      "id": "upz-040",
+      "districtId": "dist-04",
+      "kind": "UPAZILA",
+      "nameEn": "Belaichhari",
+      "nameBn": "বিলাইছড়ি",
+      "bbsCode": "BD20840029"
+    },
+    {
+      "id": "upz-041",
+      "districtId": "dist-04",
+      "kind": "UPAZILA",
+      "nameEn": "Jurachhari",
+      "nameBn": "জুরাছড়ি",
+      "bbsCode": "BD20840047"
+    },
+    {
+      "id": "upz-042",
+      "districtId": "dist-04",
+      "kind": "UPAZILA",
+      "nameEn": "Naniarchar",
+      "nameBn": "নানিয়ারচর",
+      "bbsCode": "BD20840075"
+    },
+    {
+      "id": "upz-043",
+      "districtId": "dist-05",
+      "kind": "UPAZILA",
+      "nameEn": "Noakhali Sadar",
+      "nameBn": "নোয়াখালী সদর",
+      "bbsCode": "BD20750087"
+    },
+    {
+      "id": "upz-044",
+      "districtId": "dist-05",
+      "kind": "UPAZILA",
+      "nameEn": "Companiganj",
+      "nameBn": "কোম্পানীগঞ্জ",
+      "bbsCode": "BD20750021"
+    },
+    {
+      "id": "upz-045",
+      "districtId": "dist-05",
+      "kind": "UPAZILA",
+      "nameEn": "Begumganj",
+      "nameBn": "বেগমগঞ্জ",
+      "bbsCode": "BD20750007"
+    },
+    {
+      "id": "upz-046",
+      "districtId": "dist-05",
+      "kind": "UPAZILA",
+      "nameEn": "Hatiya",
+      "nameBn": "হাতিয়া",
+      "bbsCode": "BD20750036"
+    },
+    {
+      "id": "upz-047",
+      "districtId": "dist-05",
+      "kind": "UPAZILA",
+      "nameEn": "Subarnachar",
+      "nameBn": "সুবর্ণচর",
+      "bbsCode": "BD20750085"
+    },
+    {
+      "id": "upz-048",
+      "districtId": "dist-05",
+      "kind": "UPAZILA",
+      "nameEn": "Kabirhat",
+      "nameBn": "কবিরহাট",
+      "bbsCode": "BD20750047"
+    },
+    {
+      "id": "upz-049",
+      "districtId": "dist-05",
+      "kind": "UPAZILA",
+      "nameEn": "Senbag",
+      "nameBn": "সেনবাগ",
+      "bbsCode": "BD20750080"
+    },
+    {
+      "id": "upz-050",
+      "districtId": "dist-05",
+      "kind": "UPAZILA",
+      "nameEn": "Chatkhil",
+      "nameBn": "চাটখিল",
+      "bbsCode": "BD20750010"
+    },
+    {
+      "id": "upz-051",
+      "districtId": "dist-05",
+      "kind": "UPAZILA",
+      "nameEn": "Sonaimuri",
+      "nameBn": "সোনাইমুড়ী",
+      "bbsCode": "BD20750083"
+    },
+    {
+      "id": "upz-052",
+      "districtId": "dist-06",
+      "kind": "UPAZILA",
+      "nameEn": "Haimchar",
+      "nameBn": "হাইমচর",
+      "bbsCode": "BD20130047"
+    },
+    {
+      "id": "upz-053",
+      "districtId": "dist-06",
+      "kind": "UPAZILA",
+      "nameEn": "Kachua",
+      "nameBn": "কচুয়া",
+      "bbsCode": "BD20130058"
+    },
+    {
+      "id": "upz-054",
+      "districtId": "dist-06",
+      "kind": "UPAZILA",
+      "nameEn": "Shahrasti",
+      "nameBn": "শাহরাস্তি",
+      "bbsCode": "BD20130095"
+    },
+    {
+      "id": "upz-055",
+      "districtId": "dist-06",
+      "kind": "UPAZILA",
+      "nameEn": "Chandpur Sadar",
+      "nameBn": "চাঁদপুর সদর",
+      "bbsCode": "BD20130022"
+    },
+    {
+      "id": "upz-056",
+      "districtId": "dist-06",
+      "kind": "UPAZILA",
+      "nameEn": "Matlab Dakkhin",
+      "nameBn": "মতলব দক্ষিণ",
+      "bbsCode": "BD20130076"
+    },
+    {
+      "id": "upz-057",
+      "districtId": "dist-06",
+      "kind": "UPAZILA",
+      "nameEn": "Hajiganj",
+      "nameBn": "হাজীগঞ্জ",
+      "bbsCode": "BD20130049"
+    },
+    {
+      "id": "upz-058",
+      "districtId": "dist-06",
+      "kind": "UPAZILA",
+      "nameEn": "Matlab Uttar",
+      "nameBn": "মতলব উত্তর",
+      "bbsCode": "BD20130079"
+    },
+    {
+      "id": "upz-059",
+      "districtId": "dist-06",
+      "kind": "UPAZILA",
+      "nameEn": "Faridganj",
+      "nameBn": "ফরিদগঞ্জ",
+      "bbsCode": "BD20130045"
+    },
+    {
+      "id": "upz-060",
+      "districtId": "dist-07",
+      "kind": "UPAZILA",
+      "nameEn": "Lakshmipur Sadar",
+      "nameBn": "লক্ষ্মীপুর সদর",
+      "bbsCode": "BD20510043"
+    },
+    {
+      "id": "upz-061",
+      "districtId": "dist-07",
+      "kind": "UPAZILA",
+      "nameEn": "Kamalnagar",
+      "nameBn": "কমলনগর",
+      "bbsCode": "BD20510033"
+    },
+    {
+      "id": "upz-062",
+      "districtId": "dist-07",
+      "kind": "UPAZILA",
+      "nameEn": "Raipur",
+      "nameBn": "রায়পুর",
+      "bbsCode": "BD20510058"
+    },
+    {
+      "id": "upz-063",
+      "districtId": "dist-07",
+      "kind": "UPAZILA",
+      "nameEn": "Ramgati",
+      "nameBn": "রামগতি",
+      "bbsCode": "BD20510073"
+    },
+    {
+      "id": "upz-064",
+      "districtId": "dist-07",
+      "kind": "UPAZILA",
+      "nameEn": "Ramganj",
+      "nameBn": "রামগঞ্জ",
+      "bbsCode": "BD20510065"
+    },
+    {
+      "id": "upz-065",
+      "districtId": "dist-08",
+      "kind": "UPAZILA",
+      "nameEn": "Rangunia",
+      "nameBn": "রাঙ্গুনিয়া",
+      "bbsCode": "BD20150070"
+    },
+    {
+      "id": "upz-066",
+      "districtId": "dist-08",
+      "kind": "UPAZILA",
+      "nameEn": "Sitakunda",
+      "nameBn": "সীতাকুন্ড",
+      "bbsCode": "BD20150086"
+    },
+    {
+      "id": "upz-067",
+      "districtId": "dist-08",
+      "kind": "UPAZILA",
+      "nameEn": "Mirsarai",
+      "nameBn": "মীরসরাই",
+      "bbsCode": "BD20150053"
+    },
+    {
+      "id": "upz-068",
+      "districtId": "dist-08",
+      "kind": "UPAZILA",
+      "nameEn": "Patiya",
+      "nameBn": "পটিয়া",
+      "bbsCode": "BD20150061"
+    },
+    {
+      "id": "upz-069",
+      "districtId": "dist-08",
+      "kind": "UPAZILA",
+      "nameEn": "Sandwip",
+      "nameBn": "সন্দ্বীপ",
+      "bbsCode": "BD20150078"
+    },
+    {
+      "id": "upz-070",
+      "districtId": "dist-08",
+      "kind": "UPAZILA",
+      "nameEn": "Banshkhali",
+      "nameBn": "বাঁশখালী",
+      "bbsCode": "BD20150008"
+    },
+    {
+      "id": "upz-071",
+      "districtId": "dist-08",
+      "kind": "UPAZILA",
+      "nameEn": "Boalkhali",
+      "nameBn": "বোয়ালখালী",
+      "bbsCode": "BD20150012"
+    },
+    {
+      "id": "upz-072",
+      "districtId": "dist-08",
+      "kind": "UPAZILA",
+      "nameEn": "Anwara",
+      "nameBn": "আনোয়ারা",
+      "bbsCode": "BD20150004"
+    },
+    {
+      "id": "upz-073",
+      "districtId": "dist-08",
+      "kind": "UPAZILA",
+      "nameEn": "Chandanaish",
+      "nameBn": "চন্দনাইশ",
+      "bbsCode": "BD20150018"
+    },
+    {
+      "id": "upz-074",
+      "districtId": "dist-08",
+      "kind": "UPAZILA",
+      "nameEn": "Satkania",
+      "nameBn": "সাতকানিয়া",
+      "bbsCode": "BD20150082"
+    },
+    {
+      "id": "upz-075",
+      "districtId": "dist-08",
+      "kind": "UPAZILA",
+      "nameEn": "Lohagara",
+      "nameBn": "লোহাগাড়া",
+      "bbsCode": "BD20150047"
+    },
+    {
+      "id": "upz-076",
+      "districtId": "dist-08",
+      "kind": "UPAZILA",
+      "nameEn": "Hathazari",
+      "nameBn": "হাটহাজারী",
+      "bbsCode": "BD20150037"
+    },
+    {
+      "id": "upz-077",
+      "districtId": "dist-08",
+      "kind": "UPAZILA",
+      "nameEn": "Fatikchhari",
+      "nameBn": "ফটিকছড়ি",
+      "bbsCode": "BD20150033"
+    },
+    {
+      "id": "upz-078",
+      "districtId": "dist-08",
+      "kind": "UPAZILA",
+      "nameEn": "Raozan",
+      "nameBn": "রাউজান",
+      "bbsCode": "BD20150074"
+    },
+    {
+      "id": "upz-079",
+      "districtId": "dist-08",
+      "kind": "UPAZILA",
+      "nameEn": "Karnaphuli",
+      "nameBn": "কর্ণফুলী",
+      "bbsCode": "BD20150039"
+    },
+    {
+      "id": "upz-080",
+      "districtId": "dist-09",
+      "kind": "UPAZILA",
+      "nameEn": "Coxs Bazar Sadar",
+      "nameBn": "কক্সবাজার সদর",
+      "bbsCode": "BD20220024"
+    },
+    {
+      "id": "upz-081",
+      "districtId": "dist-09",
+      "kind": "UPAZILA",
+      "nameEn": "Chakaria",
+      "nameBn": "চকরিয়া",
+      "bbsCode": "BD20220016"
+    },
+    {
+      "id": "upz-082",
+      "districtId": "dist-09",
+      "kind": "UPAZILA",
+      "nameEn": "Kutubdia",
+      "nameBn": "কুতুবদিয়া",
+      "bbsCode": "BD20220045"
+    },
+    {
+      "id": "upz-083",
+      "districtId": "dist-09",
+      "kind": "UPAZILA",
+      "nameEn": "Ukhia",
+      "nameBn": "উখিয়া",
+      "bbsCode": "BD20220094"
+    },
+    {
+      "id": "upz-084",
+      "districtId": "dist-09",
+      "kind": "UPAZILA",
+      "nameEn": "Maheshkhali",
+      "nameBn": "মহেশখালী",
+      "bbsCode": "BD20220049"
+    },
+    {
+      "id": "upz-085",
+      "districtId": "dist-09",
+      "kind": "UPAZILA",
+      "nameEn": "Pekua",
+      "nameBn": "পেকুয়া",
+      "bbsCode": "BD20220056"
+    },
+    {
+      "id": "upz-086",
+      "districtId": "dist-09",
+      "kind": "UPAZILA",
+      "nameEn": "Ramu",
+      "nameBn": "রামু",
+      "bbsCode": "BD20220066"
+    },
+    {
+      "id": "upz-087",
+      "districtId": "dist-09",
+      "kind": "UPAZILA",
+      "nameEn": "Teknaf",
+      "nameBn": "টেকনাফ",
+      "bbsCode": "BD20220090"
+    },
+    {
+      "id": "upz-088",
+      "districtId": "dist-10",
+      "kind": "UPAZILA",
+      "nameEn": "Khagrachhari Sadar",
+      "nameBn": "খাগড়াছড়ি সদর",
+      "bbsCode": "BD20460049"
+    },
+    {
+      "id": "upz-089",
+      "districtId": "dist-10",
+      "kind": "UPAZILA",
+      "nameEn": "Dighinala",
+      "nameBn": "দিঘীনালা",
+      "bbsCode": "BD20460043"
+    },
+    {
+      "id": "upz-090",
+      "districtId": "dist-10",
+      "kind": "UPAZILA",
+      "nameEn": "Panchhari",
+      "nameBn": "পানছড়ি",
+      "bbsCode": "BD20460077"
+    },
+    {
+      "id": "upz-091",
+      "districtId": "dist-10",
+      "kind": "UPAZILA",
+      "nameEn": "Lakkhichhari",
+      "nameBn": "লক্ষীছড়ি",
+      "bbsCode": "BD20460061"
+    },
+    {
+      "id": "upz-092",
+      "districtId": "dist-10",
+      "kind": "UPAZILA",
+      "nameEn": "Mahalchhari",
+      "nameBn": "মহালছড়ি",
+      "bbsCode": "BD20460065"
+    },
+    {
+      "id": "upz-093",
+      "districtId": "dist-10",
+      "kind": "UPAZILA",
+      "nameEn": "Manikchhari",
+      "nameBn": "মানিকছড়ি",
+      "bbsCode": "BD20460067"
+    },
+    {
+      "id": "upz-094",
+      "districtId": "dist-10",
+      "kind": "UPAZILA",
+      "nameEn": "Ramgarh",
+      "nameBn": "রামগড়",
+      "bbsCode": "BD20460080"
+    },
+    {
+      "id": "upz-095",
+      "districtId": "dist-10",
+      "kind": "UPAZILA",
+      "nameEn": "Matiranga",
+      "nameBn": "মাটিরাঙ্গা",
+      "bbsCode": "BD20460070"
+    },
+    {
+      "id": "upz-096",
+      "districtId": "dist-10",
+      "kind": "UPAZILA",
+      "nameEn": "Guimara",
+      "nameBn": "গুইমারা",
+      "bbsCode": "BD20460047"
+    },
+    {
+      "id": "upz-097",
+      "districtId": "dist-11",
+      "kind": "UPAZILA",
+      "nameEn": "Bandarban Sadar",
+      "nameBn": "বান্দরবান সদর",
+      "bbsCode": "BD20030014"
+    },
+    {
+      "id": "upz-098",
+      "districtId": "dist-11",
+      "kind": "UPAZILA",
+      "nameEn": "Alikadam",
+      "nameBn": "আলীকদম",
+      "bbsCode": "BD20030004"
+    },
+    {
+      "id": "upz-099",
+      "districtId": "dist-11",
+      "kind": "UPAZILA",
+      "nameEn": "Naikkhongchhari",
+      "nameBn": "নাইক্ষ্যংছড়ি",
+      "bbsCode": "BD20030073"
+    },
+    {
+      "id": "upz-100",
+      "districtId": "dist-11",
+      "kind": "UPAZILA",
+      "nameEn": "Rowangchhari",
+      "nameBn": "রোয়াংছড়ি",
+      "bbsCode": "BD20030089"
+    },
+    {
+      "id": "upz-101",
+      "districtId": "dist-11",
+      "kind": "UPAZILA",
+      "nameEn": "Lama",
+      "nameBn": "লামা",
+      "bbsCode": "BD20030051"
+    },
+    {
+      "id": "upz-102",
+      "districtId": "dist-11",
+      "kind": "UPAZILA",
+      "nameEn": "Ruma",
+      "nameBn": "রুমা",
+      "bbsCode": "BD20030091"
+    },
+    {
+      "id": "upz-103",
+      "districtId": "dist-11",
+      "kind": "UPAZILA",
+      "nameEn": "Thanchi",
+      "nameBn": "থানচি",
+      "bbsCode": "BD20030095"
+    },
+    {
+      "id": "upz-104",
+      "districtId": "dist-12",
+      "kind": "UPAZILA",
+      "nameEn": "Belkuchi",
+      "nameBn": "বেলকুচি",
+      "bbsCode": "BD50880011"
+    },
+    {
+      "id": "upz-105",
+      "districtId": "dist-12",
+      "kind": "UPAZILA",
+      "nameEn": "Chouhali",
+      "nameBn": "চৌহালি",
+      "bbsCode": "BD50880027"
+    },
+    {
+      "id": "upz-106",
+      "districtId": "dist-12",
+      "kind": "UPAZILA",
+      "nameEn": "Kamarkhanda",
+      "nameBn": "কামারখন্দ",
+      "bbsCode": "BD50880044"
+    },
+    {
+      "id": "upz-107",
+      "districtId": "dist-12",
+      "kind": "UPAZILA",
+      "nameEn": "Kazipur",
+      "nameBn": "কাজীপুর",
+      "bbsCode": "BD50880050"
+    },
+    {
+      "id": "upz-108",
+      "districtId": "dist-12",
+      "kind": "UPAZILA",
+      "nameEn": "Rayganj",
+      "nameBn": "রায়গঞ্জ",
+      "bbsCode": "BD50880061"
+    },
+    {
+      "id": "upz-109",
+      "districtId": "dist-12",
+      "kind": "UPAZILA",
+      "nameEn": "Shahjadpur",
+      "nameBn": "শাহজাদপুর",
+      "bbsCode": "BD50880067"
+    },
+    {
+      "id": "upz-110",
+      "districtId": "dist-12",
+      "kind": "UPAZILA",
+      "nameEn": "Sirajganj Sadar",
+      "nameBn": "সিরাজগঞ্জ সদর",
+      "bbsCode": "BD50880078"
+    },
+    {
+      "id": "upz-111",
+      "districtId": "dist-12",
+      "kind": "UPAZILA",
+      "nameEn": "Tarash",
+      "nameBn": "তাড়াশ",
+      "bbsCode": "BD50880089"
+    },
+    {
+      "id": "upz-112",
+      "districtId": "dist-12",
+      "kind": "UPAZILA",
+      "nameEn": "Ullapara",
+      "nameBn": "উল্লাপাড়া",
+      "bbsCode": "BD50880094"
+    },
+    {
+      "id": "upz-113",
+      "districtId": "dist-13",
+      "kind": "UPAZILA",
+      "nameEn": "Sujanagar",
+      "nameBn": "সুজানগর",
+      "bbsCode": "BD50760083"
+    },
+    {
+      "id": "upz-114",
+      "districtId": "dist-13",
+      "kind": "UPAZILA",
+      "nameEn": "Ishwardi",
+      "nameBn": "ঈশ্বরদী",
+      "bbsCode": "BD50760039"
+    },
+    {
+      "id": "upz-115",
+      "districtId": "dist-13",
+      "kind": "UPAZILA",
+      "nameEn": "Bhangura",
+      "nameBn": "ভাঙ্গুড়া",
+      "bbsCode": "BD50760019"
+    },
+    {
+      "id": "upz-116",
+      "districtId": "dist-13",
+      "kind": "UPAZILA",
+      "nameEn": "Pabna Sadar",
+      "nameBn": "পাবনা সদর",
+      "bbsCode": "BD50760055"
+    },
+    {
+      "id": "upz-117",
+      "districtId": "dist-13",
+      "kind": "UPAZILA",
+      "nameEn": "Bera",
+      "nameBn": "বেড়া",
+      "bbsCode": "BD50760016"
+    },
+    {
+      "id": "upz-118",
+      "districtId": "dist-13",
+      "kind": "UPAZILA",
+      "nameEn": "Atgharia",
+      "nameBn": "আটঘরিয়া",
+      "bbsCode": "BD50760005"
+    },
+    {
+      "id": "upz-119",
+      "districtId": "dist-13",
+      "kind": "UPAZILA",
+      "nameEn": "Chatmohar",
+      "nameBn": "চাটমোহর",
+      "bbsCode": "BD50760022"
+    },
+    {
+      "id": "upz-120",
+      "districtId": "dist-13",
+      "kind": "UPAZILA",
+      "nameEn": "Santhia",
+      "nameBn": "সাঁথিয়া",
+      "bbsCode": "BD50760072"
+    },
+    {
+      "id": "upz-121",
+      "districtId": "dist-13",
+      "kind": "UPAZILA",
+      "nameEn": "Faridpur",
+      "nameBn": "ফরিদপুর",
+      "bbsCode": "BD50760033"
+    },
+    {
+      "id": "upz-122",
+      "districtId": "dist-14",
+      "kind": "UPAZILA",
+      "nameEn": "Kahaloo",
+      "nameBn": "কাহালু",
+      "bbsCode": "BD50100054"
+    },
+    {
+      "id": "upz-123",
+      "districtId": "dist-14",
+      "kind": "UPAZILA",
+      "nameEn": "Bogura Sadar",
+      "nameBn": "বগুড়া সদর",
+      "bbsCode": "BD50100020"
+    },
+    {
+      "id": "upz-124",
+      "districtId": "dist-14",
+      "kind": "UPAZILA",
+      "nameEn": "Sariakandi",
+      "nameBn": "সারিয়াকান্দি",
+      "bbsCode": "BD50100081"
+    },
+    {
+      "id": "upz-125",
+      "districtId": "dist-14",
+      "kind": "UPAZILA",
+      "nameEn": "Shajahanpur",
+      "nameBn": "শাজাহানপুর",
+      "bbsCode": "BD50100085"
+    },
+    {
+      "id": "upz-126",
+      "districtId": "dist-14",
+      "kind": "UPAZILA",
+      "nameEn": "Dupchachia",
+      "nameBn": "দুপচাচিঁয়া",
+      "bbsCode": "BD50100033"
+    },
+    {
+      "id": "upz-127",
+      "districtId": "dist-14",
+      "kind": "UPAZILA",
+      "nameEn": "Adamdighi",
+      "nameBn": "আদমদিঘি",
+      "bbsCode": "BD50100006"
+    },
+    {
+      "id": "upz-128",
+      "districtId": "dist-14",
+      "kind": "UPAZILA",
+      "nameEn": "Nandigram",
+      "nameBn": "নন্দিগ্রাম",
+      "bbsCode": "BD50100067"
+    },
+    {
+      "id": "upz-129",
+      "districtId": "dist-14",
+      "kind": "UPAZILA",
+      "nameEn": "Sonatala",
+      "nameBn": "সোনাতলা",
+      "bbsCode": "BD50100095"
+    },
+    {
+      "id": "upz-130",
+      "districtId": "dist-14",
+      "kind": "UPAZILA",
+      "nameEn": "Dhunat",
+      "nameBn": "ধুনট",
+      "bbsCode": "BD50100027"
+    },
+    {
+      "id": "upz-131",
+      "districtId": "dist-14",
+      "kind": "UPAZILA",
+      "nameEn": "Gabtali",
+      "nameBn": "গাবতলী",
+      "bbsCode": "BD50100040"
+    },
+    {
+      "id": "upz-132",
+      "districtId": "dist-14",
+      "kind": "UPAZILA",
+      "nameEn": "Sherpur",
+      "nameBn": "শেরপুর",
+      "bbsCode": "BD50100088"
+    },
+    {
+      "id": "upz-133",
+      "districtId": "dist-14",
+      "kind": "UPAZILA",
+      "nameEn": "Shibganj",
+      "nameBn": "শিবগঞ্জ",
+      "bbsCode": "BD50100094"
+    },
+    {
+      "id": "upz-134",
+      "districtId": "dist-15",
+      "kind": "UPAZILA",
+      "nameEn": "Paba",
+      "nameBn": "পবা",
+      "bbsCode": "BD50810072"
+    },
+    {
+      "id": "upz-135",
+      "districtId": "dist-15",
+      "kind": "UPAZILA",
+      "nameEn": "Durgapur",
+      "nameBn": "দুর্গাপুর",
+      "bbsCode": "BD50810031"
+    },
+    {
+      "id": "upz-136",
+      "districtId": "dist-15",
+      "kind": "UPAZILA",
+      "nameEn": "Mohanpur",
+      "nameBn": "মোহনপুর",
+      "bbsCode": "BD50810053"
+    },
+    {
+      "id": "upz-137",
+      "districtId": "dist-15",
+      "kind": "UPAZILA",
+      "nameEn": "Charghat",
+      "nameBn": "চারঘাট",
+      "bbsCode": "BD50810025"
+    },
+    {
+      "id": "upz-138",
+      "districtId": "dist-15",
+      "kind": "UPAZILA",
+      "nameEn": "Puthia",
+      "nameBn": "পুঠিয়া",
+      "bbsCode": "BD50810082"
+    },
+    {
+      "id": "upz-139",
+      "districtId": "dist-15",
+      "kind": "UPAZILA",
+      "nameEn": "Bagha",
+      "nameBn": "বাঘা",
+      "bbsCode": "BD50810010"
+    },
+    {
+      "id": "upz-140",
+      "districtId": "dist-15",
+      "kind": "UPAZILA",
+      "nameEn": "Godagari",
+      "nameBn": "গোদাগাড়ী",
+      "bbsCode": "BD50810034"
+    },
+    {
+      "id": "upz-141",
+      "districtId": "dist-15",
+      "kind": "UPAZILA",
+      "nameEn": "Tanore",
+      "nameBn": "তানোর",
+      "bbsCode": "BD50810094"
+    },
+    {
+      "id": "upz-142",
+      "districtId": "dist-15",
+      "kind": "UPAZILA",
+      "nameEn": "Bagmara",
+      "nameBn": "বাগমারা",
+      "bbsCode": "BD50810012"
+    },
+    {
+      "id": "upz-143",
+      "districtId": "dist-16",
+      "kind": "UPAZILA",
+      "nameEn": "Natore Sadar",
+      "nameBn": "নাটোর সদর",
+      "bbsCode": "BD50690063"
+    },
+    {
+      "id": "upz-144",
+      "districtId": "dist-16",
+      "kind": "UPAZILA",
+      "nameEn": "Singra",
+      "nameBn": "সিংড়া",
+      "bbsCode": "BD50690091"
+    },
+    {
+      "id": "upz-145",
+      "districtId": "dist-16",
+      "kind": "UPAZILA",
+      "nameEn": "Baraigram",
+      "nameBn": "বড়াইগ্রাম",
+      "bbsCode": "BD50690015"
+    },
+    {
+      "id": "upz-146",
+      "districtId": "dist-16",
+      "kind": "UPAZILA",
+      "nameEn": "Bagatipara",
+      "nameBn": "বাগাতিপাড়া",
+      "bbsCode": "BD50690009"
+    },
+    {
+      "id": "upz-147",
+      "districtId": "dist-16",
+      "kind": "UPAZILA",
+      "nameEn": "Lalpur",
+      "nameBn": "লালপুর",
+      "bbsCode": "BD50690044"
+    },
+    {
+      "id": "upz-148",
+      "districtId": "dist-16",
+      "kind": "UPAZILA",
+      "nameEn": "Gurudaspur",
+      "nameBn": "গুরুদাসপুর",
+      "bbsCode": "BD50690041"
+    },
+    {
+      "id": "upz-149",
+      "districtId": "dist-16",
+      "kind": "UPAZILA",
+      "nameEn": "Naldanga",
+      "nameBn": "নলডাঙ্গা",
+      "bbsCode": "BD50690055"
+    },
+    {
+      "id": "upz-150",
+      "districtId": "dist-17",
+      "kind": "UPAZILA",
+      "nameEn": "Akkelpur",
+      "nameBn": "আক্কেলপুর",
+      "bbsCode": "BD50380013"
+    },
+    {
+      "id": "upz-151",
+      "districtId": "dist-17",
+      "kind": "UPAZILA",
+      "nameEn": "Kalai",
+      "nameBn": "কালাই",
+      "bbsCode": "BD50380058"
+    },
+    {
+      "id": "upz-152",
+      "districtId": "dist-17",
+      "kind": "UPAZILA",
+      "nameEn": "Khetlal",
+      "nameBn": "ক্ষেতলাল",
+      "bbsCode": "BD50380061"
+    },
+    {
+      "id": "upz-153",
+      "districtId": "dist-17",
+      "kind": "UPAZILA",
+      "nameEn": "Panchbibi",
+      "nameBn": "পাঁচবিবি",
+      "bbsCode": "BD50380074"
+    },
+    {
+      "id": "upz-154",
+      "districtId": "dist-17",
+      "kind": "UPAZILA",
+      "nameEn": "Joypurhat Sadar",
+      "nameBn": "জয়পুরহাট সদর",
+      "bbsCode": "BD50380047"
+    },
+    {
+      "id": "upz-155",
+      "districtId": "dist-18",
+      "kind": "UPAZILA",
+      "nameEn": "Chapainawabganj Sadar",
+      "nameBn": "চাঁপাইনবাবগঞ্জ সদর",
+      "bbsCode": "BD50700066"
+    },
+    {
+      "id": "upz-156",
+      "districtId": "dist-18",
+      "kind": "UPAZILA",
+      "nameEn": "Gomastapur",
+      "nameBn": "গোমস্তাপুর",
+      "bbsCode": "BD50700037"
+    },
+    {
+      "id": "upz-157",
+      "districtId": "dist-18",
+      "kind": "UPAZILA",
+      "nameEn": "Nachole",
+      "nameBn": "নাচোল",
+      "bbsCode": "BD50700056"
+    },
+    {
+      "id": "upz-158",
+      "districtId": "dist-18",
+      "kind": "UPAZILA",
+      "nameEn": "Bholahat",
+      "nameBn": "ভোলাহাট",
+      "bbsCode": "BD50700018"
+    },
+    {
+      "id": "upz-159",
+      "districtId": "dist-18",
+      "kind": "UPAZILA",
+      "nameEn": "Shibganj",
+      "nameBn": "শিবগঞ্জ",
+      "bbsCode": "BD50700088"
+    },
+    {
+      "id": "upz-160",
+      "districtId": "dist-19",
+      "kind": "UPAZILA",
+      "nameEn": "Mahadebpur",
+      "nameBn": "মহাদেবপুর",
+      "bbsCode": "BD50640050"
+    },
+    {
+      "id": "upz-161",
+      "districtId": "dist-19",
+      "kind": "UPAZILA",
+      "nameEn": "Badalgachhi",
+      "nameBn": "বদলগাছী",
+      "bbsCode": "BD50640006"
+    },
+    {
+      "id": "upz-162",
+      "districtId": "dist-19",
+      "kind": "UPAZILA",
+      "nameEn": "Patnitala",
+      "nameBn": "পত্নিতলা",
+      "bbsCode": "BD50640075"
+    },
+    {
+      "id": "upz-163",
+      "districtId": "dist-19",
+      "kind": "UPAZILA",
+      "nameEn": "Dhamoirhat",
+      "nameBn": "ধামইরহাট",
+      "bbsCode": "BD50640028"
+    },
+    {
+      "id": "upz-164",
+      "districtId": "dist-19",
+      "kind": "UPAZILA",
+      "nameEn": "Niamatpur",
+      "nameBn": "নিয়ামতপুর",
+      "bbsCode": "BD50640069"
+    },
+    {
+      "id": "upz-165",
+      "districtId": "dist-19",
+      "kind": "UPAZILA",
+      "nameEn": "Manda",
+      "nameBn": "মান্দা",
+      "bbsCode": "BD50640047"
+    },
+    {
+      "id": "upz-166",
+      "districtId": "dist-19",
+      "kind": "UPAZILA",
+      "nameEn": "Atrai",
+      "nameBn": "আত্রাই",
+      "bbsCode": "BD50640003"
+    },
+    {
+      "id": "upz-167",
+      "districtId": "dist-19",
+      "kind": "UPAZILA",
+      "nameEn": "Raninagar",
+      "nameBn": "রাণীনগর",
+      "bbsCode": "BD50640085"
+    },
+    {
+      "id": "upz-168",
+      "districtId": "dist-19",
+      "kind": "UPAZILA",
+      "nameEn": "Naogaon Sadar",
+      "nameBn": "নওগাঁ সদর",
+      "bbsCode": "BD50640060"
+    },
+    {
+      "id": "upz-169",
+      "districtId": "dist-19",
+      "kind": "UPAZILA",
+      "nameEn": "Porsha",
+      "nameBn": "পোরশা",
+      "bbsCode": "BD50640079"
+    },
+    {
+      "id": "upz-170",
+      "districtId": "dist-19",
+      "kind": "UPAZILA",
+      "nameEn": "Sapahar",
+      "nameBn": "সাপাহার",
+      "bbsCode": "BD50640086"
+    },
+    {
+      "id": "upz-171",
+      "districtId": "dist-20",
+      "kind": "UPAZILA",
+      "nameEn": "Manirampur",
+      "nameBn": "মণিরামপুর",
+      "bbsCode": "BD40410061"
+    },
+    {
+      "id": "upz-172",
+      "districtId": "dist-20",
+      "kind": "UPAZILA",
+      "nameEn": "Abhaynagar",
+      "nameBn": "অভয়নগর",
+      "bbsCode": "BD40410004"
+    },
+    {
+      "id": "upz-173",
+      "districtId": "dist-20",
+      "kind": "UPAZILA",
+      "nameEn": "Bagharpara",
+      "nameBn": "বাঘারপাড়া",
+      "bbsCode": "BD40410009"
+    },
+    {
+      "id": "upz-174",
+      "districtId": "dist-20",
+      "kind": "UPAZILA",
+      "nameEn": "Chaugachha",
+      "nameBn": "চৌগাছা",
+      "bbsCode": "BD40410011"
+    },
+    {
+      "id": "upz-175",
+      "districtId": "dist-20",
+      "kind": "UPAZILA",
+      "nameEn": "Jhikargachha",
+      "nameBn": "ঝিকরগাছা",
+      "bbsCode": "BD40410023"
+    },
+    {
+      "id": "upz-176",
+      "districtId": "dist-20",
+      "kind": "UPAZILA",
+      "nameEn": "Keshabpur",
+      "nameBn": "কেশবপুর",
+      "bbsCode": "BD40410038"
+    },
+    {
+      "id": "upz-177",
+      "districtId": "dist-20",
+      "kind": "UPAZILA",
+      "nameEn": "Jashore Sadar",
+      "nameBn": "যশোর সদর",
+      "bbsCode": "BD40410047"
+    },
+    {
+      "id": "upz-178",
+      "districtId": "dist-20",
+      "kind": "UPAZILA",
+      "nameEn": "Sharsha",
+      "nameBn": "শার্শা",
+      "bbsCode": "BD40410090"
+    },
+    {
+      "id": "upz-179",
+      "districtId": "dist-21",
+      "kind": "UPAZILA",
+      "nameEn": "Ashashuni",
+      "nameBn": "আশাশুনি",
+      "bbsCode": "BD40870004"
+    },
+    {
+      "id": "upz-180",
+      "districtId": "dist-21",
+      "kind": "UPAZILA",
+      "nameEn": "Debhata",
+      "nameBn": "দেবহাটা",
+      "bbsCode": "BD40870025"
+    },
+    {
+      "id": "upz-181",
+      "districtId": "dist-21",
+      "kind": "UPAZILA",
+      "nameEn": "Kalaroa",
+      "nameBn": "কলারোয়া",
+      "bbsCode": "BD40870043"
+    },
+    {
+      "id": "upz-182",
+      "districtId": "dist-21",
+      "kind": "UPAZILA",
+      "nameEn": "Satkhira Sadar",
+      "nameBn": "সাতক্ষীরা সদর",
+      "bbsCode": "BD40870082"
+    },
+    {
+      "id": "upz-183",
+      "districtId": "dist-21",
+      "kind": "UPAZILA",
+      "nameEn": "Shyamnagar",
+      "nameBn": "শ্যামনগর",
+      "bbsCode": "BD40870086"
+    },
+    {
+      "id": "upz-184",
+      "districtId": "dist-21",
+      "kind": "UPAZILA",
+      "nameEn": "Tala",
+      "nameBn": "তালা",
+      "bbsCode": "BD40870090"
+    },
+    {
+      "id": "upz-185",
+      "districtId": "dist-21",
+      "kind": "UPAZILA",
+      "nameEn": "Kaliganj",
+      "nameBn": "কালিগঞ্জ",
+      "bbsCode": "BD40870047"
+    },
+    {
+      "id": "upz-186",
+      "districtId": "dist-22",
+      "kind": "UPAZILA",
+      "nameEn": "Mujibnagar",
+      "nameBn": "মুজিবনগর",
+      "bbsCode": "BD40570060"
+    },
+    {
+      "id": "upz-187",
+      "districtId": "dist-22",
+      "kind": "UPAZILA",
+      "nameEn": "Meherpur Sadar",
+      "nameBn": "মেহেরপুর সদর",
+      "bbsCode": "BD40570087"
+    },
+    {
+      "id": "upz-188",
+      "districtId": "dist-22",
+      "kind": "UPAZILA",
+      "nameEn": "Gangni",
+      "nameBn": "গাংনী",
+      "bbsCode": "BD40570047"
+    },
+    {
+      "id": "upz-189",
+      "districtId": "dist-23",
+      "kind": "UPAZILA",
+      "nameEn": "Narail Sadar",
+      "nameBn": "নড়াইল সদর",
+      "bbsCode": "BD40650076"
+    },
+    {
+      "id": "upz-190",
+      "districtId": "dist-23",
+      "kind": "UPAZILA",
+      "nameEn": "Lohagara",
+      "nameBn": "লোহাগড়া",
+      "bbsCode": "BD40650052"
+    },
+    {
+      "id": "upz-191",
+      "districtId": "dist-23",
+      "kind": "UPAZILA",
+      "nameEn": "Kalia",
+      "nameBn": "কালিয়া",
+      "bbsCode": "BD40650028"
+    },
+    {
+      "id": "upz-192",
+      "districtId": "dist-24",
+      "kind": "UPAZILA",
+      "nameEn": "Chuadanga Sadar",
+      "nameBn": "চুয়াডাঙ্গা সদর",
+      "bbsCode": "BD40180023"
+    },
+    {
+      "id": "upz-193",
+      "districtId": "dist-24",
+      "kind": "UPAZILA",
+      "nameEn": "Alamdanga",
+      "nameBn": "আলমডাঙ্গা",
+      "bbsCode": "BD40180007"
+    },
+    {
+      "id": "upz-194",
+      "districtId": "dist-24",
+      "kind": "UPAZILA",
+      "nameEn": "Damurhuda",
+      "nameBn": "দামুড়হুদা",
+      "bbsCode": "BD40180031"
+    },
+    {
+      "id": "upz-195",
+      "districtId": "dist-24",
+      "kind": "UPAZILA",
+      "nameEn": "Jibannagar",
+      "nameBn": "জীবননগর",
+      "bbsCode": "BD40180055"
+    },
+    {
+      "id": "upz-196",
+      "districtId": "dist-25",
+      "kind": "UPAZILA",
+      "nameEn": "Kushtia Sadar",
+      "nameBn": "কুষ্টিয়া সদর",
+      "bbsCode": "BD40500079"
+    },
+    {
+      "id": "upz-197",
+      "districtId": "dist-25",
+      "kind": "UPAZILA",
+      "nameEn": "Kumarkhali",
+      "nameBn": "কুমারখালী",
+      "bbsCode": "BD40500071"
+    },
+    {
+      "id": "upz-198",
+      "districtId": "dist-25",
+      "kind": "UPAZILA",
+      "nameEn": "Khoksa",
+      "nameBn": "খোকসা",
+      "bbsCode": "BD40500063"
+    },
+    {
+      "id": "upz-199",
+      "districtId": "dist-25",
+      "kind": "UPAZILA",
+      "nameEn": "Mirpur",
+      "nameBn": "মিরপুর",
+      "bbsCode": "BD40500094"
+    },
+    {
+      "id": "upz-200",
+      "districtId": "dist-25",
+      "kind": "UPAZILA",
+      "nameEn": "Daulatpur",
+      "nameBn": "দৌলতপুর",
+      "bbsCode": "BD40500039"
+    },
+    {
+      "id": "upz-201",
+      "districtId": "dist-25",
+      "kind": "UPAZILA",
+      "nameEn": "Bheramara",
+      "nameBn": "ভেড়ামারা",
+      "bbsCode": "BD40500015"
+    },
+    {
+      "id": "upz-202",
+      "districtId": "dist-26",
+      "kind": "UPAZILA",
+      "nameEn": "Shalikha",
+      "nameBn": "শালিখা",
+      "bbsCode": "BD40550085"
+    },
+    {
+      "id": "upz-203",
+      "districtId": "dist-26",
+      "kind": "UPAZILA",
+      "nameEn": "Sreepur",
+      "nameBn": "শ্রীপুর",
+      "bbsCode": "BD40550095"
+    },
+    {
+      "id": "upz-204",
+      "districtId": "dist-26",
+      "kind": "UPAZILA",
+      "nameEn": "Magura Sadar",
+      "nameBn": "মাগুরা সদর",
+      "bbsCode": "BD40550057"
+    },
+    {
+      "id": "upz-205",
+      "districtId": "dist-26",
+      "kind": "UPAZILA",
+      "nameEn": "Mohammadpur",
+      "nameBn": "মহম্মদপুর",
+      "bbsCode": "BD40550066"
+    },
+    {
+      "id": "upz-206",
+      "districtId": "dist-27",
+      "kind": "UPAZILA",
+      "nameEn": "Paikgachha",
+      "nameBn": "পাইকগাছা",
+      "bbsCode": "BD40470064"
+    },
+    {
+      "id": "upz-207",
+      "districtId": "dist-27",
+      "kind": "UPAZILA",
+      "nameEn": "Phultala",
+      "nameBn": "ফুলতলা",
+      "bbsCode": "BD40470069"
+    },
+    {
+      "id": "upz-208",
+      "districtId": "dist-27",
+      "kind": "UPAZILA",
+      "nameEn": "Dighalia",
+      "nameBn": "দিঘলিয়া",
+      "bbsCode": "BD40470040"
+    },
+    {
+      "id": "upz-209",
+      "districtId": "dist-27",
+      "kind": "UPAZILA",
+      "nameEn": "Rupsa",
+      "nameBn": "রূপসা",
+      "bbsCode": "BD40470075"
+    },
+    {
+      "id": "upz-210",
+      "districtId": "dist-27",
+      "kind": "UPAZILA",
+      "nameEn": "Terokhada",
+      "nameBn": "তেরখাদা",
+      "bbsCode": "BD40470094"
+    },
+    {
+      "id": "upz-211",
+      "districtId": "dist-27",
+      "kind": "UPAZILA",
+      "nameEn": "Dumuria",
+      "nameBn": "ডুমুরিয়া",
+      "bbsCode": "BD40470030"
+    },
+    {
+      "id": "upz-212",
+      "districtId": "dist-27",
+      "kind": "UPAZILA",
+      "nameEn": "Batiaghata",
+      "nameBn": "বটিয়াঘাটা",
+      "bbsCode": "BD40470012"
+    },
+    {
+      "id": "upz-213",
+      "districtId": "dist-27",
+      "kind": "UPAZILA",
+      "nameEn": "Dacope",
+      "nameBn": "দাকোপ",
+      "bbsCode": "BD40470017"
+    },
+    {
+      "id": "upz-214",
+      "districtId": "dist-27",
+      "kind": "UPAZILA",
+      "nameEn": "Koyra",
+      "nameBn": "কয়রা",
+      "bbsCode": "BD40470053"
+    },
+    {
+      "id": "upz-215",
+      "districtId": "dist-28",
+      "kind": "UPAZILA",
+      "nameEn": "Fakirhat",
+      "nameBn": "ফকিরহাট",
+      "bbsCode": "BD40010034"
+    },
+    {
+      "id": "upz-216",
+      "districtId": "dist-28",
+      "kind": "UPAZILA",
+      "nameEn": "Bagerhat Sadar",
+      "nameBn": "বাগেরহাট সদর",
+      "bbsCode": "BD40010008"
+    },
+    {
+      "id": "upz-217",
+      "districtId": "dist-28",
+      "kind": "UPAZILA",
+      "nameEn": "Mollahat",
+      "nameBn": "মোল্লাহাট",
+      "bbsCode": "BD40010056"
+    },
+    {
+      "id": "upz-218",
+      "districtId": "dist-28",
+      "kind": "UPAZILA",
+      "nameEn": "Sharankhola",
+      "nameBn": "শরণখোলা",
+      "bbsCode": "BD40010077"
+    },
+    {
+      "id": "upz-219",
+      "districtId": "dist-28",
+      "kind": "UPAZILA",
+      "nameEn": "Rampal",
+      "nameBn": "রামপাল",
+      "bbsCode": "BD40010073"
+    },
+    {
+      "id": "upz-220",
+      "districtId": "dist-28",
+      "kind": "UPAZILA",
+      "nameEn": "Morelganj",
+      "nameBn": "মোড়েলগঞ্জ",
+      "bbsCode": "BD40010060"
+    },
+    {
+      "id": "upz-221",
+      "districtId": "dist-28",
+      "kind": "UPAZILA",
+      "nameEn": "Kachua",
+      "nameBn": "কচুয়া",
+      "bbsCode": "BD40010038"
+    },
+    {
+      "id": "upz-222",
+      "districtId": "dist-28",
+      "kind": "UPAZILA",
+      "nameEn": "Mongla",
+      "nameBn": "মোংলা",
+      "bbsCode": "BD40010058"
+    },
+    {
+      "id": "upz-223",
+      "districtId": "dist-28",
+      "kind": "UPAZILA",
+      "nameEn": "Chitalmari",
+      "nameBn": "চিতলমারী",
+      "bbsCode": "BD40010014"
+    },
+    {
+      "id": "upz-224",
+      "districtId": "dist-29",
+      "kind": "UPAZILA",
+      "nameEn": "Jhenaidah Sadar",
+      "nameBn": "ঝিনাইদহ সদর",
+      "bbsCode": "BD40440019"
+    },
+    {
+      "id": "upz-225",
+      "districtId": "dist-29",
+      "kind": "UPAZILA",
+      "nameEn": "Shailkupa",
+      "nameBn": "শৈলকুপা",
+      "bbsCode": "BD40440080"
+    },
+    {
+      "id": "upz-226",
+      "districtId": "dist-29",
+      "kind": "UPAZILA",
+      "nameEn": "Harinakundu",
+      "nameBn": "হরিণাকুন্ডু",
+      "bbsCode": "BD40440014"
+    },
+    {
+      "id": "upz-227",
+      "districtId": "dist-29",
+      "kind": "UPAZILA",
+      "nameEn": "Kaliganj",
+      "nameBn": "কালীগঞ্জ",
+      "bbsCode": "BD40440033"
+    },
+    {
+      "id": "upz-228",
+      "districtId": "dist-29",
+      "kind": "UPAZILA",
+      "nameEn": "Kotchandpur",
+      "nameBn": "কোটচাঁদপুর",
+      "bbsCode": "BD40440042"
+    },
+    {
+      "id": "upz-229",
+      "districtId": "dist-29",
+      "kind": "UPAZILA",
+      "nameEn": "Maheshpur",
+      "nameBn": "মহেশপুর",
+      "bbsCode": "BD40440071"
+    },
+    {
+      "id": "upz-230",
+      "districtId": "dist-30",
+      "kind": "UPAZILA",
+      "nameEn": "Jhalokathi Sadar",
+      "nameBn": "ঝালকাঠি সদর",
+      "bbsCode": "BD10420040"
+    },
+    {
+      "id": "upz-231",
+      "districtId": "dist-30",
+      "kind": "UPAZILA",
+      "nameEn": "Kanthalia",
+      "nameBn": "কাঠালিয়া",
+      "bbsCode": "BD10420043"
+    },
+    {
+      "id": "upz-232",
+      "districtId": "dist-30",
+      "kind": "UPAZILA",
+      "nameEn": "Nalchhity",
+      "nameBn": "নলছিটি",
+      "bbsCode": "BD10420073"
+    },
+    {
+      "id": "upz-233",
+      "districtId": "dist-30",
+      "kind": "UPAZILA",
+      "nameEn": "Rajapur",
+      "nameBn": "রাজাপুর",
+      "bbsCode": "BD10420084"
+    },
+    {
+      "id": "upz-234",
+      "districtId": "dist-31",
+      "kind": "UPAZILA",
+      "nameEn": "Bauphal",
+      "nameBn": "বাউফল",
+      "bbsCode": "BD10780038"
+    },
+    {
+      "id": "upz-235",
+      "districtId": "dist-31",
+      "kind": "UPAZILA",
+      "nameEn": "Patuakhali Sadar",
+      "nameBn": "পটুয়াখালী সদর",
+      "bbsCode": "BD10780095"
+    },
+    {
+      "id": "upz-236",
+      "districtId": "dist-31",
+      "kind": "UPAZILA",
+      "nameEn": "Dumki",
+      "nameBn": "দুমকি",
+      "bbsCode": "BD10780055"
+    },
+    {
+      "id": "upz-237",
+      "districtId": "dist-31",
+      "kind": "UPAZILA",
+      "nameEn": "Dashmina",
+      "nameBn": "দশমিনা",
+      "bbsCode": "BD10780052"
+    },
+    {
+      "id": "upz-238",
+      "districtId": "dist-31",
+      "kind": "UPAZILA",
+      "nameEn": "Kalapara",
+      "nameBn": "কলাপাড়া",
+      "bbsCode": "BD10780066"
+    },
+    {
+      "id": "upz-239",
+      "districtId": "dist-31",
+      "kind": "UPAZILA",
+      "nameEn": "Mirzaganj",
+      "nameBn": "মির্জাগঞ্জ",
+      "bbsCode": "BD10780076"
+    },
+    {
+      "id": "upz-240",
+      "districtId": "dist-31",
+      "kind": "UPAZILA",
+      "nameEn": "Galachipa",
+      "nameBn": "গলাচিপা",
+      "bbsCode": "BD10780057"
+    },
+    {
+      "id": "upz-241",
+      "districtId": "dist-31",
+      "kind": "UPAZILA",
+      "nameEn": "Rangabali",
+      "nameBn": "রাঙ্গাবালী",
+      "bbsCode": "BD10780097"
+    },
+    {
+      "id": "upz-242",
+      "districtId": "dist-32",
+      "kind": "UPAZILA",
+      "nameEn": "Pirojpur Sadar",
+      "nameBn": "পিরোজপুর সদর",
+      "bbsCode": "BD10790080"
+    },
+    {
+      "id": "upz-243",
+      "districtId": "dist-32",
+      "kind": "UPAZILA",
+      "nameEn": "Nazirpur",
+      "nameBn": "নাজিরপুর",
+      "bbsCode": "BD10790076"
+    },
+    {
+      "id": "upz-244",
+      "districtId": "dist-32",
+      "kind": "UPAZILA",
+      "nameEn": "Kawkhali",
+      "nameBn": "কাউখালী",
+      "bbsCode": "BD10790047"
+    },
+    {
+      "id": "upz-245",
+      "districtId": "dist-32",
+      "kind": "UPAZILA",
+      "nameEn": "Indurkani",
+      "nameBn": "ইন্দুরকানী",
+      "bbsCode": "BD10790090"
+    },
+    {
+      "id": "upz-246",
+      "districtId": "dist-32",
+      "kind": "UPAZILA",
+      "nameEn": "Bhandaria",
+      "nameBn": "ভান্ডারিয়া",
+      "bbsCode": "BD10790014"
+    },
+    {
+      "id": "upz-247",
+      "districtId": "dist-32",
+      "kind": "UPAZILA",
+      "nameEn": "Mathbaria",
+      "nameBn": "মঠবাড়ীয়া",
+      "bbsCode": "BD10790058"
+    },
+    {
+      "id": "upz-248",
+      "districtId": "dist-32",
+      "kind": "UPAZILA",
+      "nameEn": "Nesarabad (Swarupkathi)",
+      "nameBn": "নেছারাবাদ",
+      "bbsCode": "BD10790087"
+    },
+    {
+      "id": "upz-249",
+      "districtId": "dist-33",
+      "kind": "UPAZILA",
+      "nameEn": "Barishal Sadar (Kotwali)",
+      "nameBn": "বরিশাল সদর",
+      "bbsCode": "BD10060051"
+    },
+    {
+      "id": "upz-250",
+      "districtId": "dist-33",
+      "kind": "UPAZILA",
+      "nameEn": "Bakerganj",
+      "nameBn": "বাকেরগঞ্জ",
+      "bbsCode": "BD10060007"
+    },
+    {
+      "id": "upz-251",
+      "districtId": "dist-33",
+      "kind": "UPAZILA",
+      "nameEn": "Babuganj",
+      "nameBn": "বাবুগঞ্জ",
+      "bbsCode": "BD10060003"
+    },
+    {
+      "id": "upz-252",
+      "districtId": "dist-33",
+      "kind": "UPAZILA",
+      "nameEn": "Ujirpur",
+      "nameBn": "উজিরপুর",
+      "bbsCode": "BD10060094"
+    },
+    {
+      "id": "upz-253",
+      "districtId": "dist-33",
+      "kind": "UPAZILA",
+      "nameEn": "Banaripara",
+      "nameBn": "বানারীপাড়া",
+      "bbsCode": "BD10060010"
+    },
+    {
+      "id": "upz-254",
+      "districtId": "dist-33",
+      "kind": "UPAZILA",
+      "nameEn": "Gaurnadi",
+      "nameBn": "গৌরনদী",
+      "bbsCode": "BD10060032"
+    },
+    {
+      "id": "upz-255",
+      "districtId": "dist-33",
+      "kind": "UPAZILA",
+      "nameEn": "Agailjhara",
+      "nameBn": "আগৈলঝাড়া",
+      "bbsCode": "BD10060002"
+    },
+    {
+      "id": "upz-256",
+      "districtId": "dist-33",
+      "kind": "UPAZILA",
+      "nameEn": "Mehendiganj",
+      "nameBn": "মেহেন্দিগঞ্জ",
+      "bbsCode": "BD10060062"
+    },
+    {
+      "id": "upz-257",
+      "districtId": "dist-33",
+      "kind": "UPAZILA",
+      "nameEn": "Muladi",
+      "nameBn": "মুলাদী",
+      "bbsCode": "BD10060069"
+    },
+    {
+      "id": "upz-258",
+      "districtId": "dist-33",
+      "kind": "UPAZILA",
+      "nameEn": "Hijla",
+      "nameBn": "হিজলা",
+      "bbsCode": "BD10060036"
+    },
+    {
+      "id": "upz-259",
+      "districtId": "dist-34",
+      "kind": "UPAZILA",
+      "nameEn": "Bhola Sadar",
+      "nameBn": "ভোলা সদর",
+      "bbsCode": "BD10090018"
+    },
+    {
+      "id": "upz-260",
+      "districtId": "dist-34",
+      "kind": "UPAZILA",
+      "nameEn": "Borhanuddin",
+      "nameBn": "বোরহান উদ্দিন",
+      "bbsCode": "BD10090021"
+    },
+    {
+      "id": "upz-261",
+      "districtId": "dist-34",
+      "kind": "UPAZILA",
+      "nameEn": "Charfasson",
+      "nameBn": "চরফ্যাশন",
+      "bbsCode": "BD10090025"
+    },
+    {
+      "id": "upz-262",
+      "districtId": "dist-34",
+      "kind": "UPAZILA",
+      "nameEn": "Daulatkhan",
+      "nameBn": "দৌলতখান",
+      "bbsCode": "BD10090029"
+    },
+    {
+      "id": "upz-263",
+      "districtId": "dist-34",
+      "kind": "UPAZILA",
+      "nameEn": "Monpura",
+      "nameBn": "মনপুরা",
+      "bbsCode": "BD10090065"
+    },
+    {
+      "id": "upz-264",
+      "districtId": "dist-34",
+      "kind": "UPAZILA",
+      "nameEn": "Tazumuddin",
+      "nameBn": "তজুমদ্দিন",
+      "bbsCode": "BD10090091"
+    },
+    {
+      "id": "upz-265",
+      "districtId": "dist-34",
+      "kind": "UPAZILA",
+      "nameEn": "Lalmohan",
+      "nameBn": "লালমোহন",
+      "bbsCode": "BD10090054"
+    },
+    {
+      "id": "upz-266",
+      "districtId": "dist-35",
+      "kind": "UPAZILA",
+      "nameEn": "Amtali",
+      "nameBn": "আমতলী",
+      "bbsCode": "BD10040009"
+    },
+    {
+      "id": "upz-267",
+      "districtId": "dist-35",
+      "kind": "UPAZILA",
+      "nameEn": "Barguna Sadar",
+      "nameBn": "বরগুনা সদর",
+      "bbsCode": "BD10040028"
+    },
+    {
+      "id": "upz-268",
+      "districtId": "dist-35",
+      "kind": "UPAZILA",
+      "nameEn": "Betagi",
+      "nameBn": "বেতাগী",
+      "bbsCode": "BD10040047"
+    },
+    {
+      "id": "upz-269",
+      "districtId": "dist-35",
+      "kind": "UPAZILA",
+      "nameEn": "Bamna",
+      "nameBn": "বামনা",
+      "bbsCode": "BD10040019"
+    },
+    {
+      "id": "upz-270",
+      "districtId": "dist-35",
+      "kind": "UPAZILA",
+      "nameEn": "Patharghata",
+      "nameBn": "পাথরঘাটা",
+      "bbsCode": "BD10040085"
+    },
+    {
+      "id": "upz-271",
+      "districtId": "dist-35",
+      "kind": "UPAZILA",
+      "nameEn": "Taltali",
+      "nameBn": "তালতলি",
+      "bbsCode": "BD10040090"
+    },
+    {
+      "id": "upz-272",
+      "districtId": "dist-36",
+      "kind": "UPAZILA",
+      "nameEn": "Balaganj",
+      "nameBn": "বালাগঞ্জ",
+      "bbsCode": "BD60910008"
+    },
+    {
+      "id": "upz-273",
+      "districtId": "dist-36",
+      "kind": "UPAZILA",
+      "nameEn": "Beanibazar",
+      "nameBn": "বিয়ানীবাজার",
+      "bbsCode": "BD60910017"
+    },
+    {
+      "id": "upz-274",
+      "districtId": "dist-36",
+      "kind": "UPAZILA",
+      "nameEn": "Bishwanath",
+      "nameBn": "বিশ্বনাথ",
+      "bbsCode": "BD60910020"
+    },
+    {
+      "id": "upz-275",
+      "districtId": "dist-36",
+      "kind": "UPAZILA",
+      "nameEn": "Companiganj",
+      "nameBn": "কোম্পানীগঞ্জ",
+      "bbsCode": "BD60910027"
+    },
+    {
+      "id": "upz-276",
+      "districtId": "dist-36",
+      "kind": "UPAZILA",
+      "nameEn": "Fenchuganj",
+      "nameBn": "ফেঞ্চুগঞ্জ",
+      "bbsCode": "BD60910035"
+    },
+    {
+      "id": "upz-277",
+      "districtId": "dist-36",
+      "kind": "UPAZILA",
+      "nameEn": "Golapganj",
+      "nameBn": "গোলাপগঞ্জ",
+      "bbsCode": "BD60910038"
+    },
+    {
+      "id": "upz-278",
+      "districtId": "dist-36",
+      "kind": "UPAZILA",
+      "nameEn": "Gowainghat",
+      "nameBn": "গোয়াইনঘাট",
+      "bbsCode": "BD60910041"
+    },
+    {
+      "id": "upz-279",
+      "districtId": "dist-36",
+      "kind": "UPAZILA",
+      "nameEn": "Jaintapur",
+      "nameBn": "জৈন্তাপুর",
+      "bbsCode": "BD60910053"
+    },
+    {
+      "id": "upz-280",
+      "districtId": "dist-36",
+      "kind": "UPAZILA",
+      "nameEn": "Kanaighat",
+      "nameBn": "কানাইঘাট",
+      "bbsCode": "BD60910059"
+    },
+    {
+      "id": "upz-281",
+      "districtId": "dist-36",
+      "kind": "UPAZILA",
+      "nameEn": "Sylhet Sadar",
+      "nameBn": "সিলেট সদর",
+      "bbsCode": "BD60910062"
+    },
+    {
+      "id": "upz-282",
+      "districtId": "dist-36",
+      "kind": "UPAZILA",
+      "nameEn": "Zakiganj",
+      "nameBn": "জকিগঞ্জ",
+      "bbsCode": "BD60910094"
+    },
+    {
+      "id": "upz-283",
+      "districtId": "dist-36",
+      "kind": "UPAZILA",
+      "nameEn": "Dakkhin Surma",
+      "nameBn": "দক্ষিণ সুরমা",
+      "bbsCode": "BD60910031"
+    },
+    {
+      "id": "upz-284",
+      "districtId": "dist-36",
+      "kind": "UPAZILA",
+      "nameEn": "Osmaninagar",
+      "nameBn": "ওসমানী নগর",
+      "bbsCode": "BD60910060"
+    },
+    {
+      "id": "upz-285",
+      "districtId": "dist-37",
+      "kind": "UPAZILA",
+      "nameEn": "Baralekha",
+      "nameBn": "বড়লেখা",
+      "bbsCode": "BD60580014"
+    },
+    {
+      "id": "upz-286",
+      "districtId": "dist-37",
+      "kind": "UPAZILA",
+      "nameEn": "Kamalganj",
+      "nameBn": "কমলগঞ্জ",
+      "bbsCode": "BD60580056"
+    },
+    {
+      "id": "upz-287",
+      "districtId": "dist-37",
+      "kind": "UPAZILA",
+      "nameEn": "Kulaura",
+      "nameBn": "কুলাউড়া",
+      "bbsCode": "BD60580065"
+    },
+    {
+      "id": "upz-288",
+      "districtId": "dist-37",
+      "kind": "UPAZILA",
+      "nameEn": "Moulvibazar Sadar",
+      "nameBn": "মৌলভীবাজার সদর",
+      "bbsCode": "BD60580074"
+    },
+    {
+      "id": "upz-289",
+      "districtId": "dist-37",
+      "kind": "UPAZILA",
+      "nameEn": "Rajnagar",
+      "nameBn": "রাজনগর",
+      "bbsCode": "BD60580080"
+    },
+    {
+      "id": "upz-290",
+      "districtId": "dist-37",
+      "kind": "UPAZILA",
+      "nameEn": "Sreemangal",
+      "nameBn": "শ্রীমঙ্গল",
+      "bbsCode": "BD60580083"
+    },
+    {
+      "id": "upz-291",
+      "districtId": "dist-37",
+      "kind": "UPAZILA",
+      "nameEn": "Juri",
+      "nameBn": "জুড়ী",
+      "bbsCode": "BD60580035"
+    },
+    {
+      "id": "upz-292",
+      "districtId": "dist-38",
+      "kind": "UPAZILA",
+      "nameEn": "Nabiganj",
+      "nameBn": "নবীগঞ্জ",
+      "bbsCode": "BD60360077"
+    },
+    {
+      "id": "upz-293",
+      "districtId": "dist-38",
+      "kind": "UPAZILA",
+      "nameEn": "Bahubal",
+      "nameBn": "বাহুবল",
+      "bbsCode": "BD60360005"
+    },
+    {
+      "id": "upz-294",
+      "districtId": "dist-38",
+      "kind": "UPAZILA",
+      "nameEn": "Ajmiriganj",
+      "nameBn": "আজমিরীগঞ্জ",
+      "bbsCode": "BD60360002"
+    },
+    {
+      "id": "upz-295",
+      "districtId": "dist-38",
+      "kind": "UPAZILA",
+      "nameEn": "Baniachong",
+      "nameBn": "বানিয়াচং",
+      "bbsCode": "BD60360011"
+    },
+    {
+      "id": "upz-296",
+      "districtId": "dist-38",
+      "kind": "UPAZILA",
+      "nameEn": "Lakhai",
+      "nameBn": "লাখাই",
+      "bbsCode": "BD60360068"
+    },
+    {
+      "id": "upz-297",
+      "districtId": "dist-38",
+      "kind": "UPAZILA",
+      "nameEn": "Chunarughat",
+      "nameBn": "চুনারুঘাট",
+      "bbsCode": "BD60360026"
+    },
+    {
+      "id": "upz-298",
+      "districtId": "dist-38",
+      "kind": "UPAZILA",
+      "nameEn": "Habiganj Sadar",
+      "nameBn": "হবিগঞ্জ সদর",
+      "bbsCode": "BD60360044"
+    },
+    {
+      "id": "upz-299",
+      "districtId": "dist-38",
+      "kind": "UPAZILA",
+      "nameEn": "Madhabpur",
+      "nameBn": "মাধবপুর",
+      "bbsCode": "BD60360071"
+    },
+    {
+      "id": "upz-300",
+      "districtId": "dist-39",
+      "kind": "UPAZILA",
+      "nameEn": "Sunamganj Sadar",
+      "nameBn": "সুনামগঞ্জ সদর",
+      "bbsCode": "BD60900089"
+    },
+    {
+      "id": "upz-301",
+      "districtId": "dist-39",
+      "kind": "UPAZILA",
+      "nameEn": "Shantiganj",
+      "nameBn": "শান্তিগঞ্জ",
+      "bbsCode": "BD60900087"
+    },
+    {
+      "id": "upz-302",
+      "districtId": "dist-39",
+      "kind": "UPAZILA",
+      "nameEn": "Bishwambharpur",
+      "nameBn": "বিশ্বম্ভরপুর",
+      "bbsCode": "BD60900018"
+    },
+    {
+      "id": "upz-303",
+      "districtId": "dist-39",
+      "kind": "UPAZILA",
+      "nameEn": "Chhatak",
+      "nameBn": "ছাতক",
+      "bbsCode": "BD60900023"
+    },
+    {
+      "id": "upz-304",
+      "districtId": "dist-39",
+      "kind": "UPAZILA",
+      "nameEn": "Jagannathpur",
+      "nameBn": "জগন্নাথপুর",
+      "bbsCode": "BD60900047"
+    },
+    {
+      "id": "upz-305",
+      "districtId": "dist-39",
+      "kind": "UPAZILA",
+      "nameEn": "Dowarabazar",
+      "nameBn": "দোয়ারাবাজার",
+      "bbsCode": "BD60900033"
+    },
+    {
+      "id": "upz-306",
+      "districtId": "dist-39",
+      "kind": "UPAZILA",
+      "nameEn": "Tahirpur",
+      "nameBn": "তাহিরপুর",
+      "bbsCode": "BD60900092"
+    },
+    {
+      "id": "upz-307",
+      "districtId": "dist-39",
+      "kind": "UPAZILA",
+      "nameEn": "Dharmapasha",
+      "nameBn": "ধর্মপাশা",
+      "bbsCode": "BD60900032"
+    },
+    {
+      "id": "upz-308",
+      "districtId": "dist-39",
+      "kind": "UPAZILA",
+      "nameEn": "Jamalganj",
+      "nameBn": "জামালগঞ্জ",
+      "bbsCode": "BD60900050"
+    },
+    {
+      "id": "upz-309",
+      "districtId": "dist-39",
+      "kind": "UPAZILA",
+      "nameEn": "Shalla",
+      "nameBn": "শাল্লা",
+      "bbsCode": "BD60900086"
+    },
+    {
+      "id": "upz-310",
+      "districtId": "dist-39",
+      "kind": "UPAZILA",
+      "nameEn": "Derai",
+      "nameBn": "দিরাই",
+      "bbsCode": "BD60900029"
+    },
+    {
+      "id": "upz-311",
+      "districtId": "dist-40",
+      "kind": "UPAZILA",
+      "nameEn": "Belabo",
+      "nameBn": "বেলাবো",
+      "bbsCode": "BD30680007"
+    },
+    {
+      "id": "upz-312",
+      "districtId": "dist-40",
+      "kind": "UPAZILA",
+      "nameEn": "Manohardi",
+      "nameBn": "মনোহরদী",
+      "bbsCode": "BD30680052"
+    },
+    {
+      "id": "upz-313",
+      "districtId": "dist-40",
+      "kind": "UPAZILA",
+      "nameEn": "Narsingdi Sadar",
+      "nameBn": "নরসিংদী সদর",
+      "bbsCode": "BD30680060"
+    },
+    {
+      "id": "upz-314",
+      "districtId": "dist-40",
+      "kind": "UPAZILA",
+      "nameEn": "Palash",
+      "nameBn": "পলাশ",
+      "bbsCode": "BD30680063"
+    },
+    {
+      "id": "upz-315",
+      "districtId": "dist-40",
+      "kind": "UPAZILA",
+      "nameEn": "Raipura",
+      "nameBn": "রায়পুরা",
+      "bbsCode": "BD30680064"
+    },
+    {
+      "id": "upz-316",
+      "districtId": "dist-40",
+      "kind": "UPAZILA",
+      "nameEn": "Shibpur",
+      "nameBn": "শিবপুর",
+      "bbsCode": "BD30680076"
+    },
+    {
+      "id": "upz-317",
+      "districtId": "dist-41",
+      "kind": "UPAZILA",
+      "nameEn": "Kaliganj",
+      "nameBn": "কালীগঞ্জ",
+      "bbsCode": "BD30330034"
+    },
+    {
+      "id": "upz-318",
+      "districtId": "dist-41",
+      "kind": "UPAZILA",
+      "nameEn": "Kaliakair",
+      "nameBn": "কালিয়াকৈর",
+      "bbsCode": "BD30330032"
+    },
+    {
+      "id": "upz-319",
+      "districtId": "dist-41",
+      "kind": "UPAZILA",
+      "nameEn": "Kapasia",
+      "nameBn": "কাপাসিয়া",
+      "bbsCode": "BD30330036"
+    },
+    {
+      "id": "upz-320",
+      "districtId": "dist-41",
+      "kind": "UPAZILA",
+      "nameEn": "Gazipur Sadar",
+      "nameBn": "গাজীপুর সদর",
+      "bbsCode": "BD30330030"
+    },
+    {
+      "id": "upz-321",
+      "districtId": "dist-41",
+      "kind": "UPAZILA",
+      "nameEn": "Sreepur",
+      "nameBn": "শ্রীপুর",
+      "bbsCode": "BD30330086"
+    },
+    {
+      "id": "upz-322",
+      "districtId": "dist-42",
+      "kind": "UPAZILA",
+      "nameEn": "Shariatpur Sadar",
+      "nameBn": "শরিয়তপুর সদর",
+      "bbsCode": "BD30860069"
+    },
+    {
+      "id": "upz-323",
+      "districtId": "dist-42",
+      "kind": "UPAZILA",
+      "nameEn": "Naria",
+      "nameBn": "নড়িয়া",
+      "bbsCode": "BD30860065"
+    },
+    {
+      "id": "upz-324",
+      "districtId": "dist-42",
+      "kind": "UPAZILA",
+      "nameEn": "Zajira",
+      "nameBn": "জাজিরা",
+      "bbsCode": "BD30860094"
+    },
+    {
+      "id": "upz-325",
+      "districtId": "dist-42",
+      "kind": "UPAZILA",
+      "nameEn": "Gosairhat",
+      "nameBn": "গোসাইরহাট",
+      "bbsCode": "BD30860036"
+    },
+    {
+      "id": "upz-326",
+      "districtId": "dist-42",
+      "kind": "UPAZILA",
+      "nameEn": "Bhedarganj",
+      "nameBn": "ভেদরগঞ্জ",
+      "bbsCode": "BD30860014"
+    },
+    {
+      "id": "upz-327",
+      "districtId": "dist-42",
+      "kind": "UPAZILA",
+      "nameEn": "Damudya",
+      "nameBn": "ডামুড্যা",
+      "bbsCode": "BD30860025"
+    },
+    {
+      "id": "upz-328",
+      "districtId": "dist-43",
+      "kind": "UPAZILA",
+      "nameEn": "Araihazar",
+      "nameBn": "আড়াইহাজার",
+      "bbsCode": "BD30670002"
+    },
+    {
+      "id": "upz-329",
+      "districtId": "dist-43",
+      "kind": "UPAZILA",
+      "nameEn": "Bandar",
+      "nameBn": "বন্দর",
+      "bbsCode": "BD30670006"
+    },
+    {
+      "id": "upz-330",
+      "districtId": "dist-43",
+      "kind": "UPAZILA",
+      "nameEn": "Narayanganj Sadar",
+      "nameBn": "নারায়নগঞ্জ সদর",
+      "bbsCode": "BD30670058"
+    },
+    {
+      "id": "upz-331",
+      "districtId": "dist-43",
+      "kind": "UPAZILA",
+      "nameEn": "Rupganj",
+      "nameBn": "রূপগঞ্জ",
+      "bbsCode": "BD30670068"
+    },
+    {
+      "id": "upz-332",
+      "districtId": "dist-43",
+      "kind": "UPAZILA",
+      "nameEn": "Sonargaon",
+      "nameBn": "সোনারগাঁ",
+      "bbsCode": "BD30670004"
+    },
+    {
+      "id": "upz-333",
+      "districtId": "dist-44",
+      "kind": "UPAZILA",
+      "nameEn": "Basail",
+      "nameBn": "বাসাইল",
+      "bbsCode": "BD30930009"
+    },
+    {
+      "id": "upz-334",
+      "districtId": "dist-44",
+      "kind": "UPAZILA",
+      "nameEn": "Bhuanpur",
+      "nameBn": "ভুয়াপুর",
+      "bbsCode": "BD30930019"
+    },
+    {
+      "id": "upz-335",
+      "districtId": "dist-44",
+      "kind": "UPAZILA",
+      "nameEn": "Delduar",
+      "nameBn": "দেলদুয়ার",
+      "bbsCode": "BD30930023"
+    },
+    {
+      "id": "upz-336",
+      "districtId": "dist-44",
+      "kind": "UPAZILA",
+      "nameEn": "Ghatail",
+      "nameBn": "ঘাটাইল",
+      "bbsCode": "BD30930028"
+    },
+    {
+      "id": "upz-337",
+      "districtId": "dist-44",
+      "kind": "UPAZILA",
+      "nameEn": "Gopalpur",
+      "nameBn": "গোপালপুর",
+      "bbsCode": "BD30930038"
+    },
+    {
+      "id": "upz-338",
+      "districtId": "dist-44",
+      "kind": "UPAZILA",
+      "nameEn": "Madhupur",
+      "nameBn": "মধুপুর",
+      "bbsCode": "BD30930057"
+    },
+    {
+      "id": "upz-339",
+      "districtId": "dist-44",
+      "kind": "UPAZILA",
+      "nameEn": "Mirzapur",
+      "nameBn": "মির্জাপুর",
+      "bbsCode": "BD30930066"
+    },
+    {
+      "id": "upz-340",
+      "districtId": "dist-44",
+      "kind": "UPAZILA",
+      "nameEn": "Nagarpur",
+      "nameBn": "নাগরপুর",
+      "bbsCode": "BD30930076"
+    },
+    {
+      "id": "upz-341",
+      "districtId": "dist-44",
+      "kind": "UPAZILA",
+      "nameEn": "Sakhipur",
+      "nameBn": "সখিপুর",
+      "bbsCode": "BD30930085"
+    },
+    {
+      "id": "upz-342",
+      "districtId": "dist-44",
+      "kind": "UPAZILA",
+      "nameEn": "Tangail Sadar",
+      "nameBn": "টাঙ্গাইল সদর",
+      "bbsCode": "BD30930095"
+    },
+    {
+      "id": "upz-343",
+      "districtId": "dist-44",
+      "kind": "UPAZILA",
+      "nameEn": "Kalihati",
+      "nameBn": "কালিহাতী",
+      "bbsCode": "BD30930047"
+    },
+    {
+      "id": "upz-344",
+      "districtId": "dist-44",
+      "kind": "UPAZILA",
+      "nameEn": "Dhanbari",
+      "nameBn": "ধনবাড়ী",
+      "bbsCode": "BD30930025"
+    },
+    {
+      "id": "upz-345",
+      "districtId": "dist-45",
+      "kind": "UPAZILA",
+      "nameEn": "Itna",
+      "nameBn": "ইটনা",
+      "bbsCode": "BD30480033"
+    },
+    {
+      "id": "upz-346",
+      "districtId": "dist-45",
+      "kind": "UPAZILA",
+      "nameEn": "Katiadi",
+      "nameBn": "কটিয়াদী",
+      "bbsCode": "BD30480045"
+    },
+    {
+      "id": "upz-347",
+      "districtId": "dist-45",
+      "kind": "UPAZILA",
+      "nameEn": "Bhairab",
+      "nameBn": "ভৈরব",
+      "bbsCode": "BD30480011"
+    },
+    {
+      "id": "upz-348",
+      "districtId": "dist-45",
+      "kind": "UPAZILA",
+      "nameEn": "Tarail",
+      "nameBn": "তাড়াইল",
+      "bbsCode": "BD30480092"
+    },
+    {
+      "id": "upz-349",
+      "districtId": "dist-45",
+      "kind": "UPAZILA",
+      "nameEn": "Hossainpur",
+      "nameBn": "হোসেনপুর",
+      "bbsCode": "BD30480027"
+    },
+    {
+      "id": "upz-350",
+      "districtId": "dist-45",
+      "kind": "UPAZILA",
+      "nameEn": "Pakundia",
+      "nameBn": "পাকুন্দিয়া",
+      "bbsCode": "BD30480079"
+    },
+    {
+      "id": "upz-351",
+      "districtId": "dist-45",
+      "kind": "UPAZILA",
+      "nameEn": "Kuliarchar",
+      "nameBn": "কুলিয়ারচর",
+      "bbsCode": "BD30480054"
+    },
+    {
+      "id": "upz-352",
+      "districtId": "dist-45",
+      "kind": "UPAZILA",
+      "nameEn": "Kishoreganj Sadar",
+      "nameBn": "কিশোরগঞ্জ সদর",
+      "bbsCode": "BD30480049"
+    },
+    {
+      "id": "upz-353",
+      "districtId": "dist-45",
+      "kind": "UPAZILA",
+      "nameEn": "Karimganj",
+      "nameBn": "করিমগঞ্জ",
+      "bbsCode": "BD30480042"
+    },
+    {
+      "id": "upz-354",
+      "districtId": "dist-45",
+      "kind": "UPAZILA",
+      "nameEn": "Bajitpur",
+      "nameBn": "বাজিতপুর",
+      "bbsCode": "BD30480006"
+    },
+    {
+      "id": "upz-355",
+      "districtId": "dist-45",
+      "kind": "UPAZILA",
+      "nameEn": "Austagram",
+      "nameBn": "অষ্টগ্রাম",
+      "bbsCode": "BD30480002"
+    },
+    {
+      "id": "upz-356",
+      "districtId": "dist-45",
+      "kind": "UPAZILA",
+      "nameEn": "Mithamain",
+      "nameBn": "মিঠামইন",
+      "bbsCode": "BD30480059"
+    },
+    {
+      "id": "upz-357",
+      "districtId": "dist-45",
+      "kind": "UPAZILA",
+      "nameEn": "Nikli",
+      "nameBn": "নিকলী",
+      "bbsCode": "BD30480076"
+    },
+    {
+      "id": "upz-358",
+      "districtId": "dist-46",
+      "kind": "UPAZILA",
+      "nameEn": "Harirampur",
+      "nameBn": "হরিরামপুর",
+      "bbsCode": "BD30560028"
+    },
+    {
+      "id": "upz-359",
+      "districtId": "dist-46",
+      "kind": "UPAZILA",
+      "nameEn": "Saturia",
+      "nameBn": "সাটুরিয়া",
+      "bbsCode": "BD30560070"
+    },
+    {
+      "id": "upz-360",
+      "districtId": "dist-46",
+      "kind": "UPAZILA",
+      "nameEn": "Manikganj Sadar",
+      "nameBn": "মানিকগঞ্জ সদর",
+      "bbsCode": "BD30560046"
+    },
+    {
+      "id": "upz-361",
+      "districtId": "dist-46",
+      "kind": "UPAZILA",
+      "nameEn": "Ghior",
+      "nameBn": "ঘিওর",
+      "bbsCode": "BD30560022"
+    },
+    {
+      "id": "upz-362",
+      "districtId": "dist-46",
+      "kind": "UPAZILA",
+      "nameEn": "Shibalay",
+      "nameBn": "শিবালয়",
+      "bbsCode": "BD30560078"
+    },
+    {
+      "id": "upz-363",
+      "districtId": "dist-46",
+      "kind": "UPAZILA",
+      "nameEn": "Daulatpur",
+      "nameBn": "দৌলতপুর",
+      "bbsCode": "BD30560010"
+    },
+    {
+      "id": "upz-364",
+      "districtId": "dist-46",
+      "kind": "UPAZILA",
+      "nameEn": "Singair",
+      "nameBn": "সিংগাইর",
+      "bbsCode": "BD30560082"
+    },
+    {
+      "id": "upz-365",
+      "districtId": "dist-47",
+      "kind": "UPAZILA",
+      "nameEn": "Savar",
+      "nameBn": "সাভার",
+      "bbsCode": "BD30260072"
+    },
+    {
+      "id": "upz-366",
+      "districtId": "dist-47",
+      "kind": "UPAZILA",
+      "nameEn": "Dhamrai",
+      "nameBn": "ধামরাই",
+      "bbsCode": "BD30260014"
+    },
+    {
+      "id": "upz-367",
+      "districtId": "dist-47",
+      "kind": "UPAZILA",
+      "nameEn": "Keraniganj",
+      "nameBn": "কেরাণীগঞ্জ",
+      "bbsCode": "BD30260038"
+    },
+    {
+      "id": "upz-368",
+      "districtId": "dist-47",
+      "kind": "UPAZILA",
+      "nameEn": "Nawabganj",
+      "nameBn": "নবাবগঞ্জ",
+      "bbsCode": "BD30260062"
+    },
+    {
+      "id": "upz-369",
+      "districtId": "dist-47",
+      "kind": "UPAZILA",
+      "nameEn": "Dohar",
+      "nameBn": "দোহার",
+      "bbsCode": "BD30260018"
+    },
+    {
+      "id": "upz-370",
+      "districtId": "dist-48",
+      "kind": "UPAZILA",
+      "nameEn": "Munshiganj Sadar",
+      "nameBn": "মুন্সিগঞ্জ সদর",
+      "bbsCode": "BD30590056"
+    },
+    {
+      "id": "upz-371",
+      "districtId": "dist-48",
+      "kind": "UPAZILA",
+      "nameEn": "Sreenagar",
+      "nameBn": "শ্রীনগর",
+      "bbsCode": "BD30590084"
+    },
+    {
+      "id": "upz-372",
+      "districtId": "dist-48",
+      "kind": "UPAZILA",
+      "nameEn": "Sirajdikhan",
+      "nameBn": "সিরাজদিখান",
+      "bbsCode": "BD30590074"
+    },
+    {
+      "id": "upz-373",
+      "districtId": "dist-48",
+      "kind": "UPAZILA",
+      "nameEn": "Louhajang",
+      "nameBn": "লৌহজং",
+      "bbsCode": "BD30590044"
+    },
+    {
+      "id": "upz-374",
+      "districtId": "dist-48",
+      "kind": "UPAZILA",
+      "nameEn": "Gazaria",
+      "nameBn": "গজারিয়া",
+      "bbsCode": "BD30590024"
+    },
+    {
+      "id": "upz-375",
+      "districtId": "dist-48",
+      "kind": "UPAZILA",
+      "nameEn": "Tongibari",
+      "nameBn": "টংগীবাড়ি",
+      "bbsCode": "BD30590094"
+    },
+    {
+      "id": "upz-376",
+      "districtId": "dist-49",
+      "kind": "UPAZILA",
+      "nameEn": "Rajbari Sadar",
+      "nameBn": "রাজবাড়ী সদর",
+      "bbsCode": "BD30820076"
+    },
+    {
+      "id": "upz-377",
+      "districtId": "dist-49",
+      "kind": "UPAZILA",
+      "nameEn": "Goalanda",
+      "nameBn": "গোয়ালন্দ",
+      "bbsCode": "BD30820029"
+    },
+    {
+      "id": "upz-378",
+      "districtId": "dist-49",
+      "kind": "UPAZILA",
+      "nameEn": "Pangsha",
+      "nameBn": "পাংশা",
+      "bbsCode": "BD30820073"
+    },
+    {
+      "id": "upz-379",
+      "districtId": "dist-49",
+      "kind": "UPAZILA",
+      "nameEn": "Baliakandi",
+      "nameBn": "বালিয়াকান্দি",
+      "bbsCode": "BD30820007"
+    },
+    {
+      "id": "upz-380",
+      "districtId": "dist-49",
+      "kind": "UPAZILA",
+      "nameEn": "Kalukhali",
+      "nameBn": "কালুখালী",
+      "bbsCode": "BD30820047"
+    },
+    {
+      "id": "upz-381",
+      "districtId": "dist-50",
+      "kind": "UPAZILA",
+      "nameEn": "Madaripur Sadar",
+      "nameBn": "মাদারীপুর সদর",
+      "bbsCode": "BD30540054"
+    },
+    {
+      "id": "upz-382",
+      "districtId": "dist-50",
+      "kind": "UPAZILA",
+      "nameEn": "Shibchar",
+      "nameBn": "শিবচর",
+      "bbsCode": "BD30540087"
+    },
+    {
+      "id": "upz-383",
+      "districtId": "dist-50",
+      "kind": "UPAZILA",
+      "nameEn": "Kalkini",
+      "nameBn": "কালকিনি",
+      "bbsCode": "BD30540040"
+    },
+    {
+      "id": "upz-384",
+      "districtId": "dist-50",
+      "kind": "UPAZILA",
+      "nameEn": "Rajoir",
+      "nameBn": "রাজৈর",
+      "bbsCode": "BD30540080"
+    },
+    {
+      "id": "upz-385",
+      "districtId": "dist-51",
+      "kind": "UPAZILA",
+      "nameEn": "Gopalganj Sadar",
+      "nameBn": "গোপালগঞ্জ সদর",
+      "bbsCode": "BD30350032"
+    },
+    {
+      "id": "upz-386",
+      "districtId": "dist-51",
+      "kind": "UPAZILA",
+      "nameEn": "Kashiani",
+      "nameBn": "কাশিয়ানী",
+      "bbsCode": "BD30350043"
+    },
+    {
+      "id": "upz-387",
+      "districtId": "dist-51",
+      "kind": "UPAZILA",
+      "nameEn": "Tungipara",
+      "nameBn": "টুংগীপাড়া",
+      "bbsCode": "BD30350091"
+    },
+    {
+      "id": "upz-388",
+      "districtId": "dist-51",
+      "kind": "UPAZILA",
+      "nameEn": "Kotalipara",
+      "nameBn": "কোটালীপাড়া",
+      "bbsCode": "BD30350051"
+    },
+    {
+      "id": "upz-389",
+      "districtId": "dist-51",
+      "kind": "UPAZILA",
+      "nameEn": "Muksudpur",
+      "nameBn": "মুকসুদপুর",
+      "bbsCode": "BD30350058"
+    },
+    {
+      "id": "upz-390",
+      "districtId": "dist-52",
+      "kind": "UPAZILA",
+      "nameEn": "Faridpur Sadar",
+      "nameBn": "ফরিদপুর সদর",
+      "bbsCode": "BD30290047"
+    },
+    {
+      "id": "upz-391",
+      "districtId": "dist-52",
+      "kind": "UPAZILA",
+      "nameEn": "Alfadanga",
+      "nameBn": "আলফাডাঙ্গা",
+      "bbsCode": "BD30290003"
+    },
+    {
+      "id": "upz-392",
+      "districtId": "dist-52",
+      "kind": "UPAZILA",
+      "nameEn": "Boalmari",
+      "nameBn": "বোয়ালমারী",
+      "bbsCode": "BD30290018"
+    },
+    {
+      "id": "upz-393",
+      "districtId": "dist-52",
+      "kind": "UPAZILA",
+      "nameEn": "Sadarpur",
+      "nameBn": "সদরপুর",
+      "bbsCode": "BD30290084"
+    },
+    {
+      "id": "upz-394",
+      "districtId": "dist-52",
+      "kind": "UPAZILA",
+      "nameEn": "Nagarkanda",
+      "nameBn": "নগরকান্দা",
+      "bbsCode": "BD30290062"
+    },
+    {
+      "id": "upz-395",
+      "districtId": "dist-52",
+      "kind": "UPAZILA",
+      "nameEn": "Bhanga",
+      "nameBn": "ভাঙ্গা",
+      "bbsCode": "BD30290010"
+    },
+    {
+      "id": "upz-396",
+      "districtId": "dist-52",
+      "kind": "UPAZILA",
+      "nameEn": "Char Bhadrasan",
+      "nameBn": "চরভদ্রাসন",
+      "bbsCode": "BD30290021"
+    },
+    {
+      "id": "upz-397",
+      "districtId": "dist-52",
+      "kind": "UPAZILA",
+      "nameEn": "Madhukhali",
+      "nameBn": "মধুখালী",
+      "bbsCode": "BD30290056"
+    },
+    {
+      "id": "upz-398",
+      "districtId": "dist-52",
+      "kind": "UPAZILA",
+      "nameEn": "Saltha",
+      "nameBn": "সালথা",
+      "bbsCode": "BD30290090"
+    },
+    {
+      "id": "upz-399",
+      "districtId": "dist-53",
+      "kind": "UPAZILA",
+      "nameEn": "Panchagarh Sadar",
+      "nameBn": "পঞ্চগড় সদর",
+      "bbsCode": "BD55770073"
+    },
+    {
+      "id": "upz-400",
+      "districtId": "dist-53",
+      "kind": "UPAZILA",
+      "nameEn": "Debiganj",
+      "nameBn": "দেবীগঞ্জ",
+      "bbsCode": "BD55770034"
+    },
+    {
+      "id": "upz-401",
+      "districtId": "dist-53",
+      "kind": "UPAZILA",
+      "nameEn": "Boda",
+      "nameBn": "বোদা",
+      "bbsCode": "BD55770025"
+    },
+    {
+      "id": "upz-402",
+      "districtId": "dist-53",
+      "kind": "UPAZILA",
+      "nameEn": "Atowari",
+      "nameBn": "আটোয়ারী",
+      "bbsCode": "BD55770004"
+    },
+    {
+      "id": "upz-403",
+      "districtId": "dist-53",
+      "kind": "UPAZILA",
+      "nameEn": "Tentulia",
+      "nameBn": "তেতুলিয়া",
+      "bbsCode": "BD55770090"
+    },
+    {
+      "id": "upz-404",
+      "districtId": "dist-54",
+      "kind": "UPAZILA",
+      "nameEn": "Nababganj",
+      "nameBn": "নবাবগঞ্জ",
+      "bbsCode": "BD55270069"
+    },
+    {
+      "id": "upz-405",
+      "districtId": "dist-54",
+      "kind": "UPAZILA",
+      "nameEn": "Birganj",
+      "nameBn": "বীরগঞ্জ",
+      "bbsCode": "BD55270012"
+    },
+    {
+      "id": "upz-406",
+      "districtId": "dist-54",
+      "kind": "UPAZILA",
+      "nameEn": "Ghoraghat",
+      "nameBn": "ঘোড়াঘাট",
+      "bbsCode": "BD55270043"
+    },
+    {
+      "id": "upz-407",
+      "districtId": "dist-54",
+      "kind": "UPAZILA",
+      "nameEn": "Birampur",
+      "nameBn": "বিরামপুর",
+      "bbsCode": "BD55270010"
+    },
+    {
+      "id": "upz-408",
+      "districtId": "dist-54",
+      "kind": "UPAZILA",
+      "nameEn": "Parbatipur",
+      "nameBn": "পার্বতীপুর",
+      "bbsCode": "BD55270077"
+    },
+    {
+      "id": "upz-409",
+      "districtId": "dist-54",
+      "kind": "UPAZILA",
+      "nameEn": "Bochaganj",
+      "nameBn": "বোচাগঞ্জ",
+      "bbsCode": "BD55270021"
+    },
+    {
+      "id": "upz-410",
+      "districtId": "dist-54",
+      "kind": "UPAZILA",
+      "nameEn": "Kaharole",
+      "nameBn": "কাহারোল",
+      "bbsCode": "BD55270056"
+    },
+    {
+      "id": "upz-411",
+      "districtId": "dist-54",
+      "kind": "UPAZILA",
+      "nameEn": "Fulbari",
+      "nameBn": "ফুলবাড়ী",
+      "bbsCode": "BD55270038"
+    },
+    {
+      "id": "upz-412",
+      "districtId": "dist-54",
+      "kind": "UPAZILA",
+      "nameEn": "Dinajpur Sadar",
+      "nameBn": "দিনাজপুর সদর",
+      "bbsCode": "BD55270064"
+    },
+    {
+      "id": "upz-413",
+      "districtId": "dist-54",
+      "kind": "UPAZILA",
+      "nameEn": "Hakimpur",
+      "nameBn": "হাকিমপুর",
+      "bbsCode": "BD55270047"
+    },
+    {
+      "id": "upz-414",
+      "districtId": "dist-54",
+      "kind": "UPAZILA",
+      "nameEn": "Khansama",
+      "nameBn": "খানসামা",
+      "bbsCode": "BD55270060"
+    },
+    {
+      "id": "upz-415",
+      "districtId": "dist-54",
+      "kind": "UPAZILA",
+      "nameEn": "Birol",
+      "nameBn": "বিরল",
+      "bbsCode": "BD55270017"
+    },
+    {
+      "id": "upz-416",
+      "districtId": "dist-54",
+      "kind": "UPAZILA",
+      "nameEn": "Chirirbandar",
+      "nameBn": "চিরিরবন্দর",
+      "bbsCode": "BD55270030"
+    },
+    {
+      "id": "upz-417",
+      "districtId": "dist-55",
+      "kind": "UPAZILA",
+      "nameEn": "Lalmonirhat Sadar",
+      "nameBn": "লালমনিরহাট সদর",
+      "bbsCode": "BD55520055"
+    },
+    {
+      "id": "upz-418",
+      "districtId": "dist-55",
+      "kind": "UPAZILA",
+      "nameEn": "Kaliganj",
+      "nameBn": "কালীগঞ্জ",
+      "bbsCode": "BD55520039"
+    },
+    {
+      "id": "upz-419",
+      "districtId": "dist-55",
+      "kind": "UPAZILA",
+      "nameEn": "Hatibandha",
+      "nameBn": "হাতীবান্ধা",
+      "bbsCode": "BD55520033"
+    },
+    {
+      "id": "upz-420",
+      "districtId": "dist-55",
+      "kind": "UPAZILA",
+      "nameEn": "Patgram",
+      "nameBn": "পাটগ্রাম",
+      "bbsCode": "BD55520070"
+    },
+    {
+      "id": "upz-421",
+      "districtId": "dist-55",
+      "kind": "UPAZILA",
+      "nameEn": "Aditmari",
+      "nameBn": "আদিতমারী",
+      "bbsCode": "BD55520002"
+    },
+    {
+      "id": "upz-422",
+      "districtId": "dist-56",
+      "kind": "UPAZILA",
+      "nameEn": "Saidpur",
+      "nameBn": "সৈয়দপুর",
+      "bbsCode": "BD55730085"
+    },
+    {
+      "id": "upz-423",
+      "districtId": "dist-56",
+      "kind": "UPAZILA",
+      "nameEn": "Domar",
+      "nameBn": "ডোমার",
+      "bbsCode": "BD55730015"
+    },
+    {
+      "id": "upz-424",
+      "districtId": "dist-56",
+      "kind": "UPAZILA",
+      "nameEn": "Dimla",
+      "nameBn": "ডিমলা",
+      "bbsCode": "BD55730012"
+    },
+    {
+      "id": "upz-425",
+      "districtId": "dist-56",
+      "kind": "UPAZILA",
+      "nameEn": "Jaldhaka",
+      "nameBn": "জলঢাকা",
+      "bbsCode": "BD55730036"
+    },
+    {
+      "id": "upz-426",
+      "districtId": "dist-56",
+      "kind": "UPAZILA",
+      "nameEn": "Kishoreganj",
+      "nameBn": "কিশোরগঞ্জ",
+      "bbsCode": "BD55730045"
+    },
+    {
+      "id": "upz-427",
+      "districtId": "dist-56",
+      "kind": "UPAZILA",
+      "nameEn": "Nilphamari Sadar",
+      "nameBn": "নীলফামারী সদর",
+      "bbsCode": "BD55730064"
+    },
+    {
+      "id": "upz-428",
+      "districtId": "dist-57",
+      "kind": "UPAZILA",
+      "nameEn": "Sadullapur",
+      "nameBn": "সাদুল্লাপুর",
+      "bbsCode": "BD55320082"
+    },
+    {
+      "id": "upz-429",
+      "districtId": "dist-57",
+      "kind": "UPAZILA",
+      "nameEn": "Gaibandha Sadar",
+      "nameBn": "গাইবান্ধা সদর",
+      "bbsCode": "BD55320024"
+    },
+    {
+      "id": "upz-430",
+      "districtId": "dist-57",
+      "kind": "UPAZILA",
+      "nameEn": "Palashbari",
+      "nameBn": "পলাশবাড়ী",
+      "bbsCode": "BD55320067"
+    },
+    {
+      "id": "upz-431",
+      "districtId": "dist-57",
+      "kind": "UPAZILA",
+      "nameEn": "Saghata",
+      "nameBn": "সাঘাটা",
+      "bbsCode": "BD55320088"
+    },
+    {
+      "id": "upz-432",
+      "districtId": "dist-57",
+      "kind": "UPAZILA",
+      "nameEn": "Gobindaganj",
+      "nameBn": "গোবিন্দগঞ্জ",
+      "bbsCode": "BD55320030"
+    },
+    {
+      "id": "upz-433",
+      "districtId": "dist-57",
+      "kind": "UPAZILA",
+      "nameEn": "Sundarganj",
+      "nameBn": "সুন্দরগঞ্জ",
+      "bbsCode": "BD55320091"
+    },
+    {
+      "id": "upz-434",
+      "districtId": "dist-57",
+      "kind": "UPAZILA",
+      "nameEn": "Fulchhari",
+      "nameBn": "ফুলছড়ি",
+      "bbsCode": "BD55320021"
+    },
+    {
+      "id": "upz-435",
+      "districtId": "dist-58",
+      "kind": "UPAZILA",
+      "nameEn": "Thakurgaon Sadar",
+      "nameBn": "ঠাকুরগাঁও সদর",
+      "bbsCode": "BD55940094"
+    },
+    {
+      "id": "upz-436",
+      "districtId": "dist-58",
+      "kind": "UPAZILA",
+      "nameEn": "Pirganj",
+      "nameBn": "পীরগঞ্জ",
+      "bbsCode": "BD55940082"
+    },
+    {
+      "id": "upz-437",
+      "districtId": "dist-58",
+      "kind": "UPAZILA",
+      "nameEn": "Ranishankail",
+      "nameBn": "রাণীশংকৈল",
+      "bbsCode": "BD55940086"
+    },
+    {
+      "id": "upz-438",
+      "districtId": "dist-58",
+      "kind": "UPAZILA",
+      "nameEn": "Haripur",
+      "nameBn": "হরিপুর",
+      "bbsCode": "BD55940051"
+    },
+    {
+      "id": "upz-439",
+      "districtId": "dist-58",
+      "kind": "UPAZILA",
+      "nameEn": "Baliadangi",
+      "nameBn": "বালিয়াডাঙ্গী",
+      "bbsCode": "BD55940008"
+    },
+    {
+      "id": "upz-440",
+      "districtId": "dist-59",
+      "kind": "UPAZILA",
+      "nameEn": "Rangpur Sadar",
+      "nameBn": "রংপুর সদর",
+      "bbsCode": "BD55850049"
+    },
+    {
+      "id": "upz-441",
+      "districtId": "dist-59",
+      "kind": "UPAZILA",
+      "nameEn": "Gangachara",
+      "nameBn": "গংগাচড়া",
+      "bbsCode": "BD55850027"
+    },
+    {
+      "id": "upz-442",
+      "districtId": "dist-59",
+      "kind": "UPAZILA",
+      "nameEn": "Taraganj",
+      "nameBn": "তারাগঞ্জ",
+      "bbsCode": "BD55850092"
+    },
+    {
+      "id": "upz-443",
+      "districtId": "dist-59",
+      "kind": "UPAZILA",
+      "nameEn": "Badarganj",
+      "nameBn": "বদরগঞ্জ",
+      "bbsCode": "BD55850003"
+    },
+    {
+      "id": "upz-444",
+      "districtId": "dist-59",
+      "kind": "UPAZILA",
+      "nameEn": "Mithapukur",
+      "nameBn": "মিঠাপুকুর",
+      "bbsCode": "BD55850058"
+    },
+    {
+      "id": "upz-445",
+      "districtId": "dist-59",
+      "kind": "UPAZILA",
+      "nameEn": "Pirganj",
+      "nameBn": "পীরগঞ্জ",
+      "bbsCode": "BD55850076"
+    },
+    {
+      "id": "upz-446",
+      "districtId": "dist-59",
+      "kind": "UPAZILA",
+      "nameEn": "Kaunia",
+      "nameBn": "কাউনিয়া",
+      "bbsCode": "BD55850042"
+    },
+    {
+      "id": "upz-447",
+      "districtId": "dist-59",
+      "kind": "UPAZILA",
+      "nameEn": "Pirgachha",
+      "nameBn": "পীরগাছা",
+      "bbsCode": "BD55850073"
+    },
+    {
+      "id": "upz-448",
+      "districtId": "dist-60",
+      "kind": "UPAZILA",
+      "nameEn": "Kurigram Sadar",
+      "nameBn": "কুড়িগ্রাম সদর",
+      "bbsCode": "BD55490052"
+    },
+    {
+      "id": "upz-449",
+      "districtId": "dist-60",
+      "kind": "UPAZILA",
+      "nameEn": "Nageshwari",
+      "nameBn": "নাগেশ্বরী",
+      "bbsCode": "BD55490061"
+    },
+    {
+      "id": "upz-450",
+      "districtId": "dist-60",
+      "kind": "UPAZILA",
+      "nameEn": "Bhurungamari",
+      "nameBn": "ভুরুঙ্গামারী",
+      "bbsCode": "BD55490006"
+    },
+    {
+      "id": "upz-451",
+      "districtId": "dist-60",
+      "kind": "UPAZILA",
+      "nameEn": "Phulbari",
+      "nameBn": "ফুলবাড়ী",
+      "bbsCode": "BD55490018"
+    },
+    {
+      "id": "upz-452",
+      "districtId": "dist-60",
+      "kind": "UPAZILA",
+      "nameEn": "Rajarhat",
+      "nameBn": "রাজারহাট",
+      "bbsCode": "BD55490077"
+    },
+    {
+      "id": "upz-453",
+      "districtId": "dist-60",
+      "kind": "UPAZILA",
+      "nameEn": "Ulipur",
+      "nameBn": "উলিপুর",
+      "bbsCode": "BD55490094"
+    },
+    {
+      "id": "upz-454",
+      "districtId": "dist-60",
+      "kind": "UPAZILA",
+      "nameEn": "Chilmari",
+      "nameBn": "চিলমারী",
+      "bbsCode": "BD55490009"
+    },
+    {
+      "id": "upz-455",
+      "districtId": "dist-60",
+      "kind": "UPAZILA",
+      "nameEn": "Roumari",
+      "nameBn": "রৌমারী",
+      "bbsCode": "BD55490079"
+    },
+    {
+      "id": "upz-456",
+      "districtId": "dist-60",
+      "kind": "UPAZILA",
+      "nameEn": "Rajibpur",
+      "nameBn": "চর রাজিবপুর",
+      "bbsCode": "BD55490008"
+    },
+    {
+      "id": "upz-457",
+      "districtId": "dist-61",
+      "kind": "UPAZILA",
+      "nameEn": "Sherpur Sadar",
+      "nameBn": "শেরপুর সদর",
+      "bbsCode": "BD45890088"
+    },
+    {
+      "id": "upz-458",
+      "districtId": "dist-61",
+      "kind": "UPAZILA",
+      "nameEn": "Nalitabari",
+      "nameBn": "নালিতাবাড়ী",
+      "bbsCode": "BD45890070"
+    },
+    {
+      "id": "upz-459",
+      "districtId": "dist-61",
+      "kind": "UPAZILA",
+      "nameEn": "Sreebardi",
+      "nameBn": "শ্রীবরদী",
+      "bbsCode": "BD45890090"
+    },
+    {
+      "id": "upz-460",
+      "districtId": "dist-61",
+      "kind": "UPAZILA",
+      "nameEn": "Nakla",
+      "nameBn": "নকলা",
+      "bbsCode": "BD45890067"
+    },
+    {
+      "id": "upz-461",
+      "districtId": "dist-61",
+      "kind": "UPAZILA",
+      "nameEn": "Jhenaigati",
+      "nameBn": "ঝিনাইগাতী",
+      "bbsCode": "BD45890037"
+    },
+    {
+      "id": "upz-462",
+      "districtId": "dist-62",
+      "kind": "UPAZILA",
+      "nameEn": "Fulbaria",
+      "nameBn": "ফুলবাড়ীয়া",
+      "bbsCode": "BD45610020"
+    },
+    {
+      "id": "upz-463",
+      "districtId": "dist-62",
+      "kind": "UPAZILA",
+      "nameEn": "Trishal",
+      "nameBn": "ত্রিশাল",
+      "bbsCode": "BD45610094"
+    },
+    {
+      "id": "upz-464",
+      "districtId": "dist-62",
+      "kind": "UPAZILA",
+      "nameEn": "Bhaluka",
+      "nameBn": "ভালুকা",
+      "bbsCode": "BD45610013"
+    },
+    {
+      "id": "upz-465",
+      "districtId": "dist-62",
+      "kind": "UPAZILA",
+      "nameEn": "Muktagachha",
+      "nameBn": "মুক্তাগাছা",
+      "bbsCode": "BD45610065"
+    },
+    {
+      "id": "upz-466",
+      "districtId": "dist-62",
+      "kind": "UPAZILA",
+      "nameEn": "Mymensingh Sadar",
+      "nameBn": "ময়মনসিংহ সদর",
+      "bbsCode": "BD45610052"
+    },
+    {
+      "id": "upz-467",
+      "districtId": "dist-62",
+      "kind": "UPAZILA",
+      "nameEn": "Dhobaura",
+      "nameBn": "ধোবাউড়া",
+      "bbsCode": "BD45610016"
+    },
+    {
+      "id": "upz-468",
+      "districtId": "dist-62",
+      "kind": "UPAZILA",
+      "nameEn": "Fulpur",
+      "nameBn": "ফুলপুর",
+      "bbsCode": "BD45610081"
+    },
+    {
+      "id": "upz-469",
+      "districtId": "dist-62",
+      "kind": "UPAZILA",
+      "nameEn": "Haluaghat",
+      "nameBn": "হালুয়াঘাট",
+      "bbsCode": "BD45610024"
+    },
+    {
+      "id": "upz-470",
+      "districtId": "dist-62",
+      "kind": "UPAZILA",
+      "nameEn": "Gouripur",
+      "nameBn": "গৌরীপুর",
+      "bbsCode": "BD45610023"
+    },
+    {
+      "id": "upz-471",
+      "districtId": "dist-62",
+      "kind": "UPAZILA",
+      "nameEn": "Gafargaon",
+      "nameBn": "গফরগাঁও",
+      "bbsCode": "BD45610022"
+    },
+    {
+      "id": "upz-472",
+      "districtId": "dist-62",
+      "kind": "UPAZILA",
+      "nameEn": "Ishwarganj",
+      "nameBn": "ঈশ্বরগঞ্জ",
+      "bbsCode": "BD45610031"
+    },
+    {
+      "id": "upz-473",
+      "districtId": "dist-62",
+      "kind": "UPAZILA",
+      "nameEn": "Nandail",
+      "nameBn": "নান্দাইল",
+      "bbsCode": "BD45610072"
+    },
+    {
+      "id": "upz-474",
+      "districtId": "dist-62",
+      "kind": "UPAZILA",
+      "nameEn": "Tarakanda",
+      "nameBn": "তারাকান্দা",
+      "bbsCode": "BD45610088"
+    },
+    {
+      "id": "upz-475",
+      "districtId": "dist-63",
+      "kind": "UPAZILA",
+      "nameEn": "Jamalpur Sadar",
+      "nameBn": "জামালপুর সদর",
+      "bbsCode": "BD45390036"
+    },
+    {
+      "id": "upz-476",
+      "districtId": "dist-63",
+      "kind": "UPAZILA",
+      "nameEn": "Melandaha",
+      "nameBn": "মেলান্দহ",
+      "bbsCode": "BD45390061"
+    },
+    {
+      "id": "upz-477",
+      "districtId": "dist-63",
+      "kind": "UPAZILA",
+      "nameEn": "Islampur",
+      "nameBn": "ইসলামপুর",
+      "bbsCode": "BD45390029"
+    },
+    {
+      "id": "upz-478",
+      "districtId": "dist-63",
+      "kind": "UPAZILA",
+      "nameEn": "Dewanganj",
+      "nameBn": "দেওয়ানগঞ্জ",
+      "bbsCode": "BD45390015"
+    },
+    {
+      "id": "upz-479",
+      "districtId": "dist-63",
+      "kind": "UPAZILA",
+      "nameEn": "Sarishabari",
+      "nameBn": "সরিষাবাড়ী",
+      "bbsCode": "BD45390085"
+    },
+    {
+      "id": "upz-480",
+      "districtId": "dist-63",
+      "kind": "UPAZILA",
+      "nameEn": "Madarganj",
+      "nameBn": "মাদারগঞ্জ",
+      "bbsCode": "BD45390058"
+    },
+    {
+      "id": "upz-481",
+      "districtId": "dist-63",
+      "kind": "UPAZILA",
+      "nameEn": "Bakshiganj",
+      "nameBn": "বকশীগঞ্জ",
+      "bbsCode": "BD45390007"
+    },
+    {
+      "id": "upz-482",
+      "districtId": "dist-64",
+      "kind": "UPAZILA",
+      "nameEn": "Barhatta",
+      "nameBn": "বারহাট্টা",
+      "bbsCode": "BD45720009"
+    },
+    {
+      "id": "upz-483",
+      "districtId": "dist-64",
+      "kind": "UPAZILA",
+      "nameEn": "Durgapur",
+      "nameBn": "দুর্গাপুর",
+      "bbsCode": "BD45720018"
+    },
+    {
+      "id": "upz-484",
+      "districtId": "dist-64",
+      "kind": "UPAZILA",
+      "nameEn": "Kendua",
+      "nameBn": "কেন্দুয়া",
+      "bbsCode": "BD45720047"
+    },
+    {
+      "id": "upz-485",
+      "districtId": "dist-64",
+      "kind": "UPAZILA",
+      "nameEn": "Atpara",
+      "nameBn": "আটপাড়া",
+      "bbsCode": "BD45720004"
+    },
+    {
+      "id": "upz-486",
+      "districtId": "dist-64",
+      "kind": "UPAZILA",
+      "nameEn": "Madan",
+      "nameBn": "মদন",
+      "bbsCode": "BD45720056"
+    },
+    {
+      "id": "upz-487",
+      "districtId": "dist-64",
+      "kind": "UPAZILA",
+      "nameEn": "Khaliajuri",
+      "nameBn": "খালিয়াজুরী",
+      "bbsCode": "BD45720038"
+    },
+    {
+      "id": "upz-488",
+      "districtId": "dist-64",
+      "kind": "UPAZILA",
+      "nameEn": "Kalmakanda",
+      "nameBn": "কলমাকান্দা",
+      "bbsCode": "BD45720040"
+    },
+    {
+      "id": "upz-489",
+      "districtId": "dist-64",
+      "kind": "UPAZILA",
+      "nameEn": "Mohanganj",
+      "nameBn": "মোহনগঞ্জ",
+      "bbsCode": "BD45720063"
+    },
+    {
+      "id": "upz-490",
+      "districtId": "dist-64",
+      "kind": "UPAZILA",
+      "nameEn": "Purbadhala",
+      "nameBn": "পূর্বধলা",
+      "bbsCode": "BD45720083"
+    },
+    {
+      "id": "upz-491",
+      "districtId": "dist-64",
+      "kind": "UPAZILA",
+      "nameEn": "Netrakona Sadar",
+      "nameBn": "নেত্রকোণা সদর",
+      "bbsCode": "BD45720074"
+    },
+    {
+      "id": "upz-492",
+      "districtId": "dist-09",
+      "kind": "UPAZILA",
+      "nameEn": "Eidgaon",
+      "nameBn": "ঈদগাঁও",
+      "bbsCode": "BD20220032"
+    },
+    {
+      "id": "upz-493",
+      "districtId": "dist-39",
+      "kind": "UPAZILA",
+      "nameEn": "Madhyanagar",
+      "nameBn": "মধ্যনগর",
+      "bbsCode": "BD60900063"
+    },
+    {
+      "id": "upz-494",
+      "districtId": "dist-50",
+      "kind": "UPAZILA",
+      "nameEn": "Dasar",
+      "nameBn": "ডাসার",
+      "bbsCode": "BD30540018"
+    },
+    {
+      "id": "upz-495",
+      "districtId": "dist-38",
+      "kind": "UPAZILA",
+      "nameEn": "Shayestaganj",
+      "nameBn": "শায়েস্তাগঞ্জ",
+      "bbsCode": "BD60360087"
+    },
+    {
+      "id": "dhk-metro-01",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Adabor",
+      "nameBn": "আদাবর",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-02",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Badda",
+      "nameBn": "বাড্ডা",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-03",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Banani",
+      "nameBn": "বনানী",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-04",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Bangshal",
+      "nameBn": "বংশাল",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-05",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Bhashantek",
+      "nameBn": "ভাষানটেক",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-06",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Bhatara",
+      "nameBn": "ভাটারা",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-07",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Biman Bandar",
+      "nameBn": "বিমানবন্দর",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-08",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Cantonment",
+      "nameBn": "ক্যান্টনমেন্ট",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-09",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Chawkbazar",
+      "nameBn": "চকবাজার",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-10",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Dakshinkhan",
+      "nameBn": "দক্ষিণখান",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-11",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Darus Salam",
+      "nameBn": "দারুস সালাম",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-12",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Demra",
+      "nameBn": "ডেমরা",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-13",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Dhanmondi",
+      "nameBn": "ধানমন্ডি",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-14",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Gendaria",
+      "nameBn": "গেন্ডারিয়া",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-15",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Gulshan",
+      "nameBn": "গুলশান",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-16",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Hatirjheel",
+      "nameBn": "হাতিরঝিল",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-17",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Hazaribagh",
+      "nameBn": "হাজারীবাগ",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-18",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Jatrabari",
+      "nameBn": "যাত্রাবাড়ী",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-19",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Kadamtali",
+      "nameBn": "কদমতলী",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-20",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Kafrul",
+      "nameBn": "কাফরুল",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-21",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Kalabagan",
+      "nameBn": "কলাবাগান",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-22",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Kamrangirchar",
+      "nameBn": "কামরাঙ্গীরচর",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-23",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Khilgaon",
+      "nameBn": "খিলগাঁও",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-24",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Khilkhet",
+      "nameBn": "খিলক্ষেত",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-25",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Kotwali",
+      "nameBn": "কোতোয়ালী",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-26",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Lalbagh",
+      "nameBn": "লালবাগ",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-27",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Mirpur Model",
+      "nameBn": "মিরপুর মডেল",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-28",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Mohammadpur",
+      "nameBn": "মোহাম্মদপুর",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-29",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Motijheel",
+      "nameBn": "মতিঝিল",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-30",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Mugda",
+      "nameBn": "মুগদা",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-31",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "New Market",
+      "nameBn": "নিউ মার্কেট",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-32",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Pallabi",
+      "nameBn": "পল্লবী",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-33",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Paltan",
+      "nameBn": "পল্টন",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-34",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Ramna",
+      "nameBn": "রমনা",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-35",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Rampura",
+      "nameBn": "রামপুরা",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-36",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Rupnagar",
+      "nameBn": "রূপনগর",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-37",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Sabujbagh",
+      "nameBn": "সবুজবাগ",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-38",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Shah Ali",
+      "nameBn": "শাহ আলী",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-39",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Shahbagh",
+      "nameBn": "শাহবাগ",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-40",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Shahjahanpur",
+      "nameBn": "শাহজাহানপুর",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-41",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Sher-e-Bangla Nagar",
+      "nameBn": "শেরেবাংলা নগর",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-42",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Shyampur",
+      "nameBn": "শ্যামপুর",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-43",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Sutrapur",
+      "nameBn": "সূত্রাপুর",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-44",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Tejgaon",
+      "nameBn": "তেজগাঁও",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-45",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Tejgaon Industrial Area",
+      "nameBn": "তেজগাঁও শিল্পাঞ্চল",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-46",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Turag",
+      "nameBn": "তুরাগ",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-47",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Uttara East",
+      "nameBn": "উত্তরা পূর্ব",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-48",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Uttara West",
+      "nameBn": "উত্তরা পশ্চিম",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-49",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Uttarkhan",
+      "nameBn": "উত্তরখান",
+      "bbsCode": null
+    },
+    {
+      "id": "dhk-metro-50",
+      "districtId": "dist-47",
+      "kind": "METRO_THANA",
+      "nameEn": "Wari",
+      "nameBn": "ওয়ারী",
+      "bbsCode": null
+    }
+  ]
+}
