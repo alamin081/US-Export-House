@@ -16,6 +16,7 @@ import {
 } from "./access.repository";
 import type { LoginInput } from "./access.schema";
 import { toPermissionKeys, type StaffContext } from "./authorization";
+import { PERMISSIONS, SUPER_ADMIN_ROLE } from "./permissions";
 import { evaluateLoginThrottle, throttleKey } from "./login-throttle";
 import { getTimingSafeDummyHash, hashPassword, needsRehash, verifyPassword } from "./password";
 import { evaluateSession, sessionPolicyFrom, sessionPurgeCutoffs } from "./session-policy";
@@ -175,7 +176,12 @@ export async function validateSessionToken(token: string): Promise<StaffContext 
     name: user.name,
     roleId: user.role.id,
     roleName: user.role.name,
-    permissions: toPermissionKeys(user.role.permissions),
+    // Super Admin always holds every permission the code defines, so a new
+    // permission never needs a migration for it and it cannot be locked out.
+    permissions:
+      user.role.isSystem && user.role.name === SUPER_ADMIN_ROLE
+        ? [...PERMISSIONS]
+        : toPermissionKeys(user.role.permissions),
     allLocations: user.role.allLocations,
     locationIds: user.locationAccess.map((access) => access.locationId),
     sessionId: record.id,

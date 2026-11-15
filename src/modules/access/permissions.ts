@@ -176,6 +176,130 @@ export const PERMISSION_GROUPS: ReadonlyArray<{
 
 export const SUPER_ADMIN_ROLE = "Super Admin";
 
+/** What each permission allows, for the role editor (English and Bengali). */
+export const PERMISSION_DESCRIPTIONS: Record<PermissionKey, { en: string; bn: string }> = {
+  "catalog.read": {
+    en: "See products, categories and options in the admin",
+    bn: "অ্যাডমিনে প্রোডাক্ট দেখা",
+  },
+  "catalog.write": {
+    en: "Edit products (not prices), variants, images, categories, brands",
+    bn: "প্রোডাক্ট, ভ্যারিয়েন্ট, ছবি ও ক্যাটাগরি এডিট (দাম ছাড়া)",
+  },
+  "catalog.content": {
+    en: "Edit product copy, SEO and alt text; create drafts",
+    bn: "প্রোডাক্টের লেখা, SEO ও ছবির বিবরণ এডিট",
+  },
+  "catalog.price.write": { en: "Change prices and compare-at prices", bn: "দাম বদলানো" },
+  "catalog.publish": { en: "Publish and archive products", bn: "প্রোডাক্ট প্রকাশ ও আর্কাইভ" },
+  "catalog.delete": {
+    en: "Delete draft products, categories, brands, size charts",
+    bn: "খসড়া প্রোডাক্ট ও ক্যাটাগরি মোছা",
+  },
+  "catalog.import": {
+    en: "Import products from CSV/Excel and bulk-upload images",
+    bn: "CSV/Excel থেকে প্রোডাক্ট আমদানি ও বাল্ক ছবি",
+  },
+  "catalog.export": { en: "Download the catalogue as CSV", bn: "প্রোডাক্টের তালিকা CSV-তে নামানো" },
+  "location.manage": {
+    en: "Create and edit branches and warehouses",
+    bn: "শাখা ও গুদাম তৈরি ও এডিট",
+  },
+  "inventory.read": { en: "See stock at their locations", bn: "নিজের লোকেশনের স্টক দেখা" },
+  "inventory.adjust": { en: "Adjust stock with a reason", bn: "কারণসহ স্টক অ্যাডজাস্ট" },
+  "inventory.receive": {
+    en: "Receive stock and import stock CSV",
+    bn: "স্টক রিসিভ ও স্টক CSV আমদানি",
+  },
+  "inventory.count": { en: "Run stock counts", bn: "স্টক গণনা" },
+  "inventory.count.apply": { en: "Apply a count's corrections", bn: "গণনার সংশোধন প্রয়োগ" },
+  "inventory.cost.read": {
+    en: "See purchase cost, stock value and profit",
+    bn: "ক্রয়মূল্য, স্টকের মূল্য ও লাভ দেখা",
+  },
+  "transfer.create": { en: "Create stock transfers", bn: "ট্রান্সফার তৈরি" },
+  "transfer.approve": { en: "Approve transfers", bn: "ট্রান্সফার অনুমোদন" },
+  "transfer.dispatch": { en: "Dispatch transfers", bn: "ট্রান্সফার পাঠানো" },
+  "transfer.receive": { en: "Receive transfers", bn: "ট্রান্সফার গ্রহণ" },
+  "order.read": { en: "See orders", bn: "অর্ডার দেখা" },
+  "coupon.manage": { en: "Create and edit coupons", bn: "কুপন তৈরি ও এডিট" },
+  "shipping.manage": { en: "Delivery zones, charges and areas", bn: "ডেলিভারি জোন ও চার্জ" },
+  "checkout.settings": {
+    en: "Checkout limits, shop details and VAT settings",
+    bn: "চেকআউটের সীমা, দোকানের তথ্য ও ভ্যাট",
+  },
+  "customer.block": { en: "Block and unblock phone numbers", bn: "ফোন নম্বর ব্লক ও আনব্লক" },
+  "order.confirm": {
+    en: "Call customers and confirm new orders",
+    bn: "কল করে নতুন অর্ডার কনফার্ম",
+  },
+  "order.edit": { en: "Edit orders before packing", bn: "প্যাকিংয়ের আগে অর্ডার এডিট" },
+  "order.cancel": { en: "Cancel orders", bn: "অর্ডার বাতিল" },
+  "order.fulfil": { en: "Pack, ship and mark delivered", bn: "প্যাক, পাঠানো ও ডেলিভারড করা" },
+  "order.cod.reconcile": {
+    en: "Record cash received from couriers",
+    bn: "কুরিয়ার থেকে টাকা পাওয়া রেকর্ড",
+  },
+  "refund.record": { en: "Record refunds", bn: "রিফান্ড রেকর্ড" },
+  "refund.approve": { en: "Approve large refunds", bn: "বড় রিফান্ড অনুমোদন" },
+  "invoice.print": {
+    en: "Print invoices, packing slips and address labels",
+    bn: "ইনভয়েস, প্যাকিং স্লিপ ও লেবেল প্রিন্ট",
+  },
+  "pos.sell": { en: "Sell at the till", bn: "দোকানে বিক্রি" },
+  "pos.discount.override": {
+    en: "Approve till discounts above the limit",
+    bn: "সীমার বেশি ছাড় অনুমোদন",
+  },
+  "pos.day.manage": { en: "Open and close the till day", bn: "ক্যাশের দিন খোলা ও বন্ধ" },
+  "label.print": { en: "Print barcode labels and generate barcodes", bn: "বারকোড লেবেল প্রিন্ট" },
+  "return.manage": { en: "Handle returns and exchanges", bn: "রিটার্ন ও এক্সচেঞ্জ" },
+  "return.policy.publish": {
+    en: "Approve and publish the return policy",
+    bn: "রিটার্ন নীতি অনুমোদন ও প্রকাশ",
+  },
+  "shipment.book": { en: "Book couriers (courier API, Phase 11)", bn: "কুরিয়ার বুকিং" },
+  "customer.read": {
+    en: "See customer phone numbers and details",
+    bn: "কাস্টমারের ফোন ও তথ্য দেখা",
+  },
+  "report.view": {
+    en: "See reports and dashboard figures for their locations",
+    bn: "নিজের লোকেশনের রিপোর্ট দেখা",
+  },
+  "report.export": { en: "Download reports as CSV", bn: "রিপোর্ট CSV-তে নামানো" },
+  "content.write": {
+    en: "Edit home page, menu, footer and pages (drafts)",
+    bn: "হোমপেজ, মেনু, ফুটার ও পেজ এডিট",
+  },
+  "content.publish": { en: "Publish content to the site", bn: "কনটেন্ট সাইটে প্রকাশ" },
+  "settings.write": { en: "Change settings", bn: "সেটিংস বদলানো" },
+  "staff.manage": {
+    en: "Create staff accounts and give roles",
+    bn: "স্টাফ অ্যাকাউন্ট ও রোল দেওয়া",
+  },
+  "role.manage": {
+    en: "Edit roles and permissions (Super Admin only)",
+    bn: "রোল ও অনুমতি এডিট (শুধু সুপার অ্যাডমিন)",
+  },
+  "audit.view": { en: "See the audit log", bn: "অডিট লগ দেখা" },
+  "audit.export": { en: "Download the audit log as CSV", bn: "অডিট লগ CSV-তে নামানো" },
+};
+
+/** Permissions that open money, people or security; flagged in the role editor. */
+export const SENSITIVE_PERMISSIONS: readonly PermissionKey[] = [
+  "inventory.cost.read",
+  "refund.approve",
+  "staff.manage",
+  "role.manage",
+  "settings.write",
+  "audit.export",
+  "customer.read",
+];
+
+/** Only the Super Admin role may hold these. */
+export const SUPER_ADMIN_ONLY: readonly PermissionKey[] = ["role.manage"];
+
 export interface SystemRoleDefinition {
   name: string;
   description: string;

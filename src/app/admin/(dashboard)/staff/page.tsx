@@ -122,7 +122,7 @@ export default async function StaffPage() {
         <header className="border-b border-border px-5 py-4">
           <h2 className="text-sm font-semibold">Roles and permissions</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            The seven system roles. Editing role permissions is planned for the Settings phase.
+            Who can do what. Super Admins edit roles on the Roles page (/admin/roles).
           </p>
         </header>
         <div className="overflow-x-auto">

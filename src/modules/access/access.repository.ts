@@ -13,6 +13,7 @@ const staffRoleSelect = {
   permissions: true,
   allLocations: true,
   deletedAt: true,
+  isSystem: true,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -297,6 +298,64 @@ export async function listActiveRoles() {
       isSystem: true,
       _count: { select: { users: { where: { kind: "STAFF", deletedAt: null } } } },
     },
+  });
+}
+
+export async function findRoleForEdit(roleId: string) {
+  return db.role.findFirst({
+    where: { id: roleId, deletedAt: null },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      permissions: true,
+      allLocations: true,
+      isSystem: true,
+      updatedAt: true,
+      _count: { select: { users: true } },
+    },
+  });
+}
+
+export async function findRoleByName(name: string) {
+  return db.role.findFirst({
+    where: { name: { equals: name, mode: "insensitive" } },
+    select: { id: true, deletedAt: true },
+  });
+}
+
+export async function createRoleRecord(data: {
+  name: string;
+  description: string | null;
+  permissions: string[];
+  allLocations: boolean;
+}) {
+  return db.role.create({ data: { ...data, isSystem: false }, select: { id: true } });
+}
+
+/** Updates a role only if nobody changed it since `updatedAt` (optimistic lock). */
+export async function updateRoleRecord(
+  roleId: string,
+  expectedUpdatedAt: Date,
+  data: {
+    name?: string;
+    description: string | null;
+    permissions: string[];
+    allLocations?: boolean;
+  },
+): Promise<boolean> {
+  const result = await db.role.updateMany({
+    where: { id: roleId, deletedAt: null, updatedAt: expectedUpdatedAt },
+    data,
+  });
+  return result.count === 1;
+}
+
+/** Soft delete; the unique name gets a suffix so it can be used again. */
+export async function softDeleteRole(roleId: string, name: string) {
+  await db.role.update({
+    where: { id: roleId },
+    data: { deletedAt: new Date(), name: `${name} (deleted ${roleId.slice(-6)})` },
   });
 }
 

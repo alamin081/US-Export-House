@@ -19,6 +19,8 @@ export interface AdminNavItem {
   group: "overview" | "catalogue" | "operations" | "insight" | "system";
   /** Omitted: every signed-in staff member may open it. */
   permission?: PermissionKey;
+  /** Shown when the staff member holds any one of these (instead of `permission`). */
+  anyOf?: readonly PermissionKey[];
 }
 
 export const ADMIN_NAV: readonly AdminNavItem[] = [
@@ -212,20 +214,20 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
     permission: "shipping.manage",
   },
   {
-    label: "Checkout settings",
-    href: "/admin/checkout-settings",
-    icon: "sliders-horizontal",
-    phase: 8,
-    group: "system",
-    permission: "checkout.settings",
-  },
-  {
     label: "Staff & roles",
     href: "/admin/staff",
     icon: "shield",
     phase: 5,
     group: "system",
     permission: "staff.manage",
+  },
+  {
+    label: "Roles",
+    href: "/admin/roles",
+    icon: "shield",
+    phase: 12,
+    group: "system",
+    permission: "role.manage",
   },
   {
     label: "Content",
@@ -241,7 +243,7 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
     icon: "settings",
     phase: 12,
     group: "system",
-    permission: "settings.write",
+    anyOf: ["settings.write", "checkout.settings", "content.write"],
   },
 ];
 
@@ -255,7 +257,9 @@ export const ADMIN_GROUP_LABELS: Record<AdminNavItem["group"], string> = {
 
 /** Nav items a staff member is allowed to open. */
 export function navForPermissions(permissions: readonly PermissionKey[]): AdminNavItem[] {
-  return ADMIN_NAV.filter(
-    (item) => item.permission === undefined || permissions.includes(item.permission),
+  return ADMIN_NAV.filter((item) =>
+    item.anyOf !== undefined
+      ? item.anyOf.some((permission) => permissions.includes(permission))
+      : item.permission === undefined || permissions.includes(item.permission),
   );
 }
