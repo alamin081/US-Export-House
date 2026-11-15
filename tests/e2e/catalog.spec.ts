@@ -35,6 +35,7 @@ function readFixture(): E2EFixture {
       checkoutName: "",
       couponCode: "",
       orderStaffEmail: "",
+      swapSku: "",
       phoneBn: "",
       phoneEn: "",
     };

@@ -21,6 +21,8 @@ export interface E2EFixture {
   checkoutName: string;
   couponCode: string;
   orderStaffEmail: string;
+  /** Phase 9: a second item stocked online, swapped in by the order edit. */
+  swapSku: string;
   phoneBn: string;
   phoneEn: string;
 }

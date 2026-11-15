@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   ArrowLeftRight,
   BadgeCheck,
+  Banknote,
   Boxes,
   ChartNoAxesColumn,
   ClipboardCheck,
@@ -53,6 +54,7 @@ const ICONS: Record<string, LucideIcon> = {
   "arrow-left-right": ArrowLeftRight,
   "clipboard-check": ClipboardCheck,
   receipt: Receipt,
+  banknote: Banknote,
   store: Store,
   "rotate-ccw": RotateCcw,
   truck: Truck,
@@ -110,6 +112,17 @@ export function AdminShell({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  // The most specific item wins: /admin/orders/cod is "Courier cash", not "Orders".
+  const activeHref = nav
+    .filter((item) =>
+      item.href === "/admin"
+        ? pathname === "/admin"
+        : pathname === item.href || pathname.startsWith(`${item.href}/`),
+    )
+    .reduce<string | null>(
+      (best, item) => (best === null || item.href.length > best.length ? item.href : best),
+      null,
+    );
 
   const sidebar = (
     <nav aria-label="Admin sections" className="flex flex-col gap-7 px-4 py-6">
@@ -125,8 +138,7 @@ export function AdminShell({
             <ul className="mt-2 flex flex-col gap-0.5">
               {items.map((item) => {
                 const Icon = ICONS[item.icon] ?? Gauge;
-                const isActive =
-                  item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
+                const isActive = item.href === activeHref;
 
                 return (
                   <li key={item.href}>

@@ -157,6 +157,34 @@ async function main() {
         reason: "E2E fixture",
       },
     });
+    // Phase 9: another item stocked online, swapped in when the order is edited.
+    const swapSku = `E2E-SW-${tag}`;
+    const swapProduct = await prisma.product.create({
+      data: {
+        slug: `e2e-swap-${run}`,
+        nameEn: `E2E Swap Shirt ${tag}`,
+        categoryId: (await prisma.category.findFirstOrThrow({ where: { slug: `e2e-${run}` } })).id,
+        status: "PUBLISHED",
+        publishedAt: new Date(),
+        variants: { create: { sku: swapSku, pricePoisha: 130_000, labelEn: "L" } },
+      },
+      select: { variants: { select: { id: true } } },
+    });
+    const swapVariantId = swapProduct.variants[0]?.id ?? "";
+    await prisma.inventoryLevel.create({
+      data: { variantId: swapVariantId, locationId: online.id, onHand: 20, reserved: 0 },
+    });
+    await prisma.inventoryMovement.create({
+      data: {
+        variantId: swapVariantId,
+        locationId: online.id,
+        type: "OPENING",
+        quantity: 20,
+        onHandAfter: 20,
+        reservedAfter: 0,
+        reason: "E2E fixture",
+      },
+    });
     const couponCode = `E2E${tag}`;
     await prisma.coupon.create({
       data: { code: couponCode, type: "PERCENTAGE", value: 10, channel: "ONLINE" },
@@ -190,6 +218,7 @@ async function main() {
       checkoutName,
       couponCode,
       orderStaffEmail,
+      swapSku,
       phoneBn: `017${digits()}`,
       phoneEn: `018${digits()}`,
     };

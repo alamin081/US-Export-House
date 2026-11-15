@@ -101,9 +101,17 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
     label: "Orders",
     href: "/admin/orders",
     icon: "receipt",
-    phase: 8,
+    phase: 9,
     group: "operations",
     permission: "order.read",
+  },
+  {
+    label: "Courier cash",
+    href: "/admin/orders/cod",
+    icon: "banknote",
+    phase: 9,
+    group: "operations",
+    permission: "order.cod.reconcile",
   },
   {
     label: "Coupons",
@@ -151,7 +159,7 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
     icon: "users",
     phase: 9,
     group: "operations",
-    permission: "customer.read",
+    permission: "order.read",
   },
 
   {

@@ -89,7 +89,7 @@ Every function checks permission and location access itself.
   `isDefaultOnlineFulfillment` (changed 2026-11-15, Phase 8: the storefront's
   in / few / out labels, the "in stock only" filter, cart checks and checkout
   reservations all use this single location, so a shopper is never shown stock
-  that checkout cannot reserve). Choosing another location per order is Phase 9.
+  that checkout cannot reserve). Staff can move an unpacked order to another online-fulfilment location (docs/ORDERS.md).
 - **Opening stock** only for a variant with no ledger history at that
   location; otherwise use Stock receive.
 - **Transfers**: the source's staff dispatch, the destination's staff receive.
