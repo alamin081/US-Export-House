@@ -26,6 +26,7 @@ export interface FilterState {
   inStock: boolean;
   sort: StorefrontSort;
   q?: string;
+  tag?: string;
 }
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -50,6 +51,7 @@ export function filterStateFrom(query: SearchParams): FilterState & { page: numb
   const sort = first(query.sort);
   const q = first(query.q)?.trim().slice(0, 80);
   const category = first(query.category);
+  const tag = first(query.tag)?.trim().slice(0, 80);
   const min = amount(first(query.min));
   const max = amount(first(query.max));
   const page = Number(first(query.page) ?? "1");
@@ -65,6 +67,7 @@ export function filterStateFrom(query: SearchParams): FilterState & { page: numb
       ? (sort as StorefrontSort)
       : "featured",
     ...(q === undefined || q === "" ? {} : { q }),
+    ...(tag === undefined || !/^[a-z0-9-]+$/.test(tag) ? {} : { tag }),
     page: Number.isInteger(page) && page > 0 ? page : 1,
   };
 }
@@ -81,6 +84,7 @@ export function filterQuery(state: FilterState, page?: number): Record<string, s
     ...(state.inStock ? { stock: "in" } : {}),
     ...(state.sort === "featured" ? {} : { sort: state.sort }),
     ...(state.q === undefined ? {} : { q: state.q }),
+    ...(state.tag === undefined ? {} : { tag: state.tag }),
     ...(page === undefined || page <= 1 ? {} : { page: String(page) }),
   };
 }
@@ -119,6 +123,7 @@ export function ProductFilters({
   return (
     <form action={action} className="flex flex-col gap-6" data-testid="product-filters">
       {state.q === undefined ? null : <input type="hidden" name="q" value={state.q} />}
+      {state.tag === undefined ? null : <input type="hidden" name="tag" value={state.tag} />}
 
       <h2 className="flex items-center gap-2 text-xs font-medium tracking-[0.18em] uppercase">
         <SlidersHorizontal aria-hidden="true" className="size-3.5" />

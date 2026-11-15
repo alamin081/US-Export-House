@@ -6,6 +6,7 @@ import { buildTree, flattenTree, type TreeItem } from "./category-tree";
 import { escapeLike, searchTerms } from "./search-text";
 import {
   findActiveCategories,
+  findBestSellingProductIds,
   findCardsByIds,
   findFacets,
   findListingIds,
@@ -192,6 +193,8 @@ export interface ListingQuery {
   sizes?: string[];
   colours?: string[];
   brands?: string[];
+  /** A tag slug ("collection" links from the home page and menu). */
+  tag?: string;
   minTaka?: number;
   maxTaka?: number;
   /** Only products with at least one variant available online. */
@@ -233,6 +236,7 @@ export async function getListing(query: ListingQuery): Promise<ListingResult | n
   const { ids, total } = await findListingIds({
     ...(categoryIds === undefined ? {} : { categoryIds }),
     ...(query.brands === undefined ? {} : { brandSlugs: query.brands }),
+    ...(query.tag === undefined ? {} : { tagSlugs: [query.tag] }),
     ...(query.sizes === undefined ? {} : { sizes: query.sizes }),
     ...(query.colours === undefined ? {} : { colours: query.colours }),
     ...(query.minTaka === undefined ? {} : { minPricePoisha: Math.round(query.minTaka * 100) }),
@@ -288,6 +292,69 @@ export async function getHomeProducts() {
     featured: withStockFlags(await cardsFor(featured.ids), outOfStock),
     categories: categories.filter((category) => category.parentId === null),
   };
+}
+
+// ---------------------------------------------------------------------------
+// home page product rows (Phase 12 content)
+// ---------------------------------------------------------------------------
+
+export interface ProductRowQuery {
+  rule: "new" | "featured" | "bestselling" | "tag" | "category" | "manual";
+  tagSlug: string | null;
+  categoryId: string | null;
+  productIds: readonly string[];
+  limit: number;
+  /** Look-back of "best selling" (report setting, default 30 days). */
+  bestSellerDays: number;
+}
+
+/** Published products for one home row, in the row's order; never throws for an empty rule. */
+export async function getProductRow(query: ProductRowQuery): Promise<ProductCardData[]> {
+  const limit = Math.max(1, Math.min(24, query.limit));
+  const base = { limit, offset: 0 } as const;
+  let ids: string[] = [];
+  if (query.rule === "new") {
+    ids = (await findListingIds({ ...base, sort: "newest" })).ids;
+  } else if (query.rule === "featured") {
+    ids = (await findListingIds({ ...base, flag: "featured", sort: "featured" })).ids;
+  } else if (query.rule === "tag" && query.tagSlug !== null) {
+    ids = (await findListingIds({ ...base, tagSlugs: [query.tagSlug], sort: "featured" })).ids;
+  } else if (query.rule === "category" && query.categoryId !== null) {
+    const categories = await getActiveCategories();
+    if (!categories.some((category) => category.id === query.categoryId)) return [];
+    const categoryIds = descendantIds(categories, query.categoryId);
+    ids = (await findListingIds({ ...base, categoryIds, sort: "featured" })).ids;
+  } else if (query.rule === "manual" || query.rule === "bestselling") {
+    const wanted =
+      query.rule === "manual"
+        ? [...query.productIds]
+        : await findBestSellingProductIds(
+            new Date(Date.now() - query.bestSellerDays * 24 * 60 * 60 * 1000),
+            limit * 3,
+          );
+    // Keep only live products, in the wanted order.
+    const live = new Set(
+      (
+        await findListingIds({
+          limit: wanted.length || 1,
+          offset: 0,
+          productIds: wanted,
+          sort: "newest",
+        })
+      ).ids,
+    );
+    ids = wanted.filter((id) => live.has(id)).slice(0, limit);
+  }
+  if (ids.length === 0) return [];
+  const [cards, outOfStock] = await Promise.all([cardsFor(ids), getOutOfStockProductIds()]);
+  const byId = new Map(cards.map((card) => [card.id, card]));
+  return withStockFlags(
+    ids.flatMap((id) => {
+      const card = byId.get(id);
+      return card === undefined ? [] : [card];
+    }),
+    outOfStock,
+  );
 }
 
 // ---------------------------------------------------------------------------

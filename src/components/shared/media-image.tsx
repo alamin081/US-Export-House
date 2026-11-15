@@ -30,7 +30,7 @@ export interface MediaImageProps {
   src: string;
   alt: string;
   /** Aspect ratio of the frame. Product imagery is always 4:5. */
-  ratio?: "product" | "square" | "wide" | "portrait";
+  ratio?: "product" | "square" | "wide" | "portrait" | "banner" | "video";
   /** "contain" (default for products) never crops; "cover" fills the frame. */
   fit?: "contain" | "cover";
   className?: string;
@@ -44,6 +44,10 @@ const RATIO_CLASS: Record<NonNullable<MediaImageProps["ratio"]>, string> = {
   square: "aspect-square",
   wide: "aspect-[8/5]",
   portrait: "aspect-[3/4]",
+  /** Home hero on desktop (Phase 12 content): 16:7. */
+  banner: "aspect-[16/7]",
+  /** Promotions and the brand story: 16:9. */
+  video: "aspect-video",
 };
 
 export function MediaImage({

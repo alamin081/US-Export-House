@@ -14,6 +14,10 @@ import { Prisma } from "@/generated/prisma/client";
 export interface StorefrontListingFilter {
   categoryIds?: readonly string[];
   brandSlugs?: readonly string[];
+  /** Products carrying any of these tags (home "collection" links, Phase 12). */
+  tagSlugs?: readonly string[];
+  /** Only these products (home rows picked by hand). */
+  productIds?: readonly string[];
   sizes?: readonly string[];
   colours?: readonly string[];
   minPricePoisha?: number;
@@ -82,6 +86,16 @@ export async function findListingIds(filter: StorefrontListingFilter) {
       SELECT 1 FROM "Brand" b WHERE b."id" = p."brandId" AND b."deletedAt" IS NULL
         AND b."slug" IN (${Prisma.join([...filter.brandSlugs])})
     )`);
+  }
+  if (filter.tagSlugs !== undefined && filter.tagSlugs.length > 0) {
+    conditions.push(Prisma.sql`EXISTS (
+      SELECT 1 FROM "ProductTag" pt JOIN "Tag" t ON t."id" = pt."tagId"
+      WHERE pt."productId" = p."id" AND t."slug" IN (${Prisma.join([...filter.tagSlugs])})
+    )`);
+  }
+  if (filter.productIds !== undefined) {
+    if (filter.productIds.length === 0) return { ids: [], total: 0 };
+    conditions.push(Prisma.sql`p."id" IN (${Prisma.join([...filter.productIds])})`);
   }
   if (filter.sizes !== undefined && filter.sizes.length > 0)
     conditions.push(optionFilter("SIZE", filter.sizes));
@@ -303,4 +317,18 @@ export async function findPublishedSlugs() {
     select: { slug: true, updatedAt: true },
     orderBy: { publishedAt: "desc" },
   });
+}
+
+/** Products by units sold since `since` (online and in store), best first. */
+export async function findBestSellingProductIds(since: Date, limit: number): Promise<string[]> {
+  const rows = await db.$queryRaw<Array<{ id: string }>>`
+    SELECT v."productId" AS id
+      FROM "OrderItem" oi
+      JOIN "Order" o ON o."id" = oi."orderId"
+      JOIN "ProductVariant" v ON v."id" = oi."variantId"
+     WHERE o."soldAt" >= ${since}
+     GROUP BY v."productId"
+     ORDER BY sum(oi."quantity") DESC, v."productId"
+     LIMIT ${limit}`;
+  return rows.map((row) => row.id);
 }

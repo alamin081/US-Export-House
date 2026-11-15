@@ -16,8 +16,19 @@ import { PrismaClient } from "@/generated/prisma/client";
  * development the client is cached on `globalThis` to survive hot reloads,
  * which otherwise opens a new pool on every edit.
  */
+/**
+ * Connections per process. `next build` prerenders pages in one worker per
+ * CPU, each with its own pool, so a small pool keeps the total under
+ * PostgreSQL's limit (100 locally; Neon pools through PgBouncer). Override
+ * with DATABASE_POOL_MAX.
+ */
+function poolMax(): number {
+  const parsed = Number(process.env.DATABASE_POOL_MAX ?? "");
+  return Number.isInteger(parsed) && parsed > 0 && parsed <= 50 ? parsed : 4;
+}
+
 function createPrismaClient(): PrismaClient {
-  const adapter = new PrismaPg({ connectionString: env.DATABASE_URL });
+  const adapter = new PrismaPg({ connectionString: env.DATABASE_URL, max: poolMax() });
 
   return new PrismaClient({
     adapter,

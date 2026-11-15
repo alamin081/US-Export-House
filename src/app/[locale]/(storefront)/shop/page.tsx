@@ -39,6 +39,7 @@ export default async function ShopPage({
     cachedListing({
       ...(state.category === undefined ? {} : { categorySlug: state.category }),
       ...(state.q === undefined ? {} : { q: state.q }),
+      ...(state.tag === undefined ? {} : { tag: state.tag }),
       sizes: [...state.sizes],
       colours: [...state.colours],
       brands: [...state.brands],
