@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Download, Images, Plus, Upload } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { isMockStorage } from "@/integrations/storage";
 import { requireStaffPage } from "@/modules/access/access.service";
-import { hasAnyPermission } from "@/modules/access/authorization";
+import { hasAnyPermission, hasPermission } from "@/modules/access/authorization";
 import { listProductsForAdmin } from "@/modules/catalog/product.service";
 import { MockStorageBadge } from "../catalogue/fields";
 import { loadProductFormReferences } from "./load-references";
@@ -38,6 +38,16 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
     return `/admin/products?${params.toString()}`;
   };
 
+  // The export takes the list's filters (not its page or sort).
+  const exportQuery = new URLSearchParams(
+    Object.entries({
+      q: raw.q,
+      categoryId: raw.categoryId,
+      brandId: raw.brandId,
+      status: raw.status,
+    }).filter((entry): entry is [string, string] => entry[1] !== undefined && entry[1] !== ""),
+  ).toString();
+
   return (
     <div className="mx-auto max-w-7xl">
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -48,12 +58,42 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
             <MockStorageBadge show={isMockStorage()} />
           </p>
         </div>
-        {hasAnyPermission(staff, ["catalog.write", "catalog.content"]) ? (
-          <Link href="/admin/products/new" className={buttonVariants({ size: "sm" })}>
-            <Plus aria-hidden="true" />
-            New product
-          </Link>
-        ) : null}
+        <div className="flex flex-wrap gap-2">
+          {hasPermission(staff, "catalog.import") ? (
+            <Link
+              href="/admin/products/import"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              <Upload aria-hidden="true" />
+              Import
+            </Link>
+          ) : null}
+          {hasPermission(staff, "catalog.export") ? (
+            <a
+              href={`/api/admin/products/export?${exportQuery}`}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+              data-testid="products-export"
+            >
+              <Download aria-hidden="true" />
+              Export CSV
+            </a>
+          ) : null}
+          {hasPermission(staff, "catalog.write") ? (
+            <Link
+              href="/admin/products/images"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              <Images aria-hidden="true" />
+              Bulk images
+            </Link>
+          ) : null}
+          {hasAnyPermission(staff, ["catalog.write", "catalog.content"]) ? (
+            <Link href="/admin/products/new" className={buttonVariants({ size: "sm" })}>
+              <Plus aria-hidden="true" />
+              New product
+            </Link>
+          ) : null}
+        </div>
       </header>
 
       <form

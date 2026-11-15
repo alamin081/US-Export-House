@@ -24,6 +24,8 @@ const root = join(process.cwd(), distDir, "static");
 const FORBIDDEN_NAMES = ["costPoisha", "unitCostPoisha", "costValue", "cost_tk"];
 
 const COST_ENTRY_MARKER = "data-cost-entry";
+/** Server-only libraries (Phase 12: the Excel reader) — their text must not ship. */
+const SERVER_ONLY_MARKERS = ["xl/worksheets", "read-excel-file", "saxen"];
 
 /** Secret environment variables, checked by value when set and long enough. */
 const SECRET_ENV = [
@@ -70,6 +72,9 @@ for (const file of list) {
   for (const [name, value] of secrets) {
     if (text.includes(value)) hits.push(`${file}: value of ${name}`);
   }
+  for (const marker of SERVER_ONLY_MARKERS) {
+    if (text.includes(marker)) hits.push(`${file}: server-only library ("${marker}")`);
+  }
 }
 
 if (hits.length > 0) {
@@ -78,5 +83,5 @@ if (hits.length > 0) {
   process.exit(1);
 }
 console.info(
-  `[check-bundle] OK: ${list.length} browser files, no cost fields, ${secrets.length} secret value(s) checked.`,
+  `[check-bundle] OK: ${list.length} browser files, no cost fields, no server-only libraries, ${secrets.length} secret value(s) checked.`,
 );
