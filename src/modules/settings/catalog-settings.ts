@@ -57,7 +57,7 @@ export const CATALOG_SETTING_KEYS = {
   numerals: "storefront.numerals",
 } as const;
 
-const parsers = {
+export const catalogSettingParsers = {
   skuPattern: z
     .string()
     .regex(/^[A-Z0-9{}_-]+$/)
@@ -90,10 +90,10 @@ export function parseCatalogSettings(
   warn: (message: string) => void = () => {},
 ): CatalogSettings {
   const result: Record<string, unknown> = { ...DEFAULT_CATALOG_SETTINGS };
-  for (const field of Object.keys(parsers) as Array<keyof CatalogSettings>) {
+  for (const field of Object.keys(catalogSettingParsers) as Array<keyof CatalogSettings>) {
     const value = raw.get(CATALOG_SETTING_KEYS[field]);
     if (value === undefined) continue;
-    const parsed = parsers[field].safeParse(value);
+    const parsed = catalogSettingParsers[field].safeParse(value);
     if (parsed.success) result[field] = parsed.data;
     else warn(`Setting ${CATALOG_SETTING_KEYS[field]} is invalid; using the default.`);
   }

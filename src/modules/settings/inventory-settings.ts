@@ -40,7 +40,7 @@ export const INVENTORY_SETTING_KEYS = {
   adjustConfirmAbove: "inventory.adjust.confirmAbove",
 } as const satisfies Record<keyof InventorySettings, string>;
 
-const parsers = {
+export const inventorySettingParsers = {
   lowStockDefaultThreshold: z.coerce.number().int().min(0).max(10_000),
   fewLeftThreshold: z.coerce.number().int().min(0).max(1_000),
   transferRequireApproval: z.enum(["true", "false"]).transform((value) => value === "true"),
@@ -58,10 +58,10 @@ export function parseInventorySettings(
   warn: (message: string) => void = () => {},
 ): InventorySettings {
   const result: Record<string, unknown> = { ...DEFAULT_INVENTORY_SETTINGS };
-  for (const field of Object.keys(parsers) as Array<keyof InventorySettings>) {
+  for (const field of Object.keys(inventorySettingParsers) as Array<keyof InventorySettings>) {
     const value = raw.get(INVENTORY_SETTING_KEYS[field]);
     if (value === undefined) continue;
-    const parsed = parsers[field].safeParse(value.trim());
+    const parsed = inventorySettingParsers[field].safeParse(value.trim());
     if (parsed.success) result[field] = parsed.data;
     else warn(`Setting ${INVENTORY_SETTING_KEYS[field]} is invalid; using the default.`);
   }
