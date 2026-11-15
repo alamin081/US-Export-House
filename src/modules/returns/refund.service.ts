@@ -40,6 +40,12 @@ const recordSchema = z
     method: z.enum(REFUND_METHODS, { error: "Choose how the money was sent." }),
     reference: z.string().trim().max(80).optional().default(""),
     note: z.string().trim().max(300).optional().default(""),
+    /** Cash handed back from a till drawer: that open day (counted in its Z-report). */
+    posSessionId: z.string().max(40).optional().default(""),
+  })
+  .refine((value) => value.posSessionId === "" || value.method === "CASH", {
+    message: "Only cash comes out of the till drawer.",
+    path: ["posSessionId"],
   })
   .refine((value) => value.method === "CASH" || value.reference.length >= 3, {
     message: "Enter the transaction or reference number.",
@@ -67,6 +73,12 @@ export async function recordRefund(
     const request = await tx.lockReturn(returnId);
     if (request === null) throw new AppError("NOT_FOUND", "Return not found.");
     if (request.status !== "INSPECTED") throw conflict("Inspect the returned items first.");
+    if (input.posSessionId !== "") {
+      const day = await tx.findOpenSession(input.posSessionId);
+      if (day === null || day.locationId !== order.locationId) {
+        throw invalid("Choose an open till day at the shop that made the sale.", "posSessionId");
+      }
+    }
     if (request.refunds.some((refund) => refund.status === "PENDING")) {
       throw conflict("A refund for this return is already waiting for approval.");
     }
@@ -107,6 +119,7 @@ export async function recordRefund(
       reference: input.reference === "" ? null : input.reference,
       note: input.note === "" ? null : input.note,
       requiresApproval: pending,
+      posSessionId: input.posSessionId === "" ? null : input.posSessionId,
       processedByUserId: staff.userId,
       processedAt: pending ? null : at,
       ...(pending ? {} : { approvedByUserId: staff.userId, approvedAt: at }),

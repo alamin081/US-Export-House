@@ -512,6 +512,8 @@ export async function listCustomers(input: {
   locationIds: readonly string[] | undefined;
 }) {
   const where: Prisma.OrderWhereInput = {
+    // Walk-in till sales without a phone are not a customer record.
+    customerPhone: { not: "" },
     ...(input.locationIds === undefined ? {} : { locationId: { in: [...input.locationIds] } }),
     ...(input.search === null
       ? {}

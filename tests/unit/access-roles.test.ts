@@ -103,7 +103,8 @@ describe("admin navigation", () => {
     const labels = items.map((item) => item.label);
 
     expect(labels).toContain("Dashboard");
-    expect(labels).toContain("In-store sale");
+    expect(labels).toContain("Till");
+    expect(labels).toContain("Barcode labels");
     expect(labels).not.toContain("Staff & roles");
     expect(labels).not.toContain("Settings");
     expect(labels).not.toContain("Audit log");

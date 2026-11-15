@@ -54,13 +54,16 @@ export function evaluateCoupon(input: {
   /** Orders by this phone that already used the coupon (cancelled ones excluded). */
   usesByPhone: number;
   couponOnSaleItems: boolean;
+  /** Where it is used: online checkout (default) or the shop till (Phase 9). */
+  channel?: "ONLINE" | "STORE";
 }): { ok: true; effect: CouponEffect } | ({ ok: false } & CouponFailure) {
   const { coupon } = input;
+  const channel = input.channel ?? "ONLINE";
   if (
     coupon === null ||
     !coupon.isActive ||
     coupon.deletedAt !== null ||
-    coupon.channel === "STORE"
+    (coupon.channel !== "BOTH" && coupon.channel !== channel)
   ) {
     return { ok: false, reason: "INVALID" };
   }

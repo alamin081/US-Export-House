@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db } from "@/lib/db";
+import { nextFreeBarcode } from "@/modules/labels/labels.repository";
 import { Prisma } from "@/generated/prisma/client";
 import { buildProductCode, renderSku } from "./sku";
 import { optionKeyOf } from "./variant-matrix";
@@ -519,6 +520,8 @@ export async function saveProductGraph(plan: ProductGraphPlan) {
         data: {
           productId,
           ...common,
+          // New variants get the shop's own EAN-13 unless one was typed in (Phase 9).
+          barcode: common.barcode ?? (await nextFreeBarcode(tx)),
           optionKey: optionKeyOf(valueIds),
           optionValues: { create: valueIds.map((optionValueId) => ({ optionValueId })) },
         },

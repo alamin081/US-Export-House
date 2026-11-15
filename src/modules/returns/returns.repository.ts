@@ -144,6 +144,13 @@ export class ReturnTx {
     return row?.orderId ?? null;
   }
 
+  async findOpenSession(id: string) {
+    return this.tx.posSession.findFirst({
+      where: { id, status: "OPEN" },
+      select: { id: true, locationId: true },
+    });
+  }
+
   async shippingRefunded(orderId: string): Promise<boolean> {
     const count = await this.tx.refund.count({
       where: { orderId, shippingRefundPoisha: { gt: 0 }, status: { in: ["PENDING", "COMPLETED"] } },

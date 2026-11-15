@@ -194,6 +194,10 @@ describe("saving a product with its variants", () => {
     expect(product.variants.map((variant) => variant.sku).sort()).toEqual(
       [`${product.code}-NVY-L`, `${product.code}-NVY-M`].sort(),
     );
+    // Phase 9: a new variant without a typed barcode gets the shop's EAN-13.
+    expect(product.variants.every((variant) => /^29\d{11}$/.test(variant.barcode ?? ""))).toBe(
+      true,
+    );
     expect(
       product.variants.every(
         (variant) => variant.optionKey !== null && variant.optionKey.includes("+"),
