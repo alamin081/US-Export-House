@@ -7,9 +7,7 @@ import { SYSTEM_ROLES, type PermissionKey } from "@/modules/access/permissions";
 import {
   blockCustomerPhone,
   deleteCoupon,
-  getOrderForStaff,
   listBlockedPhonesForStaff,
-  listOrdersForStaff,
   mapArea,
   saveCheckoutSettings,
   saveCoupon,
@@ -289,25 +287,22 @@ describe("blocked phones and settings", () => {
       (await caught(saveCheckoutSettings(shippingOnly, { maxItemsPerOrder: "30" }, META))).code,
     ).toBe("FORBIDDEN");
   });
-});
 
-describe("orders (read-only)", () => {
-  it("masks the phone without customer.read and shows it with it", async () => {
-    const order = await db.order.findFirst({
-      where: { channel: "ONLINE" },
-      orderBy: { placedAt: "desc" },
-    });
-    if (order === null) return; // the checkout suite creates orders; nothing to check alone
-    const viewer = await actor("Order Staff", ["order.read"]);
-    const masked = await getOrderForStaff(viewer, order.id);
-    expect(masked.customerPhone).toMatch(/^01\*\*\*-\*\*\*\d{3}$/);
-    expect(masked.phoneMasked).toBe(true);
-    const full = await getOrderForStaff(orderStaff, order.id);
-    expect(full.customerPhone).toBe(order.customerPhone);
-    const list = await listOrdersForStaff(viewer, {});
-    expect(list.rows.every((row) => !row.customerPhone.startsWith("+880"))).toBe(true);
-    expect((await caught(listOrdersForStaff(await actor("Inventory Staff"), {}))).code).toBe(
-      "FORBIDDEN",
-    );
+  it("creates the store contact phone row when it does not exist yet", async () => {
+    const key = "store.contactPhone";
+    const previous = await db.setting.findUnique({ where: { key } });
+    await db.setting.deleteMany({ where: { key } });
+    try {
+      await saveCheckoutSettings(manager, { storeContactPhone: "+880 1711-000000" }, META);
+      const row = await db.setting.findUniqueOrThrow({ where: { key } });
+      expect(row.value).toBe("+880 1711-000000");
+      expect(row.updatedByUserId).toBe(manager.userId);
+      expect(
+        (await caught(saveCheckoutSettings(manager, { storeContactPhone: "call us" }, META))).code,
+      ).toBe("VALIDATION_FAILED");
+    } finally {
+      await db.setting.deleteMany({ where: { key } });
+      if (previous !== null) await db.setting.create({ data: previous });
+    }
   });
 });

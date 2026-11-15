@@ -1,17 +1,33 @@
 import "server-only";
 
 /**
- * Outgoing notifications. Phase 8 only records that an event happened (no
+ * Outgoing notifications. Phases 8-9 only record that an event happened (no
  * SMS, no email yet); a later phase plugs a real sender in here. Events carry
  * no personal data: never a phone number, name or address.
  */
 
-export type NotificationEvent = { type: "order.placed"; orderNumber: string; totalPoisha: number };
+export type NotificationEvent =
+  | { type: "order.placed"; orderNumber: string; totalPoisha: number }
+  | { type: "order.confirmed"; orderNumber: string; totalPoisha: number }
+  | { type: "order.updated"; orderNumber: string; totalPoisha: number }
+  | { type: "order.cancelled"; orderNumber: string; reason: string }
+  | { type: "order.shipped"; orderNumber: string; courier: string; codAmountPoisha: number }
+  | { type: "order.delivered"; orderNumber: string }
+  | { type: "order.delivery_failed"; orderNumber: string };
+
+/** One log line per event: the type, the order number and amounts only. */
+function describe(event: NotificationEvent): string {
+  const { type, orderNumber, ...rest } = event;
+  const extra = Object.entries(rest)
+    .map(([key, value]) => `${key}=${String(value)}`)
+    .join(" ");
+  return `[notify] ${type} ${orderNumber}${extra === "" ? "" : ` ${extra}`}`;
+}
 
 type Sink = (event: NotificationEvent) => void | Promise<void>;
 
 const logSink: Sink = (event) => {
-  console.info(`[notify] ${event.type} ${event.orderNumber} total=${event.totalPoisha}`);
+  console.info(describe(event));
 };
 
 let sink: Sink = logSink;

@@ -13,7 +13,7 @@ export { reserveThrottleAttempt };
  * so two submits for the same phone are decided one after the other.
  */
 
-const COUPON_SELECT = {
+export const COUPON_SELECT = {
   id: true,
   code: true,
   type: true,

@@ -25,14 +25,12 @@ import {
   findBlockedPhone,
   findBlockedPhoneById,
   findCoupon,
-  findOrderDetail,
   findProductIdsBySlugs,
   findZone,
   isDuplicateCode,
   listBlockedPhones,
   listCategoryChoices,
   listCoupons,
-  listOrders,
   listZones,
   searchAreas,
   setAreaMapping,
@@ -531,62 +529,4 @@ export async function unblockCustomerPhone(staff: StaffContext, id: string, meta
     before: { phone: maskBdMobile(row.phone) },
     meta,
   });
-}
-
-// ---------------------------------------------------------------------------
-// orders (read-only)
-// ---------------------------------------------------------------------------
-
-const ORDER_STATUSES = [
-  "PENDING",
-  "CONFIRMED",
-  "PROCESSING",
-  "SHIPPED",
-  "DELIVERED",
-  "CANCELLED",
-  "RETURNED",
-] as const;
-
-export async function listOrdersForStaff(
-  staff: StaffContext,
-  query: { status?: string; review?: string; q?: string; page?: string },
-) {
-  assertPermission(staff, "order.read");
-  const showPhone = hasPermission(staff, "customer.read");
-  const status = ORDER_STATUSES.find((value) => value === query.status) ?? null;
-  const search = (query.q ?? "").trim().slice(0, 40);
-  const page = Math.max(1, Math.min(1000, Number.parseInt(query.page ?? "1", 10) || 1));
-  const result = await listOrders({
-    status,
-    reviewOnly: query.review === "1",
-    // Without customer.read, searching by phone would reveal who ordered.
-    search: search === "" ? null : showPhone ? search : search.toUpperCase(),
-    page,
-    pageSize: 50,
-  });
-  return {
-    ...result,
-    page,
-    pageSize: 50,
-    rows: result.rows.map((row) => ({
-      ...row,
-      customerPhone: showPhone ? row.customerPhone : maskBdMobile(row.customerPhone),
-    })),
-  };
-}
-
-export async function getOrderForStaff(staff: StaffContext, id: string) {
-  assertPermission(staff, "order.read");
-  const order = await findOrderDetail(id);
-  if (order === null || order.channel !== "ONLINE") {
-    throw new AppError("NOT_FOUND", "Order not found.");
-  }
-  const showPhone = hasPermission(staff, "customer.read");
-  return {
-    ...order,
-    customerPhone: showPhone ? order.customerPhone : maskBdMobile(order.customerPhone),
-    shipPhone:
-      order.shipPhone === null ? null : showPhone ? order.shipPhone : maskBdMobile(order.shipPhone),
-    phoneMasked: !showPhone,
-  };
 }
