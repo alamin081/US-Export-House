@@ -10,6 +10,7 @@ import {
   deleteCoupon,
   mapArea,
   saveCheckoutSettings,
+  saveStoreSettings,
   saveCoupon,
   saveZone,
   searchShippingAreas,
@@ -83,6 +84,19 @@ export async function saveCheckoutSettingsAction(
     revalidatePath("/admin/checkout-settings");
     revalidatePath("/admin/shipping");
     return { status: "success", message: "Settings saved." };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function saveStoreSettingsAction(
+  payload: Record<string, unknown>,
+): Promise<ActionResult> {
+  try {
+    const staff = await requireStaffAction("checkout.settings");
+    await saveStoreSettings(staff, payload, await getRequestMeta());
+    revalidatePath("/admin/checkout-settings");
+    return { status: "success", message: "Shop details saved." };
   } catch (error) {
     return actionError(error);
   }

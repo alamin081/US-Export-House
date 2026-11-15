@@ -10,6 +10,11 @@ import { getCheckoutCart } from "@/modules/cart/cart.service";
 import { applyStockMovements } from "@/modules/inventory/inventory.service";
 import { runInventoryTransaction } from "@/modules/inventory/inventory.repository";
 import { notify } from "@/modules/notifications/notification.service";
+import {
+  getCustomerReturnOptions,
+  isReturnPolicyPublished,
+  type CustomerReturnOptions,
+} from "@/modules/returns/returns.service";
 import { getCheckoutSettings, type CheckoutSettings } from "@/modules/settings/settings.service";
 import { resolveDeliveryArea, type DeliveryArea } from "@/modules/shipping/shipping.service";
 import {
@@ -566,13 +571,14 @@ async function freshQuote(
 // confirmation and tracking
 // ---------------------------------------------------------------------------
 
-export interface OrderView extends Omit<OrderViewRow, "customerPhone" | "customerName"> {
+export interface OrderView extends Omit<OrderViewRow, "id" | "customerPhone" | "customerName"> {
   maskedPhone: string;
   customerName: string;
 }
 
 function toOrderView(row: OrderViewRow): OrderView {
-  const { customerPhone, ...rest } = row;
+  // The database id never reaches the browser.
+  const { customerPhone, id: _id, ...rest } = row;
   return { ...rest, maskedPhone: maskBdMobile(customerPhone) };
 }
 
@@ -583,7 +589,14 @@ export async function getOrderConfirmation(publicToken: string): Promise<OrderVi
 }
 
 export type TrackResult =
-  | { ok: true; order: Omit<OrderView, "customerName" | "shipLine1" | "shipLandmark"> }
+  | {
+      ok: true;
+      order: Omit<OrderView, "customerName" | "shipLine1" | "shipLandmark">;
+      /** Return / exchange choices when the order is eligible (Phase 9). */
+      returns: CustomerReturnOptions | null;
+      /** The return policy link shows only once the policy is published. */
+      showReturnsPolicy: boolean;
+    }
   | { ok: false; error: "NOT_FOUND" | "RATE_LIMITED" };
 
 /**
@@ -611,5 +624,9 @@ export async function trackOrder(rawInput: unknown, meta: RequestMeta): Promise<
     shipLandmark: _landmark,
     ...order
   } = toOrderView(row);
-  return { ok: true, order };
+  const [returns, showReturnsPolicy] = await Promise.all([
+    getCustomerReturnOptions(row.id),
+    isReturnPolicyPublished(),
+  ]);
+  return { ok: true, order, returns, showReturnsPolicy };
 }

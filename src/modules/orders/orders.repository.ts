@@ -28,6 +28,7 @@ const LOCKED_ORDER_INCLUDE = {
   invoices: { where: { isCurrent: true } },
   redemption: true,
   codItem: { select: { id: true } },
+  exchangeFor: { select: { reference: true, status: true } },
   location: { select: { id: true, code: true, nameEn: true } },
 } satisfies Prisma.OrderInclude;
 
@@ -395,6 +396,13 @@ export async function findOrderDetail(id: string) {
       },
       codItem: { include: { settlement: { select: { reference: true, receivedOn: true } } } },
       location: { select: { id: true, code: true, nameEn: true, isSample: true } },
+      returnRequests: {
+        select: { id: true, reference: true, status: true, type: true },
+        orderBy: { requestedAt: "desc" },
+      },
+      exchangeFor: {
+        select: { id: true, reference: true, order: { select: { id: true, orderNumber: true } } },
+      },
     },
   });
 }

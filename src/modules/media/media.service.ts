@@ -253,3 +253,39 @@ export async function deleteStoredFiles(
   }
   return { deleted, failed };
 }
+
+// ---------------------------------------------------------------------------
+// return photos (customers and staff; same checks, own folder)
+// ---------------------------------------------------------------------------
+
+const RETURNS_FOLDER = "returns";
+
+/**
+ * Stores a photo attached to a return request. The server checks the type,
+ * the file signature and the size before anything is stored; the bytes go to
+ * the configured provider (Cloudinary, or the mock in automated tests).
+ */
+export async function storeReturnPhoto(
+  file: { declaredMime: string; bytes: Uint8Array },
+  meta: RequestMeta,
+  actorUserId: string | null = null,
+): Promise<{ provider: string; key: string; url: string }> {
+  const settings = await getCatalogSettings();
+  const check = validateImageUpload({ ...file, maxBytes: settings.maxUploadBytes });
+  if (!check.ok) throw rejected(check.problem);
+  const provider = getStorageProvider();
+  const stored = await provider.upload({
+    bytes: file.bytes,
+    format: check.format,
+    folder: `${storageFolder}/${RETURNS_FOLDER}`,
+  });
+  await recordAudit({
+    actorUserId,
+    action: AUDIT_ACTIONS.imageUploaded,
+    entityType: "return_photo",
+    entityId: stored.key,
+    after: { provider: stored.provider, bytes: stored.bytes, format: stored.format },
+    meta,
+  });
+  return { provider: stored.provider, key: stored.key, url: stored.url };
+}

@@ -218,6 +218,16 @@ export async function shipOrder(
       const at = new Date();
       const firstShipment = order.status === "PROCESSING";
       if (firstShipment && order.packedAt === null) throw conflict("Finish packing first.");
+      // An exchange may leave before the old item is back (owner decision),
+      // but only with a note saying how the old item comes back.
+      const awaitingReturn =
+        order.exchangeFor !== null && ["REQUESTED", "APPROVED"].includes(order.exchangeFor.status);
+      if (awaitingReturn && input.note.length < 3) {
+        throw invalid(
+          `The returned item of ${order.exchangeFor!.reference} has not arrived yet. Add a note (e.g. “courier brings the old item back”).`,
+          "note",
+        );
+      }
 
       let invoiceNumber: string | null = order.invoices[0]?.number ?? null;
       if (firstShipment) {

@@ -1,0 +1,108 @@
+/**
+ * Printed words on invoices and receipts, in both languages. Kept apart from
+ * the storefront messages: printouts are chosen per print (the customer's
+ * language), not by the admin's locale.
+ */
+export type PrintLanguage = "bn" | "en";
+
+export const PRINT_LABELS = {
+  en: {
+    invoice: "Invoice",
+    receipt: "Receipt",
+    invoiceNo: "Invoice no.",
+    billNo: "Bill no.",
+    order: "Order",
+    date: "Date",
+    version: "Version",
+    billTo: "Bill to",
+    item: "Item",
+    sku: "SKU",
+    size: "Size",
+    colour: "Colour",
+    qty: "Qty",
+    unitPrice: "Unit price",
+    discount: "Discount",
+    amount: "Amount",
+    subtotal: "Subtotal",
+    delivery: "Delivery",
+    total: "Total",
+    vatIncluded: "All prices include VAT.",
+    vatShare: "VAT included",
+    bin: "BIN",
+    payment: "Payment",
+    paid: "Paid",
+    change: "Change",
+    phone: "Phone",
+    branch: "Branch",
+    servedBy: "Served by",
+    thanks: "Thank you for shopping with us.",
+    superseded: "This version was replaced",
+  },
+  bn: {
+    invoice: "ইনভয়েস",
+    receipt: "রসিদ",
+    invoiceNo: "ইনভয়েস নং",
+    billNo: "বিল নং",
+    order: "অর্ডার",
+    date: "তারিখ",
+    version: "সংস্করণ",
+    billTo: "ক্রেতা",
+    item: "পণ্য",
+    sku: "এসকেইউ",
+    size: "সাইজ",
+    colour: "রঙ",
+    qty: "পরিমাণ",
+    unitPrice: "একক দাম",
+    discount: "ছাড়",
+    amount: "মোট",
+    subtotal: "উপমোট",
+    delivery: "ডেলিভারি",
+    total: "সর্বমোট",
+    vatIncluded: "সব দাম ভ্যাট-সহ।",
+    vatShare: "অন্তর্ভুক্ত ভ্যাট",
+    bin: "বিআইএন",
+    payment: "পেমেন্ট",
+    paid: "পরিশোধিত",
+    change: "ফেরত",
+    phone: "ফোন",
+    branch: "শাখা",
+    servedBy: "বিক্রেতা",
+    thanks: "আমাদের সাথে কেনাকাটার জন্য ধন্যবাদ।",
+    superseded: "এই সংস্করণটি পরে বদলানো হয়েছে",
+  },
+} as const satisfies Record<PrintLanguage, Record<string, string>>;
+
+export const PAYMENT_LABELS: Record<PrintLanguage, Record<string, string>> = {
+  en: {
+    COD: "Cash on delivery",
+    CASH: "Cash",
+    CARD: "Card",
+    BKASH: "bKash",
+    NAGAD: "Nagad",
+    SSLCOMMERZ: "Online",
+    EXCHANGE_CREDIT: "Exchange credit",
+    UNPAID: "Unpaid",
+    PAID: "Paid",
+    PARTIALLY_REFUNDED: "Partly refunded",
+    REFUNDED: "Refunded",
+    FAILED: "Failed",
+  },
+  bn: {
+    COD: "ক্যাশ অন ডেলিভারি",
+    CASH: "নগদ",
+    CARD: "কার্ড",
+    BKASH: "বিকাশ",
+    NAGAD: "নগদ (মোবাইল)",
+    SSLCOMMERZ: "অনলাইন",
+    EXCHANGE_CREDIT: "এক্সচেঞ্জ ক্রেডিট",
+    UNPAID: "অপরিশোধিত",
+    PAID: "পরিশোধিত",
+    PARTIALLY_REFUNDED: "আংশিক ফেরত",
+    REFUNDED: "ফেরত",
+    FAILED: "ব্যর্থ",
+  },
+};
+
+export function printLanguage(value: string | undefined): PrintLanguage {
+  return value === "en" ? "en" : "bn";
+}

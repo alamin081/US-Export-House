@@ -162,6 +162,7 @@ export interface OrderActions {
   note: boolean;
   printSlip: boolean;
   printInvoice: boolean;
+  startReturn: boolean;
 }
 
 function orderActions(staff: StaffContext, status: OrderStatus, packed: boolean): OrderActions {
@@ -187,6 +188,7 @@ function orderActions(staff: StaffContext, status: OrderStatus, packed: boolean)
     ),
     printSlip: can("invoice.print"),
     printInvoice: can("invoice.print"),
+    startReturn: can("return.manage") && status === "DELIVERED",
   };
 }
 

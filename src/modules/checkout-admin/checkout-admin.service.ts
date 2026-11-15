@@ -13,7 +13,12 @@ import {
   checkoutSettingParsers,
   type CheckoutSettings,
 } from "@/modules/settings/checkout-settings";
-import { getCheckoutSettings } from "@/modules/settings/settings.service";
+import { getCheckoutSettings, getStoreSettings } from "@/modules/settings/settings.service";
+import {
+  STORE_SETTING_KEYS,
+  storeSettingParsers,
+  type StoreSettings,
+} from "@/modules/settings/store-settings";
 import {
   areaExists,
   blockPhone,
@@ -473,6 +478,87 @@ export async function saveCheckoutSettings(
     entityType: "Setting",
     entityId: changed.map((row) => row.key).join(","),
     before: Object.fromEntries(fields.map((field) => [field, before[field]])),
+    after,
+    meta,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// shop details printed on invoices, receipts and labels
+// ---------------------------------------------------------------------------
+
+/** Fields edited on the checkout settings page (the phone is in the checkout group). */
+export const STORE_FIELDS = [
+  "nameEn",
+  "nameBn",
+  "addressEn",
+  "addressBn",
+  "logoUrl",
+  "vatEnabled",
+  "vatRatePercent",
+  "vatBin",
+  "vatShowBreakdown",
+] as const satisfies ReadonlyArray<keyof StoreSettings>;
+
+export type StoreField = (typeof STORE_FIELDS)[number];
+
+export const STORE_FIELD_LABELS: Record<StoreField, string> = {
+  nameEn: "Shop name (English)",
+  nameBn: "Shop name (Bengali)",
+  addressEn: "Shop address (English)",
+  addressBn: "Shop address (Bengali)",
+  logoUrl: "Logo image URL (https, optional)",
+  vatEnabled: "Show VAT details on invoices",
+  vatRatePercent: "VAT rate (%)",
+  vatBin: "BIN number",
+  vatShowBreakdown: "Show the VAT share contained in the total",
+};
+
+export async function getStoreSettingsForStaff(staff: StaffContext) {
+  assertPermission(staff, "checkout.settings");
+  return getStoreSettings();
+}
+
+export async function saveStoreSettings(
+  staff: StaffContext,
+  raw: Record<string, unknown>,
+  meta: RequestMeta,
+) {
+  assertPermission(staff, "checkout.settings");
+  const before = await getStoreSettings();
+  const rows: Parameters<typeof upsertSettings>[0][number][] = [];
+  const after: Partial<Record<StoreField, unknown>> = {};
+  for (const field of Object.keys(raw) as StoreField[]) {
+    if (!(STORE_FIELDS as readonly string[]).includes(field))
+      throw invalid(`Unknown setting ${field}.`);
+    const text = String(raw[field] ?? "").trim();
+    const parsed = storeSettingParsers[field].safeParse(text);
+    if (!parsed.success) throw invalid(`${STORE_FIELD_LABELS[field]}: not a valid value.`, field);
+    if (String(before[field]) === String(parsed.data)) continue;
+    after[field] = parsed.data;
+    rows.push({
+      key: STORE_SETTING_KEYS[field],
+      value: String(parsed.data),
+      valueType:
+        typeof parsed.data === "boolean"
+          ? "BOOLEAN"
+          : typeof parsed.data === "number"
+            ? "INT"
+            : "STRING",
+      group: field.startsWith("vat") ? "tax" : "store",
+      labelEn: STORE_FIELD_LABELS[field],
+    });
+  }
+  if (rows.length === 0) return;
+  await upsertSettings(rows, staff.userId);
+  await recordAudit({
+    actorUserId: staff.userId,
+    action: AUDIT_ACTIONS.storeSettingsChanged,
+    entityType: "Setting",
+    entityId: rows.map((row) => row.key).join(","),
+    before: Object.fromEntries(
+      Object.keys(after).map((field) => [field, before[field as StoreField]]),
+    ),
     after,
     meta,
   });

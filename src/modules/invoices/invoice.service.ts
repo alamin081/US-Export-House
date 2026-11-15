@@ -1,5 +1,11 @@
 import "server-only";
 
+import { AppError } from "@/lib/errors";
+import {
+  assertLocationAccess,
+  assertPermission,
+  type StaffContext,
+} from "@/modules/access/authorization";
 import { AUDIT_ACTIONS, type RequestMeta } from "@/modules/audit/audit.service";
 import type { InventoryUnitOfWork } from "@/modules/inventory/inventory.repository";
 import type { OrderTx } from "@/modules/orders/orders.repository";
@@ -9,6 +15,7 @@ import {
   formatInvoiceNumber,
   type InvoiceSnapshot,
 } from "./invoice-snapshot";
+import { findInvoice } from "./invoice.repository";
 
 /**
  * Issues an invoice version inside the caller's transaction (the one that
@@ -66,4 +73,24 @@ export async function issueInvoiceInTx(input: {
     userAgent: input.meta.userAgent,
   });
   return { number, version };
+}
+
+/** An issued invoice, exactly as it was issued, for printing. */
+export async function getInvoiceForPrint(
+  staff: StaffContext,
+  orderId: string,
+  rawVersion?: string,
+) {
+  assertPermission(staff, "invoice.print");
+  const version =
+    rawVersion === undefined || !/^\d{1,4}$/.test(rawVersion) ? null : Number(rawVersion);
+  const invoice = await findInvoice(orderId, version);
+  if (invoice === null)
+    throw new AppError("NOT_FOUND", "No invoice yet: it is issued when the order ships.");
+  assertLocationAccess(staff, invoice.order.locationId);
+  return {
+    snapshot: invoice.snapshot as unknown as InvoiceSnapshot,
+    isCurrent: invoice.isCurrent,
+    reason: invoice.reason,
+  };
 }

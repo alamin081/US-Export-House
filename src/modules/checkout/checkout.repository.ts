@@ -85,6 +85,7 @@ export async function peekThrottle(key: string): Promise<number> {
 // ---------------------------------------------------------------------------
 
 const ORDER_VIEW_SELECT = {
+  id: true,
   orderNumber: true,
   status: true,
   paymentStatus: true,
