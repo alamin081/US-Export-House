@@ -35,6 +35,12 @@ import {
   RETURNS_SETTING_KEYS,
   type ReturnsSettings,
 } from "./returns-settings";
+import {
+  DEFAULT_POS_SETTINGS,
+  parsePosSettings,
+  POS_SETTING_KEYS,
+  type PosSettings,
+} from "./pos-settings";
 
 export { DEFAULT_CATALOG_SETTINGS, type CatalogSettings };
 export { DEFAULT_INVENTORY_SETTINGS, type InventorySettings };
@@ -42,6 +48,7 @@ export { DEFAULT_CHECKOUT_SETTINGS, type CheckoutSettings };
 export { DEFAULT_ORDER_SETTINGS, type OrderSettings };
 export { DEFAULT_STORE_SETTINGS, type StoreSettings };
 export { DEFAULT_RETURNS_SETTINGS, type ReturnsSettings };
+export { DEFAULT_POS_SETTINGS, type PosSettings };
 
 /**
  * Catalogue settings from the database. A database error falls back to the
@@ -109,5 +116,16 @@ export async function getReturnsSettings(): Promise<ReturnsSettings> {
   } catch (error) {
     console.error("[settings] could not load settings", error instanceof Error ? error.name : "");
     return DEFAULT_RETURNS_SETTINGS;
+  }
+}
+
+/** Till and label settings, falling back to the defaults. */
+export async function getPosSettings(): Promise<PosSettings> {
+  try {
+    const raw = await findSettingValues(Object.values(POS_SETTING_KEYS));
+    return parsePosSettings(raw, (message) => console.warn(`[settings] ${message}`));
+  } catch (error) {
+    console.error("[settings] could not load settings", error instanceof Error ? error.name : "");
+    return DEFAULT_POS_SETTINGS;
   }
 }

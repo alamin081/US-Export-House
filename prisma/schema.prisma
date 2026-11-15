@@ -275,6 +275,11 @@ enum ReturnSource {
   STAFF
 }
 
+enum PosSessionStatus {
+  OPEN
+  CLOSED
+}
+
 enum CouponType {
   PERCENTAGE
   FIXED
@@ -385,6 +390,8 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   passwordHash  String?
+  /// Argon2 hash of the till PIN a manager types to allow a larger discount.
+  posPinHash    String?
   name          String?
   image         String?
 
@@ -619,6 +626,7 @@ model Location {
   staffAccess     StaffLocationAccess[]
   returnItems     ReturnItem[]
   stockReceipts   StockReceipt[]
+  posSessions     PosSession[]
 
   @@index([type, isActive])
 }
@@ -1457,6 +1465,14 @@ model Order {
   /// The order an exchange replaces items of (this order is the replacement).
   exchangeOfOrderId     String?
 
+  // --- Phase 9: in-store sales -----------------------------------------------
+  /// The till day the sale belongs to; its bills are locked once it closes.
+  posSessionId             String?
+  /// Discount typed at the till (lines + bill), part of discountPoisha.
+  manualDiscountPoisha     Int     @default(0)
+  /// Manager who allowed a discount above the seller's limit.
+  discountApprovedByUserId String?
+
   placedAt             DateTime  @default(now())
   confirmedAt          DateTime?
   processedAt          DateTime?
@@ -1482,6 +1498,7 @@ model Order {
   shipments      Shipment[]
   returnRequests ReturnRequest[]
   exchangeFor    ReturnRequest?       @relation("ReturnExchangeOrder")
+  posSession     PosSession?          @relation(fields: [posSessionId], references: [id], onDelete: Restrict)
   redemption     CouponRedemption?
   callLogs       OrderCallLog[]
   notes          OrderNote[]
@@ -1498,6 +1515,7 @@ model Order {
   @@index([placedIpHash, placedAt])
   @@index([channel, status, placedAt])
   @@index([exchangeOfOrderId])
+  @@index([posSessionId])
 }
 
 /// A line on an order. Product name, SKU and price are snapshots: editing the
@@ -1514,17 +1532,19 @@ model OrderItem {
   sku           String
   imageUrl      String?
 
-  unitPricePoisha Int
-  quantity        Int
-  lineTotalPoisha Int
+  unitPricePoisha      Int
+  quantity             Int
+  lineTotalPoisha      Int
   /// Compare-at price when the line was on sale (snapshot).
-  compareAtPoisha Int?
+  compareAtPoisha      Int?
   /// This line's share of the order discount (sums to Order.discountPoisha).
-  discountPoisha  Int     @default(0)
-  sizeLabelEn     String?
-  sizeLabelBn     String?
-  colourLabelEn   String?
-  colourLabelBn   String?
+  discountPoisha       Int     @default(0)
+  /// Part of discountPoisha typed at the till for this line (Phase 9).
+  manualDiscountPoisha Int     @default(0)
+  sizeLabelEn          String?
+  sizeLabelBn          String?
+  colourLabelEn        String?
+  colourLabelBn        String?
 
   order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Restrict)
@@ -1572,12 +1592,19 @@ model Payment {
   providerReference     String?
   paidAt                DateTime?
 
+  /// Till: cash handed over and change given back (amountPoisha is what was kept).
+  tenderedPoisha   Int?
+  changePoisha     Int?
+  posSessionId     String?
+  recordedByUserId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  order    Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  attempts PaymentAttempt[]
-  refunds  Refund[]
+  order      Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  attempts   PaymentAttempt[]
+  refunds    Refund[]
+  posSession PosSession?      @relation(fields: [posSessionId], references: [id], onDelete: Restrict)
 
   @@unique([provider, providerTransactionId])
   @@index([orderId])
@@ -1627,11 +1654,14 @@ model Refund {
   approvedByUserId     String?
   approvedAt           DateTime?
   rejectedReason       String?
+  /// Cash refunded from a till drawer (counted in that day's Z-report).
+  posSessionId         String?
 
   order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   payment       Payment?       @relation(fields: [paymentId], references: [id], onDelete: SetNull)
   processedBy   User?          @relation(fields: [processedByUserId], references: [id], onDelete: SetNull)
   returnRequest ReturnRequest? @relation(fields: [returnRequestId], references: [id], onDelete: SetNull)
+  posSession    PosSession?    @relation(fields: [posSessionId], references: [id], onDelete: Restrict)
 
   @@index([orderId])
   @@index([status, createdAt])
@@ -1961,6 +1991,52 @@ model CodSettlementItem {
   shipment   Shipment?     @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
 
   @@index([settlementId])
+}
+
+/// A till day at one counter of one location: opening float, sales, cash
+/// refunds, and the counted cash when it closes (Z-report). Only one open
+/// day per counter (partial unique index); a closed day's bills cannot change.
+model PosSession {
+  id                 String           @id @default(cuid())
+  /// DAY-YYMM-NNNNN
+  reference          String           @unique
+  locationId         String
+  counterCode        String           @default("MAIN")
+  status             PosSessionStatus @default(OPEN)
+  openingFloatPoisha Int              @default(0)
+  openedByUserId     String?
+  openedAt           DateTime         @default(now())
+  closedByUserId     String?
+  closedAt           DateTime?
+  expectedCashPoisha Int?
+  countedCashPoisha  Int?
+  differencePoisha   Int?
+  differenceReason   String?
+  /// The Z-report exactly as it was when the day closed.
+  zReport            Json?
+
+  location  Location      @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  orders    Order[]
+  payments  Payment[]
+  refunds   Refund[]
+  heldBills PosHeldBill[]
+
+  @@index([locationId, openedAt])
+}
+
+/// A bill parked at the till while another customer is served. Holds no stock.
+model PosHeldBill {
+  id        String   @id @default(cuid())
+  sessionId String
+  userId    String?
+  label     String
+  /// The cart as the till had it (lines, discounts, customer).
+  cart      Json
+  createdAt DateTime @default(now())
+
+  session PosSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
 }
 
 model ShipmentEvent {

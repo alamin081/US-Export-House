@@ -96,6 +96,13 @@ export const AUDIT_ACTIONS = {
   returnPolicyPublished: "return_policy.published",
   returnPolicyUnpublished: "return_policy.unpublished",
   storeSettingsChanged: "store.settings_changed",
+  barcodesGenerated: "catalog.barcodes_generated",
+  posDayOpened: "pos.day_opened",
+  posDayClosed: "pos.day_closed",
+  posSale: "pos.sale",
+  posDiscountOverride: "pos.discount_override",
+  posPinSet: "pos.pin_set",
+  posBillHeld: "pos.bill_held",
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];

@@ -16,6 +16,7 @@ import {
   INVENTORY_SETTING_KEYS,
 } from "../src/modules/settings/inventory-settings";
 import { DEFAULT_ORDER_SETTINGS, ORDER_SETTING_KEYS } from "../src/modules/settings/order-settings";
+import { DEFAULT_POS_SETTINGS, POS_SETTING_KEYS } from "../src/modules/settings/pos-settings";
 import {
   DEFAULT_RETURNS_SETTINGS,
   RETURNS_SETTING_KEYS,
@@ -290,5 +291,34 @@ export const RETURNS_SETTINGS = (
   valueType,
   value: String(DEFAULT_RETURNS_SETTINGS[field]),
   group: field === "refundApprovalAbovePoisha" ? "refunds" : "returns",
+  description,
+}));
+
+/** Phase 9 till and label settings (new keys only). Owner decisions 2026-11-15. */
+export const POS_SETTINGS = (
+  [
+    [
+      "maxDiscountPercentByRole",
+      "JSON",
+      "Largest till discount (% of the bill) per role without a manager; roles not listed: unlimited.",
+    ],
+    [
+      "counters",
+      "JSON",
+      'Extra till counters per location code, e.g. {"BR-GUL": ["2"]}. MAIN always exists.',
+    ],
+    ["receiptWidthMm", "INT", "Receipt printer paper width: 80 or 58 mm."],
+    ["labelWidthMm", "INT", "Barcode label width in mm."],
+    ["labelHeightMm", "INT", "Barcode label height in mm."],
+    ["pinAttemptsPer15Min", "INT", "Wrong manager PIN tries per manager per 15 minutes."],
+  ] as const
+).map(([field, valueType, description]) => ({
+  key: POS_SETTING_KEYS[field],
+  valueType,
+  value:
+    typeof DEFAULT_POS_SETTINGS[field] === "object"
+      ? JSON.stringify(DEFAULT_POS_SETTINGS[field])
+      : String(DEFAULT_POS_SETTINGS[field]),
+  group: field.startsWith("label") ? "labels" : "pos",
   description,
 }));
