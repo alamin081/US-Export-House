@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "regions": ["sin1"],
+  "crons": [
+    { "path": "/api/cron/auth-cleanup", "schedule": "15 20 * * *" },
+    { "path": "/api/cron/cart-cleanup", "schedule": "45 20 * * *" }
+  ]
+}

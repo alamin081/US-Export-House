@@ -242,6 +242,99 @@ function assertSafeCombinations(parsedEnv: ServerEnv): void {
   }
 }
 
+const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
+const SECURE_SSL_MODES = new Set(["require", "verify-ca", "verify-full"]);
+
+function parseUrlOrNull(value: string | undefined): URL | null {
+  if (value === undefined || value.trim() === "") return null;
+  try {
+    return new URL(value);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Extra rules for the hosted targets (APP_ENV=staging or production). Local
+ * development, CI and the test runs all use APP_ENV=local and are untouched.
+ *
+ *  - The public origin is HTTPS, and NEXT_PUBLIC_APP_URL names the same origin
+ *    as APP_URL (absolute links, sitemap and webhooks must agree).
+ *  - The app talks to the database through the pooled URL (DATABASE_URL), and
+ *    migrations use a separate direct URL (DATABASE_URL_UNPOOLED). On Neon the
+ *    pooled host carries "-pooler" and the direct host does not.
+ *  - Neither URL points at this machine, and both require TLS.
+ *
+ * Messages name the variables, never their values.
+ */
+export function assertHostedTargetRules(
+  parsedEnv: Pick<ServerEnv, "APP_ENV" | "APP_URL" | "DATABASE_URL" | "DATABASE_URL_UNPOOLED">,
+  publicAppUrl: string | undefined,
+): void {
+  if (parsedEnv.APP_ENV === "local") return;
+  const target = "APP_ENV=" + parsedEnv.APP_ENV;
+  const problems: string[] = [];
+
+  const appUrl = parseUrlOrNull(parsedEnv.APP_URL);
+  if (appUrl?.protocol !== "https:") {
+    problems.push("  - APP_URL must be an https:// URL when " + target);
+  }
+  const publicUrl = parseUrlOrNull(publicAppUrl);
+  if (publicUrl === null) {
+    problems.push("  - NEXT_PUBLIC_APP_URL must be set when " + target);
+  } else if (appUrl !== null && publicUrl.origin !== appUrl.origin) {
+    problems.push("  - NEXT_PUBLIC_APP_URL must have the same origin as APP_URL when " + target);
+  }
+
+  const pooled = parseUrlOrNull(parsedEnv.DATABASE_URL);
+  const direct = parseUrlOrNull(parsedEnv.DATABASE_URL_UNPOOLED);
+  if (direct === null) {
+    problems.push(
+      "  - DATABASE_URL_UNPOOLED (direct connection, used by migrations) is required when " +
+        target,
+    );
+  } else if (!/^postgres(ql)?:$/.test(direct.protocol)) {
+    problems.push("  - DATABASE_URL_UNPOOLED must be a postgres:// or postgresql:// URL");
+  }
+
+  for (const [name, url] of [
+    ["DATABASE_URL", pooled],
+    ["DATABASE_URL_UNPOOLED", direct],
+  ] as const) {
+    if (url === null) continue;
+    if (LOCAL_HOSTS.has(url.hostname)) {
+      problems.push("  - " + name + " must not point at a local database when " + target);
+    }
+    if (!SECURE_SSL_MODES.has(url.searchParams.get("sslmode") ?? "")) {
+      problems.push("  - " + name + " must include sslmode=require when " + target);
+    }
+  }
+
+  if (pooled !== null && direct !== null) {
+    if (pooled.host === direct.host) {
+      problems.push(
+        "  - DATABASE_URL (pooled) and DATABASE_URL_UNPOOLED (direct) must use different hosts when " +
+          target,
+      );
+    }
+    if (pooled.hostname.endsWith(".neon.tech") && !pooled.hostname.includes("-pooler.")) {
+      problems.push("  - DATABASE_URL must be Neon's pooled host (the one with -pooler)");
+    }
+    if (direct.hostname.endsWith(".neon.tech") && direct.hostname.includes("-pooler.")) {
+      problems.push("  - DATABASE_URL_UNPOOLED must be Neon's direct host (without -pooler)");
+    }
+    if (pooled.pathname !== direct.pathname) {
+      problems.push(
+        "  - DATABASE_URL and DATABASE_URL_UNPOOLED must name the same database when " + target,
+      );
+    }
+  }
+
+  if (problems.length > 0) {
+    fail("Unsafe environment configuration:", problems.join("\n"));
+  }
+}
+
 /** Validates raw server variables; throws one readable error listing every problem. */
 export function parseServerEnv(raw: Record<string, string | undefined>): ServerEnv {
   const parsed = serverSchema.safeParse(raw);
@@ -249,6 +342,7 @@ export function parseServerEnv(raw: Record<string, string | undefined>): ServerE
     fail("Invalid or missing server environment variables:", formatIssues(parsed.error));
   }
   assertSafeCombinations(parsed.data);
+  assertHostedTargetRules(parsed.data, raw.NEXT_PUBLIC_APP_URL);
   return parsed.data;
 }
 

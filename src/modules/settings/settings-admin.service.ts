@@ -11,6 +11,7 @@ import {
   SETTING_GROUPS,
   listValues,
   settingDefinition,
+  settingValueType,
   toStored,
   type SettingDefinition,
   type SettingGroup,
@@ -162,15 +163,6 @@ export function storedFromInput(definition: SettingDefinition, raw: unknown): st
   return toStored(parsed.data);
 }
 
-function valueType(definition: SettingDefinition): SettingWrite["valueType"] {
-  if (definition.kind === "bool") return "BOOLEAN";
-  if (definition.kind === "money" || definition.kind === "int" || definition.kind === "percent") {
-    return "INT";
-  }
-  if (definition.kind === "json" || definition.kind === "multi") return "JSON";
-  return "STRING";
-}
-
 /**
  * Saves the changed settings of one group. Every value is checked before
  * anything is written; one bad value saves nothing. Returns the cache tags
@@ -208,7 +200,7 @@ export async function saveSettings(
     writes.push({
       key: definition.key,
       value: stored,
-      valueType: valueType(definition),
+      valueType: settingValueType(definition),
       group: definition.group,
       labelEn: definition.label.en,
     });

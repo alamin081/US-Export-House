@@ -118,6 +118,18 @@ export function listValues(
   }
 }
 
+/** The Setting.valueType column for a definition's kind. */
+export function settingValueType(
+  definition: Pick<SettingDefinition, "kind">,
+): "STRING" | "INT" | "BOOLEAN" | "JSON" {
+  if (definition.kind === "bool") return "BOOLEAN";
+  if (definition.kind === "money" || definition.kind === "int" || definition.kind === "percent") {
+    return "INT";
+  }
+  if (definition.kind === "json" || definition.kind === "multi") return "JSON";
+  return "STRING";
+}
+
 /** Stored text for a value (lists and maps as JSON). */
 export function toStored(value: unknown): string {
   return typeof value === "object" && value !== null ? JSON.stringify(value) : String(value);

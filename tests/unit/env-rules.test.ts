@@ -21,6 +21,16 @@ const CLOUDINARY = {
   CLOUDINARY_API_SECRET: "fake-secret-for-tests-only-abc",
 };
 
+/** A valid hosted (staging) shape: fake Neon-style hosts, no real credentials. */
+const HOSTED = {
+  APP_URL: "https://staging.example.test",
+  NEXT_PUBLIC_APP_URL: "https://staging.example.test",
+  DATABASE_URL:
+    "postgresql://role:fake@ep-fake-123-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require",
+  DATABASE_URL_UNPOOLED:
+    "postgresql://role:fake@ep-fake-123.ap-southeast-1.aws.neon.tech/neondb?sslmode=require",
+};
+
 function refusal(raw: Record<string, string>): string {
   try {
     parseServerEnv(raw);
@@ -45,6 +55,7 @@ describe("image storage per environment", () => {
           : {};
       const env = parseServerEnv({
         ...BASE,
+        ...(APP_ENV === "local" ? {} : HOSTED),
         ...CLOUDINARY,
         ...extra,
         APP_ENV,
@@ -149,5 +160,87 @@ describe("Cloudinary folder per environment", () => {
   it("defaults the root to ueh", () => {
     const env = parseServerEnv({ ...BASE, ...CLOUDINARY, NODE_ENV: "development" });
     expect(storageRootFolder(env)).toBe("ueh/dev");
+  });
+
+  it("puts a staging deployment under ueh/staging", () => {
+    const env = parseServerEnv({
+      ...BASE,
+      ...HOSTED,
+      ...CLOUDINARY,
+      APP_ENV: "staging",
+      NODE_ENV: "production",
+    });
+    expect(storageRootFolder(env)).toBe("ueh/staging");
+  });
+});
+
+describe("hosted targets (staging, production)", () => {
+  const staging = { ...BASE, ...HOSTED, ...CLOUDINARY, APP_ENV: "staging", NODE_ENV: "production" };
+
+  it("accepts the pooled/direct Neon pair over HTTPS", () => {
+    const env = parseServerEnv(staging);
+    expect(env.DATABASE_URL).toContain("-pooler.");
+    expect(env.DATABASE_URL_UNPOOLED).not.toContain("-pooler.");
+  });
+
+  it("leaves local development untouched", () => {
+    expect(parseServerEnv({ ...BASE, ...CLOUDINARY, NODE_ENV: "development" }).APP_ENV).toBe(
+      "local",
+    );
+  });
+
+  it("requires HTTPS and the same public origin", () => {
+    expect(refusal({ ...staging, APP_URL: "http://staging.example.test" })).toContain(
+      "APP_URL must be an https:// URL",
+    );
+    expect(refusal({ ...staging, NEXT_PUBLIC_APP_URL: "https://other.example.test" })).toContain(
+      "same origin as APP_URL",
+    );
+    expect(refusal({ ...staging, NEXT_PUBLIC_APP_URL: "" })).toContain(
+      "NEXT_PUBLIC_APP_URL must be set",
+    );
+  });
+
+  it("requires a separate direct connection", () => {
+    expect(refusal({ ...staging, DATABASE_URL_UNPOOLED: "" })).toContain(
+      "DATABASE_URL_UNPOOLED (direct connection, used by migrations) is required",
+    );
+    expect(refusal({ ...staging, DATABASE_URL_UNPOOLED: HOSTED.DATABASE_URL })).toContain(
+      "must use different hosts",
+    );
+  });
+
+  it("refuses swapped Neon hosts", () => {
+    const message = refusal({
+      ...staging,
+      DATABASE_URL: HOSTED.DATABASE_URL_UNPOOLED,
+      DATABASE_URL_UNPOOLED: HOSTED.DATABASE_URL,
+    });
+    expect(message).toContain("DATABASE_URL must be Neon's pooled host");
+    expect(message).toContain("DATABASE_URL_UNPOOLED must be Neon's direct host");
+  });
+
+  it("refuses a local database, a missing sslmode and two different databases", () => {
+    expect(refusal({ ...staging, DATABASE_URL: BASE.DATABASE_URL })).toContain(
+      "DATABASE_URL must not point at a local database",
+    );
+    expect(
+      refusal({
+        ...staging,
+        DATABASE_URL_UNPOOLED: HOSTED.DATABASE_URL_UNPOOLED.replace("?sslmode=require", ""),
+      }),
+    ).toContain("DATABASE_URL_UNPOOLED must include sslmode=require");
+    expect(
+      refusal({
+        ...staging,
+        DATABASE_URL_UNPOOLED: HOSTED.DATABASE_URL_UNPOOLED.replace("/neondb", "/otherdb"),
+      }),
+    ).toContain("must name the same database");
+  });
+
+  it("never prints connection strings in a refusal", () => {
+    const message = refusal({ ...staging, DATABASE_URL_UNPOOLED: HOSTED.DATABASE_URL });
+    expect(message).not.toContain("role:fake");
+    expect(message).not.toContain("neon.tech");
   });
 });
